@@ -66,41 +66,33 @@
   "projects": [
     {
       "id": 1,
-      "title": "Project 1",
-      "description": "This is the description for Project 1",
-      "status": "Active",
-      "team": [
-        "Developer 1",
-        "Developer 2",
-        "Business Analyst 1"
-      ],
-      "startDate": "2023-01-01",
-      "endDate": "2023-02-28"
+      "title": "Project A",
+      "status": "In Progress",
+      "overview": "This is an overview of Project A. It involves building a web application using React and Node.js.",
+      "createdBy": "John Doe",
+      "createdAt": "2023-06-01",
+      "updatedBy": "Jane Smith",
+      "updatedAt": "2023-06-15"
     },
     {
       "id": 2,
-      "title": "Project 2",
-      "description": "This is the description for Project 2",
-      "status": "Inactive",
-      "team": [
-        "Developer 3",
-        "Developer 4",
-        "Business Analyst 2"
-      ],
-      "startDate": "2023-03-01",
-      "endDate": "2023-04-30"
+      "title": "Project B",
+      "status": "Completed",
+      "overview": "Project B is a mobile app development project. It focuses on creating a cross-platform app using Flutter.",
+      "createdBy": "Alice Johnson",
+      "createdAt": "2023-06-05",
+      "updatedBy": "Bob Williams",
+      "updatedAt": "2023-06-25"
     },
     {
       "id": 3,
-      "title": "Project 3",
-      "description": "This is the description for Project 3",
-      "status": "Active",
-      "team": [
-        "Developer 2",
-        "Business Analyst 1"
-      ],
-      "startDate": "2023-05-01",
-      "endDate": "2023-06-30"
+      "title": "Project C",
+      "status": "Planned",
+      "overview": "Project C is a data analysis project. It involves processing large datasets using Python and performing statistical analysis.",
+      "createdBy": "Ethan Davis",
+      "createdAt": "2023-06-10",
+      "updatedBy": "Olivia Brown",
+      "updatedAt": "2023-06-20"
     }
   ]
 }

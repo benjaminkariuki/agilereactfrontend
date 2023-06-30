@@ -1,0 +1,106 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "Isaac",
+      "lastName": "Kiplagat",
+      "email": "isaac.kiplagat@agilebiz.co.ke",
+      "password": "123456",
+      "role": "COO",
+      "profilephoto": "/photos/image1.jpeg"
+    },
+    {
+      "id": 2,
+      "firstName": "Lydia",
+      "lastName": "chepkoech",
+      "email": "lydia.chepkoech@agilebiz.co.ke",
+      "password": "123456",
+      "role": "Project Manager",
+      "profilephoto": "/photos/image2.jpeg"
+    },
+    {
+      "id": 3,
+      "firstName": "keith",
+      "lastName": "Collins",
+      "email": "keith.kibet@agilebiz.co.ke",
+      "role": "Developer",
+      "profilephoto": "/photos/image3.jpeg"
+    },
+    {
+      "id": 4,
+      "firstName": "sharon",
+      "lastName": "Jepkemoi",
+      "email": "sharon.jepkemoi@agilebiz.co.ke",
+      "password": "123456",
+      "role": "Business Analyst",
+      "profilephoto": "/photos/image4.jpeg"
+    },
+    {
+      "id": 5,
+      "firstName": "Benjamin",
+      "lastName": "Leiyan",
+      "email": "benjamin.leyian@agilebiz.co.ke",
+      "password": "123456",
+      "role": "Developer",
+      "profilephoto": ""
+    },
+    {
+      "firstName": "collins",
+      "lastName": "Kibet",
+      "email": "keithkibet2@gmail.com",
+      "role": "Team Lead",
+      "profilephoto": "",
+      "password": "123456",
+      "id": 6
+    },
+    {
+      "firstName": "we",
+      "lastName": "are",
+      "email": "we.are@agilebiz.co.ke",
+      "role": "Business Analyst",
+      "profilephoto": "",
+      "password": "123456",
+      "id": 7
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Project 1",
+      "description": "This is the description for Project 1",
+      "status": "Active",
+      "team": [
+        "Developer 1",
+        "Developer 2",
+        "Business Analyst 1"
+      ],
+      "startDate": "2023-01-01",
+      "endDate": "2023-02-28"
+    },
+    {
+      "id": 2,
+      "title": "Project 2",
+      "description": "This is the description for Project 2",
+      "status": "Inactive",
+      "team": [
+        "Developer 3",
+        "Developer 4",
+        "Business Analyst 2"
+      ],
+      "startDate": "2023-03-01",
+      "endDate": "2023-04-30"
+    },
+    {
+      "id": 3,
+      "title": "Project 3",
+      "description": "This is the description for Project 3",
+      "status": "Active",
+      "team": [
+        "Developer 2",
+        "Business Analyst 1"
+      ],
+      "startDate": "2023-05-01",
+      "endDate": "2023-06-30"
+    }
+  ]
+}

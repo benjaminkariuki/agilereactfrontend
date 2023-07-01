@@ -30,19 +30,25 @@ const userSlice = createSlice({
       state.userRole = "";
       state.userProfilePhoto = "";
       localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
     },
     updateUser: (state, action) => {
-      state.userFName = action.payload.userFName;
-      state.userLName = action.payload.userLName;
-      state.userEmail = action.payload.userEmail;
-      state.userRole = action.payload.userRole;
-      state.userProfilePhoto = action.payload.userProfilePhoto;
+      state.userFName = action.payload.firstName;
+      state.userLName = action.payload.lastName;
+      state.userEmail = action.payload.email;
+      state.userRole = action.payload.role;
+      state.userProfilePhoto = action.payload.profilephoto;
+      // Check if the password is present in the payload
+      if (action.payload.password) {
+        // Update the password
+        state.userPassword = action.payload.password;
+      }
+
       // Store the updated user data in local storage
-      localStorage.setItem("user", JSON.stringify(state));
     },
     createUser: (state, action) => {
       // Dispatch an API request to the server
-      fetch("http://192.168.88.188:8001/users", {
+      fetch("http://192.168.1.106:8001/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

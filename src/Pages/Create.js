@@ -20,7 +20,7 @@ const CreateUser = () => {
         lastName,
         email,
         role,
-        profilephoto: "",
+        profilephoto: "/profile2.jpeg",
         password: "123456", // You can set the profile photo here or modify it as needed
       })
     );

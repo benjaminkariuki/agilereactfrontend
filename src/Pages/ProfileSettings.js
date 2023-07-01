@@ -8,10 +8,12 @@ const EditProfile = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [photo, setPhoto] = useState("");
-  const [role, setRole] = useState("");
+  const [profilephoto, setPhoto] = useState("");
+  const [password, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const dispatch = useDispatch();
+  useEffect(() => {});
   const {
     userId,
     userRole,
@@ -21,14 +23,7 @@ const EditProfile = () => {
     userProfilePhoto,
   } = useSelector((state) => state.user);
 
-  useEffect(() => {
-    // Set initial values from the user data obtained from session storage
-    setFirstName(userFName);
-    setLastName(userLName);
-    setEmail(userEmail);
-    setRole(userRole);
-    setPhoto(userProfilePhoto);
-  }, [userEmail, userFName, userLName, userRole, userProfilePhoto]);
+  console.log(isEditing);
 
   const handleFirstNameChange = (event) => {
     setFirstName(event.target.value);
@@ -36,6 +31,14 @@ const EditProfile = () => {
 
   const handleLastNameChange = (event) => {
     setLastName(event.target.value);
+  };
+
+  const handleNewPasswordChange = (event) => {
+    setNewPassword(event.target.value);
+  };
+
+  const handleConfirmPasswordChange = (event) => {
+    setConfirmPassword(event.target.value);
   };
 
   const handleEmailChange = (event) => {
@@ -65,31 +68,40 @@ const EditProfile = () => {
   const handleEdit = () => {
     setIsEditing(true);
   };
-
+  //updating the database
+  
   const handleSave = () => {
+    if (!profilephoto) {
+      setPhoto(userProfilePhoto);
+    }
+    if (password !== confirmPassword) {
+      console.log("Passwords do not match");
+      return;
+    }
     const updatedUser = {
       id: userId,
       firstName,
       lastName,
       email,
-      // password: password,
+      password,
       role: userRole,
-      profilephoto: photo,
+      profilephoto: profilephoto,
     };
 
     axios
-      .put(`http://192.168.88.188:8001/users/${userId}`, updatedUser)
+      .put(`http://192.168.1.106:8001/users/${userId}`, updatedUser)
       .then((response) => {
         // Dispatch the update user action
-        dispatch(updateUser(response.data));
-
-        // Reset the editing state
+        const updatedUser = response.data;
+        dispatch(updateUser(updatedUser));
+        sessionStorage.setItem("user", JSON.stringify(updatedUser)); // Update the session data
         setIsEditing(false);
       })
       .catch((error) => {
         console.log("Error updating user:", error);
       });
   };
+
   const handleClose = () => {
     // Reset the form and close the edit profile window
     setFirstName(userFName);
@@ -140,6 +152,37 @@ const EditProfile = () => {
             <div className="mb-4">
               <label
                 className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="newPassword"
+              >
+                New Password
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="newPassword"
+                type="password"
+                value={password}
+                onChange={handleNewPasswordChange}
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="confirmPassword"
+              >
+                Confirm New Password
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
                 htmlFor="email"
               >
                 Email
@@ -168,7 +211,7 @@ const EditProfile = () => {
                   Drag and drop a photo here, or click to select a file
                 </p>
               </div>
-              {photo && <img src={photo} alt="Profile" />}
+              {profilephoto && <img src={profilephoto} alt="Profile" />}
             </div>
             <div className="flex justify-between">
               <button
@@ -195,9 +238,9 @@ const EditProfile = () => {
                 Profile Photo
               </label>
               <div className="w-24 h-24 rounded-full overflow-hidden">
-                {photo ? (
+                {userProfilePhoto ? (
                   <img
-                    src={photo}
+                    src={process.env.PUBLIC_URL + userProfilePhoto}
                     alt="User"
                     className="w-full h-full object-cover"
                   />
@@ -217,7 +260,7 @@ const EditProfile = () => {
               >
                 Email
               </label>
-              <span className="text-gray-700">{email}</span>
+              <span className="text-gray-700">{userEmail}</span>
             </div>
             <div className="mb-4">
               <label
@@ -227,7 +270,7 @@ const EditProfile = () => {
                 Full Name
               </label>
               <span className="text-gray-700">
-                {firstName} {lastName}
+                {userFName} {userLName}
               </span>
             </div>
             <div className="mb-4">
@@ -237,7 +280,7 @@ const EditProfile = () => {
               >
                 Role
               </label>
-              <span className="text-gray-700">{role}</span>
+              <span className="text-gray-700">{userRole}</span>
             </div>
 
             <div className="flex justify-center mt-4">

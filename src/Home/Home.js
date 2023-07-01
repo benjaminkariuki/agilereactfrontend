@@ -97,7 +97,7 @@ const Home = () => {
                   />
                 ) : (
                   <img
-                    src={process.env.PUBLIC_URL + "/profile2.jpeg"}
+                    src={""}
                     alt="Default User"
                     className="w-full h-full rounded-full object-cover"
                   />

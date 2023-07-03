@@ -48,7 +48,7 @@ const userSlice = createSlice({
     },
     createUser: (state, action) => {
       // Dispatch an API request to the server
-      fetch("http://192.168.1.106:8001/users", {
+      fetch("http://192.168.88.188:8001/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

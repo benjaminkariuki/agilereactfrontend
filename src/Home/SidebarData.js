@@ -43,7 +43,7 @@ const SidebarData = [
   },
   {
     id: 6,
-    title: "Create User",
+    title: "Create-User",
     path: "../dashboard/create",
     iconOpened: <AiIcons.AiOutlineUserAdd />,
     iconClosed: <AiIcons.AiOutlineUserAdd />,

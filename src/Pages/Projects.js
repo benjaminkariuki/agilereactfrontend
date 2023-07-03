@@ -29,6 +29,17 @@ const Projects = () => {
       <h1 className="text-center text-3xl font-bold mb-4 text-blue-800">
         Projects
       </h1>
+      {/* Create Project button */}
+      {canCreateEditDelete && (
+        <div className="mt-4">
+          <button
+            onClick={handleCreateProject}
+            className="bg-blue-500 text-white font-semibold px-4 py-2 rounded-md"
+          >
+            Create Project
+          </button>
+        </div>
+      )}
       {/* Display projects */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {projectsData.projects.map((project) => (
@@ -70,17 +81,6 @@ const Projects = () => {
           </div>
         ))}
       </div>
-      {/* Create Project button */}
-      {canCreateEditDelete && (
-        <div className="mt-4">
-          <button
-            onClick={handleCreateProject}
-            className="bg-blue-500 text-white font-semibold px-4 py-2 rounded-md"
-          >
-            Create Project
-          </button>
-        </div>
-      )}
     </div>
   );
 };

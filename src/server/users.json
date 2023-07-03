@@ -91,15 +91,6 @@
       "profilephoto": "/profile2.jpeg"
     },
     {
-      "id": 11,
-      "firstName": "Matthew",
-      "lastName": "Miller",
-      "email": "matthewmiller@example.com",
-      "password": "123456",
-      "role": "COO",
-      "profilephoto": "/profile2.jpeg"
-    },
-    {
       "id": 12,
       "firstName": "Ava",
       "lastName": "Harris",
@@ -223,15 +214,6 @@
       "email": "danielhernandez@example.com",
       "password": "123456",
       "role": "Team Lead",
-      "profilephoto": "/profile2.jpeg"
-    },
-    {
-      "id": 26,
-      "firstName": "Victoria",
-      "lastName": "Moore",
-      "email": "victoriamoore@example.com",
-      "password": "123456",
-      "role": "COO",
       "profilephoto": "/profile2.jpeg"
     },
     {

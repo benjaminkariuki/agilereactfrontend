@@ -13,7 +13,7 @@ const Users = () => {
 
   const fetchUsers = () => {
     axios
-      .get("http://192.168.1.106:8001/users")
+      .get("http://192.168.88.188:8001/users")
       .then((response) => {
         setUsers(response.data);
       })
@@ -25,7 +25,7 @@ const Users = () => {
   const handleDeleteUser = (userId) => {
     if (userRole === "COO") {
       axios
-        .delete(`http://192.168.1.106:8001/users/${userId}`)
+        .delete(`http://192.168.88.188:8001/users/${userId}`)
         .then(() => {
           setUsers((prevUsers) =>
             prevUsers.filter((user) => user.id !== userId)
@@ -41,11 +41,14 @@ const Users = () => {
     return (
       <div key={role}>
         <h2 className={`text-2xl font-bold mt-8 ${roleHeaderClass}`}>{role}</h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ">
           {users
             .filter((user) => user.role === role)
             .map((user) => (
-              <div key={user.id} className="bg-white rounded-lg shadow p-4">
+              <div
+                key={user.id}
+                className="bg-white rounded-lg shadow p-4 max-w-md "
+              >
                 <div className="flex justify-center mb-2">
                   <img
                     src={process.env.PUBLIC_URL + userProfilePhoto}

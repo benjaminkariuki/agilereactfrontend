@@ -34,7 +34,7 @@ const LoginForm = () => {
     setIsPending(true);
 
     axios
-      .get("http://192.168.1.106:8001/users")
+      .get("http://192.168.88.188:8001/users")
       .then((response) => {
         const loguser = response.data.find(
           (loguser) => loguser.email === email && loguser.password === password

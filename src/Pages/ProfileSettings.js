@@ -89,7 +89,7 @@ const EditProfile = () => {
     };
 
     axios
-      .put(`http://192.168.1.106:8001/users/${userId}`, updatedUser)
+      .put(`http://192.168.88.188:8001/users/${userId}`, updatedUser)
       .then((response) => {
         // Dispatch the update user action
         const updatedUser = response.data;

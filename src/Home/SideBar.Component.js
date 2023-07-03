@@ -29,7 +29,7 @@ function SideBar({ isOpen }) {
     <div
       className={clsx([
         "bg-white transition-all duration-500 ease-in",
-        isOpen ? "w-40" : "w-10",
+        isOpen ? "w-36" : "w-10",
       ])}
     >
       <ul className="flex flex-col">

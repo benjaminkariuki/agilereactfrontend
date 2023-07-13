@@ -2,47 +2,96 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import clsx from "clsx";
-import SidebarData from "./SidebarData";
+import {
+  HomeIcon,
+  BriefcaseIcon,
+  PresentationChartBarIcon,
+  UsersIcon,
+  UserAddIcon,
+  CogIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/outline"; // Import from the "outline" package
+
+import {
+  HomeIcon as HomeOutlineIcon,
+  BriefcaseIcon as BriefcaseOutlineIcon,
+  PresentationChartBarIcon as PresentationChartBarOutlineIcon,
+  UsersIcon as UsersOutlineIcon,
+  UserAddIcon as UserAddOutlineIcon,
+  CogIcon as CogOutlineIcon,
+  CheckCircleIcon as CheckCircleOutlineIcon,
+} from "@heroicons/react/solid"; // Import from the "solid" package
+
+function getSolidIcon(iconName) {
+  switch (iconName) {
+    case "HomeIcon":
+      return <HomeIcon className="w-6 h-6" />;
+    case "BriefcaseIcon":
+      return <BriefcaseIcon className="w-6 h-6" />;
+    case "PresentationChartBarIcon":
+      return <PresentationChartBarIcon className="w-6 h-6" />;
+    case "UsersIcon":
+      return <UsersIcon className="w-6 h-6" />;
+    case "UserAddIcon":
+      return <UserAddIcon className="w-6 h-6" />;
+    case "CogIcon":
+      return <CogIcon className="w-6 h-6" />;
+    case "CheckCircleIcon":
+      return <CheckCircleIcon className="w-6 h-6" />;
+    default:
+      return null;
+  }
+}
+
+function getOutlineIcon(iconName) {
+  switch (iconName) {
+    case "HomeOutlineIcon":
+      return <HomeOutlineIcon className="w-6 h-6" />;
+    case "BriefcaseOutlineIcon":
+      return <BriefcaseOutlineIcon className="w-6 h-6" />;
+    case "PresentationChartBarOutlineIcon":
+      return <PresentationChartBarOutlineIcon className="w-6 h-6" />;
+    case "UsersOutlineIcon":
+      return <UsersOutlineIcon className="w-6 h-6" />;
+    case "UserAddOutlineIcon":
+      return <UserAddOutlineIcon className="w-6 h-6" />;
+    case "CogOutlineIcon":
+      return <CogOutlineIcon className="w-6 h-6" />;
+    case "CheckCircleOutlineIcon":
+      return <CheckCircleOutlineIcon className="w-6 h-6" />;
+    default:
+      return null;
+  }
+}
 
 function SideBar({ isOpen }) {
-  const userRole = useSelector((state) => state.user.userRole);
-
-  const filteredSidebarData = SidebarData.filter((item) => {
-    if (userRole === "COO" && (item.id === 5 || item.id === 6)) {
-      // COO can view items with id 5 and 6
-      return true;
-    } else if (userRole === "Project Manager" && item.id === 6) {
-      // Project Manager cannot view item with id 6 (Create User)
-      return false;
-    } else if (
-      userRole !== "COO" &&
-      userRole !== "Project Manager" &&
-      (item.id === 5 || item.id === 6)
-    ) {
-      // Other roles cannot view items with id 5 and 6 (Users and Create User)
-      return false;
-    }
-    return true; // Include all other menu items
-  });
+  const userActivities = useSelector((state) => state.user.userActivities);
 
   return (
     <div
       className={clsx([
         "bg-white transition-all duration-500 ease-in",
-        isOpen ? "w-36" : "w-10",
+        isOpen ? "w-40" : "w-10",
       ])}
     >
-      <ul className="flex flex-col">
-        {filteredSidebarData.map((item) => (
-          <li key={item.id} className="text-blue-900">
+      <ul className="flex flex-col items-strecth">
+        {userActivities.map((activity) => (
+          <li key={activity.id} className="text-blue-900 whitespace-nowrap">
             <a
-              href={item.path}
+              href={activity.route}
               className="flex items-center py-2 pl-2 hover:bg-blue-100 rounded"
             >
-              <span className="text-2xl mr-2">
-                {isOpen ? item.iconOpened : item.iconClosed}
+              <span
+                key={activity.id}
+                className={`text-2xl mr-2 ${
+                  isOpen ? "" : "text-blue-800"
+                }`}
+              >
+                {isOpen
+                  ? getOutlineIcon(activity.iconOpened)
+                  : getSolidIcon(activity.iconClosed)}
               </span>
-              <span className="font-bold text-blue-800">{item.title}</span>
+              <span className="font-bold text-blue-800">{activity.name}</span>
             </a>
           </li>
         ))}

@@ -1,36 +1,68 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { createUser } from "../slices/userSlices";
+import React, { useState, useEffect } from "react";
 
 const CreateUser = () => {
-  const dispatch = useDispatch();
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [contacts, setContacts] = useState("");
+  const [role_id, setRole] = useState("");
+  const [roles, setRoles] = useState([]);
+  const [errors, seterrors] = useState("");
 
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await fetch("http://192.168.88.187:8000/api/allRoles");
+      const data = await response.json();
+      setRoles(data.roles);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const createUser = async () => {
+    try {
+      const response = await fetch("http://192.168.88.187:8000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          contacts,
+          role_id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create user.");
+      } else {
+        seterrors("created successfuly");
+      }
+
+      // Reset the form
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setContacts("");
+      setRole("");
+    } catch (error) {
+      console.log(error);
+      seterrors(error);
+    }
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
-    // console.log(firstName, lastName, email, role);
-    // Dispatch the createUser action with the user details
-    dispatch(
-      createUser({
-        firstName,
-        lastName,
-        email,
-        role,
-        profilephoto: "/profile2.jpeg",
-        password: "123456", // You can set the profile photo here or modify it as needed
-      })
-    );
-
-    // Reset the form
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setRole("");
+    createUser();
+    console.log(Error);
+    console.log(errors);
   };
+
   return (
     <div className="w-full max-w-sm mx-auto pt-10">
       <h2 className="text-center text-xl font-bold mb-4 text-blue-800">
@@ -93,6 +125,22 @@ const CreateUser = () => {
         <div className="mb-4">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="contacts"
+          >
+            Contacts
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="contacts"
+            type="text"
+            placeholder="Enter contacts"
+            value={contacts}
+            onChange={(e) => setContacts(e.target.value)}
+          />
+        </div>
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
             htmlFor="roles"
           >
             Roles
@@ -100,17 +148,17 @@ const CreateUser = () => {
           <select
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="roles"
-            value={role}
+            value={role_id.id}
             onChange={(e) => setRole(e.target.value)}
           >
             <option value="" disabled>
               Select a role
             </option>
-            <option value="COO">COO</option>
-            <option value="Project Manager">Project Manager</option>
-            <option value="Developer">Developer</option>
-            <option value="Business Analyst">Business Analyst</option>
-            <option value="Team Lead">Team Lead</option>
+            {roles.map((role) => (
+              <option key={role.id} value={role.name}>
+                {role.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex items-center justify-center">

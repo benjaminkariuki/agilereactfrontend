@@ -11,15 +11,18 @@ import Projects from "../Pages/Projects";
 import ProfileSettings from "../Pages/ProfileSettings";
 import { useDispatch, useSelector } from "react-redux";
 import { login, logout } from "../slices/userSlices";
+import ManageRoles from "../Pages/manageRoles";
 
 const Home = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenProfile, setIsOpenProfile] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userRole, userEmail, userFName, userLName, userProfilePhoto } =
+  const { userRole, userEmail, userFName, userLName, userProfilePhoto, baseUrl} =
     useSelector((state) => state.user);
-
+  
+  console.log(userProfilePhoto);
+  console.log(baseUrl);
   // Use useEffect to check login status on component mount
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -89,19 +92,15 @@ const Home = () => {
                 }`}
                 onClick={toggleDropdown}
               >
-                {userProfilePhoto ? (
                   <img
-                    src={process.env.PUBLIC_URL + userProfilePhoto}
+                    src={
+                      userProfilePhoto ? (baseUrl + userProfilePhoto):
+                      (process.env.PUBLIC_URL+ "/profile2.jpeg")     
+                    }
                     alt="User"
                     className="w-full h-full rounded-full object-cover"
                   />
-                ) : (
-                  <img
-                    src={""}
-                    alt="Default User"
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                )}
+                
               </div>
             </div>
 
@@ -131,18 +130,22 @@ const Home = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <SideBar isOpen={isOpen} userRole={userRole} />
         <div className="flex-grow bg-blue-50">
-          <Routes>
+        <div style={{height: "calc(100vh - 64px)", overflowY: "auto"}}>
+        <Routes>
             <Route path="/home" element={<Dashboard />} />
             <Route path="/project" element={<Projects />} />
             <Route path="/sprints" element={<Sprints />} />
             <Route path="/tasks" element={<Task />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/roles" element={<ManageRoles />} />
             <Route path="/create" element={<CreateUser />} />
             <Route path="/editprofile" element={<ProfileSettings />} />
           </Routes>
+        </div>
+          
         </div>
       </div>
     </div>

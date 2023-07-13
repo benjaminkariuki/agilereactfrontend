@@ -33,14 +33,14 @@ const PasswordReset = () => {
     // Send the password and token in the POST request to the backend API
     setIsPending(true);
     axios
-      .post("http://127.0.0.1:8001/api/reset_password", {
+      .post("http://192.168.88.187:8000/api/reset_password", {
         password,
         token,
       })
       .then((response) => {
         setSuccessMessage(response.data.message);
         setErrorMessage("");
-        navigate("/Home");
+        navigate("/");
       })
       .catch((error) => {
         if (error.response) {
@@ -92,7 +92,7 @@ const PasswordReset = () => {
         </div>
         <div className="Loginform">
           <div className="top_Loginform">
-            <h5 className="title_Login">Login to Your Dashboard</h5>
+            <h5 className="title_Login">Create New Password</h5>
             <p className="info_Login">Enter your new password</p>
 
             {successMessage && (
@@ -153,7 +153,7 @@ const PasswordReset = () => {
             </div>
             <div className="form-group">
               <p>
-                <Link className="login_link" to="/login">
+                <Link className="login_link" to="/">
                   Back to login
                 </Link>
               </p>

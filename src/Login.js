@@ -24,6 +24,7 @@ const LoginForm = () => {
   };
 
   console.log(loggedIn);
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -34,23 +35,21 @@ const LoginForm = () => {
     setIsPending(true);
 
     axios
-      .get("http://192.168.88.188:8001/users")
+      .post("http://192.168.88.187:8000/api/login", {
+        email,
+        password,
+      })
       .then((response) => {
-        const loguser = response.data.find(
-          (loguser) => loguser.email === email && loguser.password === password
-        );
+        const loguser = response.data.user;
 
-        if (loguser != null) {
-          dispatch(login(loguser));
-          setIsPending(false);
-          sessionStorage.setItem("user", JSON.stringify(loguser)); // Store user details in sessionStorage
-          navigate("/dashboard/home");
-          console.log("Successful");
-          console.log(loggedIn);
-        } else {
-          setAuthError("Invalid email or password");
-          setIsPending(false);
-        }
+        dispatch(login(loguser));
+        setIsPending(false);
+        sessionStorage.setItem("user", JSON.stringify(loguser));
+        navigate("/dashboard/home");
+        console.log("Successful");
+        console.log(loguser);
+        console.log(loggedIn);
+        console.log(loguser.profile_pic);
       })
       .catch((error) => {
         let errorMessage = "An error occurred. Please try again.";
@@ -88,7 +87,12 @@ const LoginForm = () => {
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const requireDomain = "@agilebiz.co.ke";
+
+    if (!emailRegex.test(email) && !email.includes(requireDomain)) {
+      return false;
+    }
+    return true;
   };
 
   return (

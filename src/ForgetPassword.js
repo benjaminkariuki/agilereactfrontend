@@ -45,7 +45,7 @@ const ForgotPass = () => {
     setIsSubmitting(true);
 
     axios
-      .post("http://192.168.88.187:8000/api/pass_reset", {
+      .post("http://agilepm.eliaskemboy.com/api/pass_reset", {
         email,
       })
       .then((response) => {

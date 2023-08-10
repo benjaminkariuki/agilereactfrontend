@@ -10,7 +10,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import App from "./App";
-import Projects from "./Pages/Projects";
+import ManageProjects from "./Pages/ManageProjects";
 import ForgotPass from "./ForgetPassword";
 import PasswordReset from "./PasswordReset";
 import Dashboard from "./Pages/Dashboard";
@@ -22,6 +22,10 @@ import CreateUser from "./Pages/Create";
 import ProfileSettings from "./Pages/ProfileSettings";
 import LoginForm from "./Login";
 import { useSelector } from "react-redux";
+
+import "primereact/resources/themes/lara-light-indigo/theme.css"; // theme
+import "primereact/resources/primereact.css"; // core css
+import "primeicons/primeicons.css"; // icons
 
 const ProtectedRoute = ({ element, redirectPath }) => {
   const loggedIn = useSelector((state) => state.user);
@@ -58,7 +62,9 @@ const router = createBrowserRouter([
       },
       {
         path: "project",
-        element: <ProtectedRoute element={<Projects />} redirectPath="/" />,
+        element: (
+          <ProtectedRoute element={<ManageProjects />} redirectPath="/" />
+        ),
       },
       {
         path: "sprints",

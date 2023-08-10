@@ -86,31 +86,34 @@ const Sprints = ({ projectId }) => {
       <div key={sprint.id} className="bg-white rounded-lg shadow p-4 mb-4">
         <h2 className="text-xl font-semibold mb-4">{sprint.name}</h2>
         <div className="mb-4 bg-white rounded-lg shadow p-4">
-  <h3 className="text-lg font-semibold mb-2">Overview</h3>
-  <p className="text-gray-600">{sprint.overview}</p>
-</div>
+          <h3 className="text-lg font-semibold mb-2">Overview</h3>
+          <p className="text-gray-600">{sprint.overview}</p>
+        </div>
 
-<div className="mb-4 bg-white rounded-lg shadow p-4">
-  <h3 className="text-lg font-semibold mb-2">Milestones</h3>
-  {renderMilestoneList(sprint.milestones)}
-</div>
+        <div className="mb-4 bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold mb-2">Milestones</h3>
+          {renderMilestoneList(sprint.milestones)}
+        </div>
 
-<div className="mb-4 bg-white rounded-lg shadow p-4">
-  <h3 className="text-lg font-semibold mb-2">High Priority</h3>
-  <p className="text-gray-600">{sprint.highPriority}</p>
-</div>
+        <div className="mb-4 bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold mb-2">High Priority</h3>
+          <p className="text-gray-600">{sprint.highPriority}</p>
+        </div>
 
-<div className="bg-white rounded-lg shadow p-4">
-  <h3 className="text-lg font-semibold mb-2">Completed Sprints</h3>
-  {renderMilestoneList(sprint.completedSprints)}
-</div>
-
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold mb-2">Completed Sprints</h3>
+          {renderMilestoneList(sprint.completedSprints)}
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="w-full">
+    <div
+      className="w-full"
+      style={{ overflowY: "auto", maxHeight: "calc(100vh - 64px)" }}
+    >
+      {" "}
       <h2 className="text-xl font-semibold mb-4">Sprints</h2>
       {isViewing ? (
         <div>
@@ -132,9 +135,7 @@ const Sprints = ({ projectId }) => {
           })}
         </div>
       ) : (
-        <div>
-          {sprints.map((sprint) => renderSprintCard(sprint))}
-        </div>
+        <div>{sprints.map((sprint) => renderSprintCard(sprint))}</div>
       )}
     </div>
   );

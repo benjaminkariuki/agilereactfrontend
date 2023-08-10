@@ -1,25 +1,14 @@
 import React, { useState, useEffect } from "react";
-// import { useDropzone } from "react-dropzone";
-import { useSelector } from "react-redux";
-// import { updateUser } from "../slices/userSlices";, useDispatch
+import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
+import { updateUser } from "../slices/userSlices";
+import { FiTrash2 } from "react-icons/fi";
 
 const EditProfile = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [contacts, setConatcts] = useState("");
-
-  const [password, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   useEffect(() => {});
   const {
     userId,
-    baseUrl,
     userRole,
     userEmail,
     userFName,
@@ -28,10 +17,23 @@ const EditProfile = () => {
     userContacts,
   } = useSelector((state) => state.user);
 
+  const baseUrl = "http://agilepm.eliaskemboy.com/storage/";
+  const [firstName, setFirstName] = useState(userFName);
+  const [lastName, setLastName] = useState(userLName);
+  const [email, setEmail] = useState(userEmail);
+  const [contacts, setConatcts] = useState(userContacts);
+  const [password, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
   //DEALING WITH IMAGES
-  const [profilephoto, setPhoto] = useState("");
+  const [profile_pic, setPhoto] = useState("");
   const [previewImage, setPreviewImage] = useState();
-  console.log(isEditing);
+
+  console.log("user profile", baseUrl + userProfilePhoto);
+  console.log("profile pic", profile_pic);
+
   const handleFirstNameChange = (event) => {
     setFirstName(event.target.value);
   };
@@ -58,31 +60,9 @@ const EditProfile = () => {
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
-      // Store the file name separately
       setPhoto(file);
     }
   };
-
-  // const handlePhotoUpload = (acceptedFiles) => {
-  //   const file = acceptedFiles[0];
-  //   const reader = new FileReader();
-
-  //   reader.onload = () => {
-  //     const uploadedPhoto = reader.result;
-  //     setPhoto(uploadedPhoto);
-  //   };
-
-  //   if (file) {
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
-
-  // const { getRootProps, getInputProps } = useDropzone({
-  //   accept: "image/*",
-  //   multiple: false,
-  //   onDrop: handlePhotoUpload,
-  // });
-  console.log(userProfilePhoto);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -90,32 +70,27 @@ const EditProfile = () => {
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
+    formData.append("contacts", contacts);
     formData.append("email", email);
-    formData.append("profile_pic", profilephoto);
+    formData.append("profile_pic", profile_pic);
 
     // setIsPending(true);
 
     axios
-      .post(`http://192.168.88.187:8000/api/updateUsers/${userId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .post(
+        `http://agilepm.eliaskemboy.com/api/updateUsers/${userId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         const { user } = response.data;
-        // const userDetails = {
-        //   id: user.id,
-        //   email: user.email,
-        //   firstName: user.firstName,
-        //   lastName: user.lastName,
-        //   profilePic: user.profile_pic,
-        // };
-        // setError("");
-        // setSuccess("Update Successful.");
-        // setIsPending(false);
-        // dispatch(login(userDetails));
-        console.log(user);
-        console.log(response.data.message);
+        dispatch(updateUser(user));
+        // Update session storage with the new user data
+        sessionStorage.setItem("user", JSON.stringify(user));
       })
       .catch((error) => {
         if (error.response) {
@@ -151,7 +126,7 @@ const EditProfile = () => {
   const handlePasswordSave = () => {
     // Save the new password
     axios
-      .post(`http://192.168.88.187:8000/api/changepassword/${userId}`, {
+      .post(`http://agilepm.eliaskemboy.com/api/changepassword/${userId}`, {
         password: password,
       })
       .then((response) => {
@@ -167,15 +142,30 @@ const EditProfile = () => {
 
   const handleClose = () => {
     setIsEditing(!isEditing);
-    setFirstName("");
-    setLastName("");
-    setConatcts("");
-    setEmail("");
     // Reset the form and close the edit profile window
   };
 
+  //DELETING THE PROFILE pHOTO
+  const handleDeletePhoto = () => {
+    // Delete the photo
+    axios
+      .delete(`http://agilepm.eliaskemboy.com/api/deleteImage/${userId}`)
+      .then((response) => {
+        const { user } = response.data;
+        dispatch(updateUser(user));
+        // Update session storage with the new user data
+        sessionStorage.setItem("user", JSON.stringify(user));
+      })
+      .catch((error) => {
+        console.log("Error deleting photo:", error);
+      });
+  };
+
   return (
-    <div className="w-full max-w-sm mx-auto pt-10">
+    <div
+      className="w-full max-w-sm mx-auto pt-10"
+      style={{ overflowY: "auto", maxHeight: "calc(100vh - 64px)" }}
+    >
       <h2 className="text-center text-xl font-bold mb-4 text-blue-800">
         User Information
       </h2>
@@ -193,7 +183,6 @@ const EditProfile = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="firstName"
                 type="text"
-                defaultValue={userFName}
                 value={firstName}
                 onChange={handleFirstNameChange}
               />
@@ -209,7 +198,6 @@ const EditProfile = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="lastName"
                 type="text"
-                defaultValue={userLName}
                 value={lastName}
                 onChange={handleLastNameChange}
               />
@@ -226,7 +214,6 @@ const EditProfile = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="email"
                 type="email"
-                defaultValue={userEmail}
                 value={email}
                 onChange={handleEmailChange}
               />
@@ -242,7 +229,6 @@ const EditProfile = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="email"
                 type="email"
-                defaultValue={userContacts}
                 value={contacts}
                 onChange={handleContactChange}
               />
@@ -282,11 +268,11 @@ const EditProfile = () => {
             <div className="mb-4">
               <label
                 className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="profilePhoto"
+                htmlFor="profile_pic"
               >
                 Profile Photo
               </label>
-              <div className="w-24 h-24 rounded-full overflow-hidden">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden">
                 <img
                   src={
                     userProfilePhoto
@@ -296,6 +282,16 @@ const EditProfile = () => {
                   alt="User"
                   className="w-full h-full rounded-full object-cover"
                 />
+                <div>
+                  {userProfilePhoto && (
+                    <button
+                      onClick={handleDeletePhoto}
+                      className="absolute bottom-0 right-0 bg-red-500 hover:bg-red-700 text-white font-bold p-2 rounded-full focus:outline-none focus:shadow-outline"
+                    >
+                      <FiTrash2 size={20} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             <div className="mb-4">

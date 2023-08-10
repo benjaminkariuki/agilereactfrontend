@@ -19,13 +19,19 @@ const ManageRoles = () => {
   };
 
   return (
-    <div className="w-full">
+    <div
+      className="w-full"
+      style={{
+        height: "calc(100vh - 90px)",
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
         Manage Roles
       </h1>
       <div className="flex justify-center space-x-4 mb-4">
-        {" "}
-        {/* Updated line */}
         <button
           className={`bg-blue-500 text-white px-4 py-2 rounded ${
             activeComponent === "add" && "bg-blue-600"
@@ -51,7 +57,7 @@ const ManageRoles = () => {
           View Roles
         </button>
       </div>
-      {renderComponent()}
+      <div style={{ flex: 1, overflowY: "auto" }}>{renderComponent()}</div>
     </div>
   );
 };

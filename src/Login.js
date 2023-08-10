@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "./slices/userSlices";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { Toast } from "primereact/toast";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,8 @@ const LoginForm = () => {
   const [authError, setAuthError] = useState("");
   const [isPending, setIsPending] = useState(false);
   const { loggedIn } = useSelector((state) => state.user);
+  const toast = useRef(null);
+
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
   };
@@ -35,21 +38,20 @@ const LoginForm = () => {
     setIsPending(true);
 
     axios
-      .post("http://192.168.88.187:8000/api/login", {
+      .post("http://agilepm.eliaskemboy.com/api/login", {
         email,
         password,
       })
       .then((response) => {
         const loguser = response.data.user;
-
         dispatch(login(loguser));
         setIsPending(false);
         sessionStorage.setItem("user", JSON.stringify(loguser));
-        navigate("/dashboard/home");
         console.log("Successful");
-        console.log(loguser);
-        console.log(loggedIn);
-        console.log(loguser.profile_pic);
+        onLoginSuccess(response.data.message);
+        setTimeout(() => {
+          navigate("/dashboard/home");
+        }, 1000);
       })
       .catch((error) => {
         let errorMessage = "An error occurred. Please try again.";
@@ -63,8 +65,9 @@ const LoginForm = () => {
         } else {
           errorMessage = "Connection error";
         }
-
+        
         setAuthError(errorMessage);
+        onLoginError(authError);
         setIsPending(false);
       });
   };
@@ -95,9 +98,28 @@ const LoginForm = () => {
     return true;
   };
 
+  const onLoginSuccess = (authError) => {
+    toast.current.show({
+      severity: "success",
+      summary: "Successful",
+      detail: `${authError}`,
+      life: 1000,
+    });
+  };
+
+  const onLoginError = (authError) => {
+    toast.current.show({
+      severity: "error",
+      summary: "Unsuccessful",
+      detail: `${authError}`,
+      life: 3000,
+    });
+  };
+
   return (
     <div className="container">
       <div className="login-form">
+        <Toast ref={toast} />
         <div className="logo-container">
           <img
             src={process.env.PUBLIC_URL + "/logo192.png"}
@@ -109,7 +131,6 @@ const LoginForm = () => {
           <div className="top_Loginform">
             <h5 className="title_Login">Login to Your Dashboard</h5>
             <p className="info_Login">Enter your username and password</p>
-            {authError && <p className="Cant_connect">{authError}</p>}
           </div>
 
           <form className="the_form" onSubmit={handleSubmit}>

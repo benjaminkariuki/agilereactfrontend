@@ -7,22 +7,22 @@ import Task from "../Pages/Task";
 import Users from "../Pages/Users";
 import CreateUser from "../Pages/Create";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import Projects from "../Pages/Projects";
+import ManageProjects from "../Pages/ManageProjects";
 import ProfileSettings from "../Pages/ProfileSettings";
 import { useDispatch, useSelector } from "react-redux";
 import { login, logout } from "../slices/userSlices";
 import ManageRoles from "../Pages/manageRoles";
+import ProtectedRoute from "./ProtectedRoute";
 
 const Home = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenProfile, setIsOpenProfile] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userRole, userEmail, userFName, userLName, userProfilePhoto, baseUrl} =
+  const { userRole, userEmail, userFName, userLName, userProfilePhoto } =
     useSelector((state) => state.user);
-  
-  console.log(userProfilePhoto);
-  console.log(baseUrl);
+
+  const baseUrl = "http://agilepm.eliaskemboy.com/storage/";
   // Use useEffect to check login status on component mount
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -37,7 +37,6 @@ const Home = () => {
   }, [dispatch, navigate]);
   const handleLinkClick = () => {
     // Perform additional actions here
-
     // Navigate to the specified URL
     navigate("/dashboard/editprofile");
   };
@@ -92,15 +91,15 @@ const Home = () => {
                 }`}
                 onClick={toggleDropdown}
               >
-                  <img
-                    src={
-                      userProfilePhoto ? (baseUrl + userProfilePhoto):
-                      (process.env.PUBLIC_URL+ "/profile2.jpeg")     
-                    }
-                    alt="User"
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                
+                <img
+                  src={
+                    userProfilePhoto
+                      ? baseUrl + userProfilePhoto
+                      : process.env.PUBLIC_URL + "/profile2.jpeg"
+                  }
+                  alt="User"
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
             </div>
 
@@ -133,21 +132,79 @@ const Home = () => {
       <div className="flex flex-1 overflow-hidden">
         <SideBar isOpen={isOpen} userRole={userRole} />
         <div className="flex-grow bg-blue-50">
-        <div style={{height: "calc(100vh - 64px)", overflowY: "auto"}}>
-        <Routes>
+          <Routes>
             <Route path="/home" element={<Dashboard />} />
-            <Route path="/project" element={<Projects />} />
-            <Route path="/sprints" element={<Sprints />} />
-            <Route path="/tasks" element={<Task />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/roles" element={<ManageRoles />} />
-            <Route path="/create" element={<CreateUser />} />
+            <Route
+              path="/project"
+              element={
+                <ProtectedRoute
+                  page={<ManageProjects />}
+                  requiredActivity={"../dashboard/project"}
+                />
+              }
+            />
+            <Route
+              path="/sprints"
+              element={
+                <ProtectedRoute
+                  page={<Sprints />}
+                  requiredActivity={"../dashboard/sprints"}
+                />
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute
+                  page={<Task />}
+                  requiredActivity={"../dashboard/tasks"}
+                />
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute
+                  page={<Users />}
+                  requiredActivity={"../dashboard/users"}
+                />
+              }
+            />
+            <Route
+              path="/roles"
+              element={
+                <ProtectedRoute
+                  page={<ManageRoles />}
+                  requiredActivity={"../dashboard/roles"}
+                />
+              }
+            />
+            <Route
+              path="/create"
+              element={
+                <ProtectedRoute
+                  page={<CreateUser />}
+                  requiredActivity={"../dashboard/create"}
+                />
+              }
+            />
             <Route path="/editprofile" element={<ProfileSettings />} />
           </Routes>
         </div>
-          
-        </div>
       </div>
+      {/* Footer component */}
+      <footer className="bg-white text-center sticky bottom-0  py-4">
+        Designed by © {new Date().getFullYear()}
+        <a
+          href="https://agilebiz.co.ke/"
+          rel="noopener noreferrer"
+          target="_blank"
+          className="text-blue-600"
+        >
+          {" "}
+          Agile Business Solutions Limited
+        </a>
+      </footer>
     </div>
   );
 };

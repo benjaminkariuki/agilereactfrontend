@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Toast } from "primereact/toast";
+import axios from "axios";
+
 
 const CreateUser = () => {
   const [firstName, setFirstName] = useState("");
@@ -6,8 +9,117 @@ const CreateUser = () => {
   const [email, setEmail] = useState("");
   const [contacts, setContacts] = useState("");
   const [role_id, setRole] = useState("");
+  const [selelctedDepartment, setSelelctedDepartment] = useState(""); // New department state
   const [roles, setRoles] = useState([]);
-  const [errors, seterrors] = useState("");
+  const [loading, setLoading] = useState(false);
+  const toast = useRef(null);
+  const [departments] = useState([
+    "Porfolio Managers Department",
+    "Web Department",
+    "Business Central Department",
+    "Infrastructure Department",
+    "Business Analyst Department",
+    "Implementation Department",
+  ]);
+  const departmentRolesMapping = {
+    "Porfolio Managers Department": [
+      "Project manager",
+      "Senior project manager",
+      "Administrator",
+    ],
+
+    "Web Department": ["Team lead web", "developer"],
+
+    "Business Central Department": [
+      "Team lead business central",
+      "Business central team",
+    ],
+
+    "Infrastructure Department": [
+      "Team lead infrastructure",
+      "infrastructure team",
+    ],
+
+    "Business Analyst Department": [
+      "business analyst",
+      "Team lead business analyst",
+    ],
+
+    "Implementation Department": [
+      "Team lead Implementation",
+      "Implementation team",
+    ],
+  };
+
+  const [filteredRoles, setfilteredroles] = useState([]);
+
+  useEffect(() => {
+    if (selelctedDepartment && selelctedDepartment in departmentRolesMapping) {
+      const departmentRoles = departmentRolesMapping[selelctedDepartment];
+
+      const filteredRoles = roles.filter((role) =>
+        departmentRoles.includes(role.name)
+      );
+      setfilteredroles(filteredRoles);
+    } else {
+      onDeparmentError("Department not found in mapping.");
+    }
+  }, [selelctedDepartment]);
+
+  const onSuccessCreate = (success) => {
+    if (success) {
+      toast.current.show({
+        severity: "success",
+        summary: "Created successfully",
+        detail: `Name: ${success}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onCreatingUser = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Error creating user",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onFetchingRoles = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Error fetching roles",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onDeparmentError = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Error fetching department",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onCreatingUserInfo = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "info",
+        summary: "Server Error",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
 
   useEffect(() => {
     fetchRoles();
@@ -15,170 +127,200 @@ const CreateUser = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch("http://192.168.88.187:8000/api/allRoles");
+      const response = await fetch(
+        "http://agilepm.eliaskemboy.com/api/allRoles"
+      );
       const data = await response.json();
       setRoles(data.roles);
     } catch (error) {
-      console.log(error);
+      onFetchingRoles("Can't fetch roles, contact the admin");
     }
   };
 
   const createUser = async () => {
-    try {
-      const response = await fetch("http://192.168.88.187:8000/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          contacts,
-          role_id,
-        }),
+    setLoading(true);
+    axios
+      .post("http://agilepm.eliaskemboy.com/api/register", {
+        firstName,
+        lastName,
+        email,
+        contacts,
+        department: selelctedDepartment,
+        role_id,
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          onSuccessCreate(response.data.message);
+        }
+
+        setLoading(false);
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setContacts("");
+        setRole("");
+        setSelelctedDepartment("");
+      })
+      .catch((error) => {
+        onCreatingUser("Error creating users");
+        onCreatingUserInfo(error.message);
+        setLoading(false);
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create user.");
-      } else {
-        seterrors("created successfuly");
-      }
-
-      // Reset the form
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setContacts("");
-      setRole("");
-    } catch (error) {
-      console.log(error);
-      seterrors(error);
-    }
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     createUser();
-    console.log(Error);
-    console.log(errors);
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto pt-10">
-      <h2 className="text-center text-xl font-bold mb-4 text-blue-800">
-        Create an Account for an AgilePM user
+    <div>
+      <Toast ref={toast} />
+      <h2 className="text-3xl font-bold mb-4 text-center text-blue-800">
+        Create an AgilePM user account
       </h2>
-
-      <form
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-        onSubmit={handleSubmit}
+      <div
+        className="w-full"
+        style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
       >
-        {/* Form fields */}
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="firstname"
-          >
-            First Name
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="firstname"
-            type="text"
-            placeholder="Enter first name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="lastname"
-          >
-            Last Name
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="lastname"
-            type="text"
-            placeholder="Enter last name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="email"
-          >
-            Email
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="email"
-            type="email"
-            placeholder="Enter email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="contacts"
-          >
-            Contacts
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="contacts"
-            type="text"
-            placeholder="Enter contacts"
-            value={contacts}
-            onChange={(e) => setContacts(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="roles"
-          >
-            Roles
-          </label>
-          <select
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="roles"
-            value={role_id.id}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="" disabled>
-              Select a role
-            </option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.name}>
-                {role.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center justify-center">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-          >
-            Create Account
-          </button>
-        </div>
-      </form>
-      <div className="credits">
-        Designed by{" "}
-        <a
-          href="https://agilebiz.co.ke/"
-          rel="noopener noreferrer"
-          target="_blank"
+        <form
+          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-sm mx-auto"
+          onSubmit={handleSubmit}
         >
-          Agile Business Solutions
-        </a>
+          {/* Form fields */}
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="firstname"
+            >
+              First Name
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="firstname"
+              type="text"
+              placeholder="Enter first name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="lastname"
+            >
+              Last Name
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="lastname"
+              type="text"
+              placeholder="Enter last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="email"
+            >
+              Email
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="email"
+              type="email"
+              placeholder="Enter email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="contacts"
+            >
+              Contacts
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="contacts"
+              type="text"
+              placeholder="Enter contacts"
+              value={contacts}
+              onChange={(e) => setContacts(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="department"
+            >
+              Department
+            </label>
+            <select
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="department"
+              value={selelctedDepartment}
+              onChange={(e) => setSelelctedDepartment(e.target.value)}
+              required
+            >
+              <option value="" disabled required>
+                Select a department
+              </option>
+              {departments.map((department, index) => (
+                <option key={index} value={department}>
+                  {department}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="roles"
+            >
+              Roles
+            </label>
+            <select
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="roles"
+              value={role_id}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="" disabled required>
+                Select a role
+              </option>
+              {filteredRoles.map((role, index) => (
+                <option key={index} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              type="submit"
+              disabled={loading} // Disable button while loading
+            >
+              {loading ? (
+                <i
+                  className="pi pi-spin pi-spinner"
+                  style={{ fontSize: "2rem" }}
+                ></i>
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

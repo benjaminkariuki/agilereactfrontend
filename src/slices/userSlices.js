@@ -21,7 +21,7 @@ const userSlice = createSlice({
   reducers: {
     login: (state, action) => {
       state.loggedIn = true;
-      state.baseUrl = "http://192.168.88.187:8000/storage/";
+      
       state.userId = action.payload.id;
       state.userFName = action.payload.firstName;
       state.userLName = action.payload.lastName;
@@ -44,19 +44,15 @@ const userSlice = createSlice({
       sessionStorage.removeItem("user");
     },
     updateUser: (state, action) => {
+      state.loggedIn = true;
+      state.userId = action.payload.id;
       state.userFName = action.payload.firstName;
       state.userLName = action.payload.lastName;
+      state.userRole = action.payload.roleName;
       state.userEmail = action.payload.email;
-      state.userContact = action.payload.contacts;
-      state.userRole = action.payload.role;
-      state.userProfilePhoto = action.payload.profilephoto;
-      // Check if the password is present in the payload
-      if (action.payload.password) {
-        // Update the password
-        state.userPassword = action.payload.password;
-      }
-
-      // Store the updated user data in local storage
+      state.userContacts = action.payload.contacts;
+      state.userProfilePhoto = action.payload.profile_pic;
+      state.userActivities = action.payload.activities;
     },
   },
 });

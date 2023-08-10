@@ -1,97 +1,151 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { Toast } from "primereact/toast";
 import axios from "axios";
 
 const UpdateRoles = () => {
+  // State variables for managing data and loading state
   const [roles, setRoles] = useState([]);
-  const [error, setError] = useState(null);
+  const [Error, setError] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedActivities, setSelectedActivities] = useState([]);
   const [errorActivity, setErrorActivity] = useState(null);
   const [showEditActivities, setShowEditActivities] = useState(false);
   const [allActivities, setAllActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [modalData, setmodalData] = useState([]);
+  const [modalData, setModalData] = useState([]);
+  const toast = useRef(null);
+  const [savedActivities, setSavedActivities] = useState(false);
+
+  // Function to show a success toast when roles are updated successfully
+  const onSuccessUpdatingRoles = (success) => {
+    if (success) {
+      toast.current.show({
+        severity: "success",
+        summary: "Created successfully",
+        detail: `Name: ${success}`,
+        life: 3000,
+      });
+    }
+  };
+
+  // Function to show a warning toast when fetching activities fails
+  const onFetchingActivities = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Error getting activities",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
+  // Function to show a warning toast when fetching roles fails
+  const onFetchingRoles = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Error Roles activities",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
+  // Function to show a warning toast when updating activities fails
+  const onUpdatingActivities = (error) => {
+    if (error) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Unsuccessful",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axios.get(
-          "http://192.168.88.187:8000/api/allRoles"
-        );
-        const fetchedRoles = response.data.roles;
-        setRoles(fetchedRoles);
-      } catch (error) {
-        console.error("Error fetching roles:", error);
-        setError("Failed to fetch roles");
-      }
-    };
-
-    fetchRoles();
-  }, []);
-
-  useEffect(() => {
-    const fetchAllActivities = async () => {
-      try {
-        const response = await axios.get(
-          "http://192.168.88.187:8000/api/activitiesAll"
-        );
-        const fetchedActivities = response.data.activities;
-        setAllActivities(fetchedActivities);
-      } catch (error) {
-        console.error("Error fetching activities:", error);
-      }
-    };
-
     fetchAllActivities();
-  }, []);
+    fetchRoles();
+  }, [savedActivities]);
 
-  useEffect(() => {
-    const initializeSelectedActivities = () => {
-      if (selectedRole) {
-        const selectedRoleData = roles.find((role) => role.id === selectedRole);
-        if (selectedRoleData) {
-          setSelectedActivities(selectedRoleData.activities);
-        }
-      }
-    };
+  // Effect hook to fetch roles on component mount
 
-    initializeSelectedActivities();
-  }, [roles, selectedRole]);
+  const fetchRoles = async () => {
+    try {
+      const response = await axios.get(
+        "http://agilepm.eliaskemboy.com/api/allRoles"
+      );
+      const fetchedRoles = response.data.roles;
+      setRoles(fetchedRoles);
+    } catch (error) {
+      const errmess = "Cannot get roles, contact the admin";
+      onFetchingRoles(errmess);
+    }
+  };
 
-  const handleRoleChange = async (event) => {
-    const roleId = event.target.value;
-    setSelectedRole(roleId);
+  const fetchAllActivities = async () => {
+    try {
+      const response = await axios.get(
+        "http://agilepm.eliaskemboy.com/api/activitiesAll"
+      );
+      const fetchedActivities = response.data.activities;
+      setAllActivities(fetchedActivities);
+    } catch (error) {
+      const errmess = "Cannot get activities, contact the admin";
+      onFetchingActivities(errmess);
+    }
+  };
 
+  const getRoleActivitiesWithId = async (roleId) => {
     try {
       const roleResponse = await axios.get(
-        `http://192.168.88.187:8000/api/allRolesWithId/${roleId}`
+        `http://agilepm.eliaskemboy.com/api/allRolesWithId/${roleId}`
       );
 
       if (roleResponse.data.roles && roleResponse.data.roles.length > 0) {
         const selectedRoleData = roleResponse.data.roles[0];
-        setmodalData(roleResponse.data.roles[0]);
+        setModalData(roleResponse.data.roles[0]);
 
         setSelectedActivities(selectedRoleData.activities);
         setErrorActivity(null);
-      } else {
-        setErrorActivity("Failed to fetch role activities");
-        setSelectedActivities([]);
       }
     } catch (error) {
-      console.error("Error fetching role activities:", error);
-      setErrorActivity("Failed to fetch role activities");
+      onFetchingRoles("Failed to get role activities");
       setSelectedActivities([]);
     }
   };
+
+  const initializeSelectedActivities = () => {
+    if (selectedRole) {
+      const selectedRoleData = roles.find((role) => role.id === selectedRole);
+      if (selectedRoleData) {
+        setSelectedActivities(selectedRoleData.activities);
+      }
+    }
+  };
+
+  initializeSelectedActivities();
+
+  // Event handler for role selection
+  const handleRoleChange = async (event) => {
+    const roleId = event.target.value;
+    setSelectedRole(roleId);
+    getRoleActivitiesWithId(roleId);
+  };
+
+  // Event handler to toggle the edit activities modal
   const openEditActivities = () => {
     setShowEditActivities(!showEditActivities);
   };
 
+  // Event handler to close the edit activities modal
   const closeEditActivities = () => {
     setShowEditActivities(!showEditActivities);
+    setIsLoading(false);
   };
-  //THE NEW CODE FOR UPDATING ROLES
 
+  // Event handler for submitting the edit activities modal
   const handleModalSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
@@ -103,56 +157,67 @@ const UpdateRoles = () => {
         permissions: getSelectedPermissions(checkbox.value),
       }));
 
+    // Validation for selected activities
     if (selectedActivities.length === 0) {
-      setErrorActivity("Please select at least one activity.");
+      onUpdatingActivities("Please select at least one activity.");
       setIsLoading(false);
       return;
     }
 
+    // Validation for activities with no permissions
     const activitiesWithNoPermissions = selectedActivities.filter(
       (activity) => activity.permissions.length === 0
     );
 
     if (activitiesWithNoPermissions.length > 0) {
-      setErrorActivity(
-        "Assign at least one permission to each selected activity."
-      );
+      onUpdatingActivities("Assign at least one permission to each selected activity");
       setIsLoading(false);
       return;
     }
 
     try {
       const response = await axios.put(
-        `http://192.168.88.187:8000/api/updateRoles/${selectedRole}`,
+        `http://agilepm.eliaskemboy.com/api/updateRoles/${selectedRole}`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,
         }
       );
-
-      if (response.status === 201) {
+      if (response.status === 200) {
+        const success = response.data.message;
+        onSuccessUpdatingRoles(success);
         event.target.reset();
         setIsLoading(false);
+        // Fetch activities data again to refresh the UI
+        fetchAllActivities();
+        getRoleActivitiesWithId(selectedRole);
+        setSavedActivities(!savedActivities);
+        setShowEditActivities(!showEditActivities);
       } else {
-        console.log("Failed to update role:", response.data.message);
-        setError("Failed to update role:", response.data.message);
-        setIsLoading(false);
+        if (response.status === 404) {
+          onUpdatingActivities(response.data.message);
+        }
+        if (response.status === 500) {
+          onUpdatingActivities(response.data.message);
+        } else {
+          onUpdatingActivities(response.data.message);
+        }
       }
     } catch (error) {
       setIsLoading(false);
-
       if (
         error.response &&
         error.response.data &&
         error.response.data.message
       ) {
-        setError(error.response.data.mnameessage);
+        onUpdatingActivities(error.response.data.message);
       } else {
-        setError("Failed to create role");
+        onUpdatingActivities("Failed to update role");
       }
     }
   };
 
+  // Function to get selected permissions for an activity
   const getSelectedPermissions = (activityId) => {
     const permissions = [];
 
@@ -173,16 +238,12 @@ const UpdateRoles = () => {
 
     return permissions;
   };
-
   return (
     <div className="flex justify-center items-center pt-6">
+      <Toast ref={toast} />
       <div className="w-full max-w-md">
         <div className="bg-white p-8 rounded shadow">
           <h2 className="text-2xl font-bold mb-4 text-center">Update Role</h2>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          {errorActivity && (
-            <p className="text-red-500 mb-4">{errorActivity}</p>
-          )}
           <form>
             <div className="mb-4">
               <label
@@ -239,12 +300,16 @@ const UpdateRoles = () => {
           </form>
         </div>
         {showEditActivities && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded shadow max-h-full overflow-y-auto">
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+            <div
+              className="bg-white p-8 rounded shadow  overflow-y-auto w-3/4"
+              style={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
+            >
               <h2 className="text-2xl font-bold mb-4 text-center">
                 Edit Activities
               </h2>
-              <form onSubmit={handleModalSubmit}>
+
+              <form className="" onSubmit={handleModalSubmit}>
                 <div className="mb-4">
                   <label
                     htmlFor="roleName"
@@ -261,81 +326,87 @@ const UpdateRoles = () => {
                     defaultValue={modalData.name}
                   />
                 </div>
-                <div className="mb-4">
+                <div className="">
                   <label
                     htmlFor="activities"
                     className="block text-gray-700 font-bold mb-2"
                   >
                     Activities
                   </label>
-                  {allActivities.map((activity) => (
-                    <div className="flex items-center mb-2" key={activity.id}>
-                      <div className="w-full">
-                        <label
-                          className="flex items-center cursor-pointer"
-                          htmlFor={`activity-${activity.id}`}
-                        >
-                          <input
-                            className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                            type="checkbox"
-                            name="activities"
-                            value={activity.id}
-                            id={`activity-${activity.id}`}
-                            defaultChecked={modalData.activities.some(
-                              (act) => act.id === activity.id
-                            )}
-                          />
-                          <span className="text-gray-700">{activity.name}</span>
-                        </label>
-                        <div className="ml-7">
+                  <div className="grid grid-cols-2 gap-4">
+                    {allActivities.map((activity) => (
+                      <div className="flex items-center mb-2" key={activity.id}>
+                        <div className="w-full">
                           <label
-                            className="inline-flex items-center cursor-pointer"
-                            htmlFor={`read-permission-${activity.id}`}
+                            className="flex items-center cursor-pointer"
+                            htmlFor={`activity-${activity.id}`}
                           >
                             <input
-                              className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                              className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
                               type="checkbox"
-                              name={`read-permission-${activity.id}`}
-                              id={`read-permission-${activity.id}`}
-                              defaultChecked={
-                                modalData.activities.find(
-                                  (act) =>
-                                    act.id === activity.id &&
-                                    act.pivot.permissions.includes("read")
-                                ) !== undefined
-                              }
+                              name="activities"
+                              value={activity.id}
+                              id={`activity-${activity.id}`}
+                              defaultChecked={modalData.activities.some(
+                                (act) => act.id === activity.id
+                              )}
                             />
-                            <span className="text-gray-700 text-xs">View</span>
-                          </label>
-                          <label
-                            className="inline-flex items-center cursor-pointer ml-4"
-                            htmlFor={`write-permission-${activity.id}`}
-                          >
-                            <input
-                              className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                              type="checkbox"
-                              name={`write-permission-${activity.id}`}
-                              id={`write-permission-${activity.id}`}
-                              defaultChecked={
-                                modalData.activities.find(
-                                  (act) =>
-                                    act.id === activity.id &&
-                                    act.pivot.permissions.includes("write")
-                                ) !== undefined
-                              }
-                            />
-                            <span className="text-gray-700 text-xs">
-                              Modify
+                            <span className="text-gray-700">
+                              {activity.name}
                             </span>
                           </label>
+                          <div className="ml-7">
+                            <label
+                              className="inline-flex items-center cursor-pointer"
+                              htmlFor={`read-permission-${activity.id}`}
+                            >
+                              <input
+                                className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                                type="checkbox"
+                                name={`read-permission-${activity.id}`}
+                                id={`read-permission-${activity.id}`}
+                                defaultChecked={
+                                  modalData.activities.find(
+                                    (act) =>
+                                      act.id === activity.id &&
+                                      act.pivot.permissions.includes("read")
+                                  ) !== undefined
+                                }
+                              />
+                              <span className="text-gray-700 text-xs">
+                                View
+                              </span>
+                            </label>
+                            <label
+                              className="inline-flex items-center cursor-pointer ml-4"
+                              htmlFor={`write-permission-${activity.id}`}
+                            >
+                              <input
+                                className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                                type="checkbox"
+                                name={`write-permission-${activity.id}`}
+                                id={`write-permission-${activity.id}`}
+                                defaultChecked={
+                                  modalData.activities.find(
+                                    (act) =>
+                                      act.id === activity.id &&
+                                      act.pivot.permissions.includes("write")
+                                  ) !== undefined
+                                }
+                              />
+                              <span className="text-gray-700 text-xs">
+                                Modify
+                              </span>
+                            </label>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-                <div className="flex justify-between mt-4">
+                <div className="col-span-3 flex justify-end mt-4">
                   <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold mr-4 "
                     type="submit"
                     disabled={isLoading}
                   >
@@ -346,7 +417,7 @@ const UpdateRoles = () => {
                     onClick={closeEditActivities}
                     type="button"
                   >
-                    Close
+                    Cancle
                   </button>
                 </div>
               </form>

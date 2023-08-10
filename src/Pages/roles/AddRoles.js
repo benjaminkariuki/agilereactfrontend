@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-
+import { useEffect, useState, useRef } from "react";
+import { Toast } from "primereact/toast";
 import axios from "axios";
 
 const AddRoles = () => {
@@ -7,17 +7,48 @@ const AddRoles = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [errorActivity, setErrorActivity] = useState(null);
+  const toast = useRef(null);
+
+  const onSuccess = (success) => {
+    toast.current.show({
+      severity: "success",
+      summary: "Created successfully",
+      detail: `Name: ${success}`,
+      life: 3000,
+    });
+    console.log("success displaying");
+  };
+
+  const onFetchingActivities = (error) => {
+    toast.current.show({
+      severity: "warn",
+      summary: "Error fetting activities",
+      detail: `${error}`,
+      life: 3000,
+    });
+  };
+
+  const onCreatingActivities = (error) => {
+    toast.current.show({
+      severity: "warn",
+      summary: "Unsuccessful",
+      detail: `${error}`,
+      life: 3000,
+    });
+  };
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.88.187:8000/api/activitiesAll"
+          "http://agilepm.eliaskemboy.com/api/activitiesAll"
         );
         const fetchedActivities = response.data.activities;
         setActivities(fetchedActivities);
       } catch (error) {
-        console.error("Error fetching activities:", error);
+        const errmess = "Please contact the admin";
+        onFetchingActivities(errmess);
+        // onFetchingActivities(errmess)
       }
     };
 
@@ -37,6 +68,7 @@ const AddRoles = () => {
 
     if (selectedActivities.length === 0) {
       setErrorActivity("Please select at least one activity.");
+      onCreatingActivities(errorActivity);
       setIsLoading(false);
       return;
     }
@@ -47,41 +79,40 @@ const AddRoles = () => {
 
     if (activitiesWithNoPermissions.length > 0) {
       setErrorActivity(
-        "Assign at least one permission to each selected activity."
+        "Assign at least one permission to each selected activity"
       );
+      onCreatingActivities(errorActivity);
       setIsLoading(false);
       return;
     }
 
     try {
       const response = await axios.post(
-        "http://192.168.88.187:8000/api/create_role",
+        "http://agilepm.eliaskemboy.com/api/create_role",
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,
         }
       );
 
+      const success = response.data.message;
       if (response.status === 201) {
+        onSuccess(success);
         event.target.reset();
-        setIsLoading(false);
-      } else {
-        console.log("Failed to create role:", response.data.message);
-        setError("Failed to create role:", response.data.message);
         setIsLoading(false);
       }
     } catch (error) {
       setIsLoading(false);
-
       if (
         error.response &&
         error.response.data &&
         error.response.data.message
       ) {
-        setError(error.response.data.mnameessage);
+        setError(error.response.data.message);
       } else {
         setError("Failed to create role");
       }
+      onCreatingActivities(error);
     }
   };
 
@@ -107,13 +138,10 @@ const AddRoles = () => {
   };
   return (
     <div className="flex justify-center items-center pt-6">
+      <Toast ref={toast} />
       <div className="w-full max-w-md">
         <div className="bg-white p-8 rounded shadow">
           <h2 className="text-2xl font-bold mb-4 text-center">Create Role</h2>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          {errorActivity && (
-            <p className="text-red-500 mb-4">{errorActivity}</p>
-          )}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import SideBar from "./SideBar.Component";
 import * as AiIcons from "react-icons/ai";
 import Dashboard from "../Pages/Dashboard";
-import Sprints from "../Pages/Sprints";
+import ManageSprints from "../Pages/ManageSprints";
 import Task from "../Pages/Task";
 import Users from "../Pages/Users";
 import CreateUser from "../Pages/Create";
@@ -22,7 +22,7 @@ const Home = () => {
   const { userRole, userEmail, userFName, userLName, userProfilePhoto } =
     useSelector((state) => state.user);
 
-  const baseUrl = "http://agilepm.eliaskemboy.com/storage/";
+  const baseUrl = "http://192.168.88.150:8000/storage/";
   // Use useEffect to check login status on component mount
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -147,7 +147,7 @@ const Home = () => {
               path="/sprints"
               element={
                 <ProtectedRoute
-                  page={<Sprints />}
+                  page={<ManageSprints />}
                   requiredActivity={"../dashboard/sprints"}
                 />
               }

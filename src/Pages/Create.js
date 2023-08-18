@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Toast } from "primereact/toast";
 import axios from "axios";
 
-
 const CreateUser = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -127,9 +126,7 @@ const CreateUser = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch(
-        "http://agilepm.eliaskemboy.com/api/allRoles"
-      );
+      const response = await fetch("http://192.168.88.150:8000/api/allRoles");
       const data = await response.json();
       setRoles(data.roles);
     } catch (error) {
@@ -140,7 +137,7 @@ const CreateUser = () => {
   const createUser = async () => {
     setLoading(true);
     axios
-      .post("http://agilepm.eliaskemboy.com/api/register", {
+      .post("http://192.168.88.150:8000/api/register", {
         firstName,
         lastName,
         email,

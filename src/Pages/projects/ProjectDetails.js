@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux/es/hooks/useSelector";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -52,7 +51,7 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
 
   const fetchProjectDetails = (projectId) => {
     axios
-      .get(`http://agilepm.eliaskemboy.com/api/allProjectsWithId/${projectId}`)
+      .get(`http://192.168.88.150:8000/api/allProjectsWithId/${projectId}`)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
         setProjectData(fetchedprojectsid);
@@ -60,7 +59,6 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
       })
       .catch((error) => {
         if (error.response && error.response.status === 429) {
-          // Retry the API call after a delay (e.g., 2 seconds)
           setTimeout(() => {
             fetchProjectDetails(projectId);
           }, 2000);
@@ -79,7 +77,7 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
   if (projectData === null) {
     return (
       <div className="mb-6 bg-white rounded-lg shadow p-4">
-        <Toast ref={toast} position="top-center" />
+        <Toast ref={toast} />
         <div>
           <h1>Click a project First </h1>
         </div>
@@ -97,7 +95,7 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
 
   return (
     <div>
-      <Toast ref={toast} position="top-center" />
+      <Toast ref={toast} />
       <div className="bg-white rounded-lg shadow p-4 ">
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-4 text-center">
@@ -120,14 +118,15 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
 
           <div className="grid gap-4">
             {projectData.phases &&
-              projectData.phases.map((phase) => (
-                <div className="min-w-1000 overflow-x-auto">
+              projectData.phases.map((phase, index) => (
+                <div key={index} className="min-w-1000 overflow-x-auto">
                   <h3 className="text-xl font-bold mb-2">{phase.name}</h3>
                   <h4 className="text-lg font-bold mt-4 mb-2">Activities</h4>
                   <DataTable
                     key={phase.id}
                     value={phase.phases_activity}
                     className="border rounded-md p-4"
+                    removableSort
                   >
                     <Column
                       body={(rowData) => <h1 key={rowData.id}>{rowData.id}</h1>}
@@ -199,14 +198,27 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
                 </div>
               ))}
           </div>
-          {/* Modal */}
+          {/* Modal
+            @projectId= takes the project ID
+            @activityId=takes the activity Id from the selected phase and activity
+            @phaseId=takes the phase Id from the selected phase
+            
+            @selectedIcon= pass the value of the icon clickec(either edit or upload)
+            @projectData.projectmanager =pass the projects projectmanagers to the modal where they are assigned micro tasks
+            @projectData.businessanalyst =pass the projects BAs to the modal where they are assigned micro tasks
+            @projectData.teamleads=pass the projects TeamLeads to the modal where they are assigned micro tasks
+            @projectData.developers=pass the projects Developers to the modal where they are assigned micro tasks
+         */}
           {showMicroTasksModal && (
             <MicroTask
               projectId={projectId}
               activityId={selectedActivty}
               phaseId={selectedPhase}
-              onClose={() => setShowMicroTasksModal(false)}
               selectedIcon={selectedIcon}
+              projectManagers={projectData.projectmanager}
+              businessAnalysts={projectData.businessanalyst}
+              teamLeads={projectData.teamleads}
+              developers={projectData.developers}
             />
           )}
         </div>
@@ -246,6 +258,9 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
                     </p>
                     <p className="text-gray-600">
                       Contacts: {teamLead.user.contacts}
+                    </p>
+                    <p className="text-gray-600">
+                      Team Lead : {teamLead.user.role.name}
                     </p>
                   </div>
                 ))}

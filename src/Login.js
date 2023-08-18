@@ -26,7 +26,6 @@ const LoginForm = () => {
     setPassword(event.target.value);
   };
 
-  console.log(loggedIn);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -38,7 +37,7 @@ const LoginForm = () => {
     setIsPending(true);
 
     axios
-      .post("http://agilepm.eliaskemboy.com/api/login", {
+      .post("http://192.168.88.150:8000/api/login", {
         email,
         password,
       })
@@ -65,7 +64,7 @@ const LoginForm = () => {
         } else {
           errorMessage = "Connection error";
         }
-        
+
         setAuthError(errorMessage);
         onLoginError(authError);
         setIsPending(false);

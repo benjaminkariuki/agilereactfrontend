@@ -82,7 +82,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   const fetchUsers = () => {
     axios
-      .get("http://agilepm.eliaskemboy.com/api/allUsers")
+      .get("http://192.168.88.150:8000/api/allUsers")
       .then((response) => {
         setUsersData(response.data.users);
       })
@@ -93,7 +93,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   const fetchProjectDetails = (projectId) => {
     axios
-      .get(`http://agilepm.eliaskemboy.com/api/allProjectsWithId/${projectId}`)
+      .get(`http://192.168.88.150:8000/api/allProjectsWithId/${projectId}`)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
         const sDate = new Date(fetchedprojectsid.start_date);
@@ -252,7 +252,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     }
     axios
       .post(
-        `http://agilepm.eliaskemboy.com/api/edit_projects/${projectId}`,
+        `http://192.168.88.150:8000/api/edit_projects/${projectId}`,
         formData,
         {
           headers: {
@@ -275,7 +275,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   const downloadExcelFile = async () => {
     try {
       const response = await axios.get(
-        `http://agilepm.eliaskemboy.com/api/download-excel-edit/${projectId}`,
+        `http://192.168.88.150:8000/api/download-excel-edit/${projectId}`,
         {
           responseType: "blob",
         }

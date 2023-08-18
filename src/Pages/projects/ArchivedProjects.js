@@ -49,7 +49,7 @@ const Archive = ({ onRestoreProject }) => {
   const fetchProjects = async () => {
     try {
       const archivedProjectsResponse = await axios.get(
-        "http://agilepm.eliaskemboy.com/api/allProjectsArchived"
+        "http://192.168.88.150:8000/api/allProjectsArchived"
       );
       const archivedProjects = archivedProjectsResponse.data.data;
       setProjects(archivedProjects);
@@ -66,7 +66,7 @@ const Archive = ({ onRestoreProject }) => {
   const handleRestoreProject = async (id) => {
     try {
       const response = await axios.post(
-        `http://agilepm.eliaskemboy.com/api/restore/${id}`
+        `http://192.168.88.150:8000/api/restore/${id}`
       );
 
       // If restoration was successful
@@ -100,7 +100,7 @@ const Archive = ({ onRestoreProject }) => {
     ) {
       try {
         const response = await axios.delete(
-          `http://agilepm.eliaskemboy.com/api/deletePermanently/${id}`
+          `http://192.168.88.150:8000/api/deletePermanently/${id}`
         );
 
         // If deletion was successful
@@ -199,7 +199,7 @@ const Archive = ({ onRestoreProject }) => {
 
   return (
     <div>
-      <Toast ref={toast} position="top-center" />
+      <Toast ref={toast} />
       {errorMessage && <p>{errorMessage}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {projects.map((project) => (

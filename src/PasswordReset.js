@@ -33,7 +33,7 @@ const PasswordReset = () => {
     // Send the password and token in the POST request to the backend API
     setIsPending(true);
     axios
-      .post("http://agilepm.eliaskemboy.com/api/reset_password", {
+      .post("http://192.168.88.150:8000/api/reset_password", {
         password,
         token,
       })

@@ -74,7 +74,7 @@ const UpdateRoles = () => {
   const fetchRoles = async () => {
     try {
       const response = await axios.get(
-        "http://agilepm.eliaskemboy.com/api/allRoles"
+        "http://192.168.88.150:8000/api/allRoles"
       );
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
@@ -87,7 +87,7 @@ const UpdateRoles = () => {
   const fetchAllActivities = async () => {
     try {
       const response = await axios.get(
-        "http://agilepm.eliaskemboy.com/api/activitiesAll"
+        "http://192.168.88.150:8000/api/activitiesAll"
       );
       const fetchedActivities = response.data.activities;
       setAllActivities(fetchedActivities);
@@ -100,7 +100,7 @@ const UpdateRoles = () => {
   const getRoleActivitiesWithId = async (roleId) => {
     try {
       const roleResponse = await axios.get(
-        `http://agilepm.eliaskemboy.com/api/allRolesWithId/${roleId}`
+        `http://192.168.88.150:8000/api/allRolesWithId/${roleId}`
       );
 
       if (roleResponse.data.roles && roleResponse.data.roles.length > 0) {
@@ -170,14 +170,16 @@ const UpdateRoles = () => {
     );
 
     if (activitiesWithNoPermissions.length > 0) {
-      onUpdatingActivities("Assign at least one permission to each selected activity");
+      onUpdatingActivities(
+        "Assign at least one permission to each selected activity"
+      );
       setIsLoading(false);
       return;
     }
 
     try {
       const response = await axios.put(
-        `http://agilepm.eliaskemboy.com/api/updateRoles/${selectedRole}`,
+        `http://192.168.88.150:8000/api/updateRoles/${selectedRole}`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,

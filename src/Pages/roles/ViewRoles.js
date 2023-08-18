@@ -18,7 +18,6 @@ const ViewRoles = () => {
       });
     }
   };
-  
 
   // Function to show a warning toast when fetching activities fails
   const onDeleteRole = (error) => {
@@ -49,7 +48,7 @@ const ViewRoles = () => {
   const fetchRoles = async () => {
     try {
       const response = await axios.get(
-        "http://agilepm.eliaskemboy.com/api/allRoles"
+        "http://192.168.88.150:8000/api/allRoles"
       );
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
@@ -70,7 +69,7 @@ const ViewRoles = () => {
 
     try {
       const response = await axios.delete(
-        `http://agilepm.eliaskemboy.com/api/deleteRoles/${roleId}`
+        `http://192.168.88.150:8000/api/deleteRoles/${roleId}`
       );
 
       if (response.status === 200) {
@@ -86,9 +85,7 @@ const ViewRoles = () => {
         }
         if (response.status === 500) {
           onDeleteRole(response.data.message);
-        }
-        else
-        {
+        } else {
           onDeleteRole(response.data.message);
         }
 

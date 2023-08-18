@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FileDownload from "react-file-download";
+import { Editor } from "primereact/editor";
 
 const CreateProject = ({ routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -58,7 +59,7 @@ const CreateProject = ({ routeToListProjects }) => {
 
   const fetchUsers = () => {
     axios
-      .get("http://agilepm.eliaskemboy.com/api/allUsers")
+      .get("http://192.168.88.150:8000/api/allUsers")
       .then((response) => {
         setUsersData(response.data.users);
       })
@@ -124,7 +125,7 @@ const CreateProject = ({ routeToListProjects }) => {
     });
     setisloading(true);
     axios
-      .post("http://agilepm.eliaskemboy.com/api/create_projects", formData, {
+      .post("http://192.168.88.150:8000/api/create_projects", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -162,7 +163,7 @@ const CreateProject = ({ routeToListProjects }) => {
   const downloadExcelFile = async () => {
     try {
       const response = await axios.get(
-        "http://agilepm.eliaskemboy.com/api/download-excel",
+        "http://192.168.88.150:8000/api/download-excel",
         {
           responseType: "blob",
         }
@@ -288,13 +289,14 @@ const CreateProject = ({ routeToListProjects }) => {
               <label htmlFor="overview" className="block text-sm font-medium">
                 Overview
               </label>
-              <textarea
+              <Editor
                 id="overview"
                 name="overview"
                 value={projectData.overview}
                 onChange={handleInputChange}
                 className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
                 required
+                style={{ height: "320px" }}
               />
             </div>
             {/* Milestones */}
@@ -631,8 +633,16 @@ const CreateProject = ({ routeToListProjects }) => {
           <button
             type="submit" // Add type="submit" to trigger form submission
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            disabled={isloading}
           >
-            {isloading ? <p>Saving.......</p> : <p>Save</p>}
+            {isloading ? (
+              <i
+                className="pi pi-spin pi-spinner"
+                style={{ fontSize: "2rem" }}
+              ></i>
+            ) : (
+              "Create Project"
+            )}
           </button>
           <button
             type="button" // Use type="button" for the cancel button

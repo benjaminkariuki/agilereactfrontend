@@ -48,7 +48,7 @@ const ViewRoles = () => {
   const fetchRoles = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.88.150:8000/api/allRoles"
+        "https://agile-pm.agilebiz.co.ke/api/allRoles"
       );
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
@@ -69,7 +69,7 @@ const ViewRoles = () => {
 
     try {
       const response = await axios.delete(
-        `http://192.168.88.150:8000/api/deleteRoles/${roleId}`
+        `https://agile-pm.agilebiz.co.ke/api/deleteRoles/${roleId}`
       );
 
       if (response.status === 200) {

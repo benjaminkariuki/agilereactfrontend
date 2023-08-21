@@ -41,7 +41,7 @@ const AddRoles = () => {
     const fetchActivities = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.88.150:8000/api/activitiesAll"
+          "https://agile-pm.agilebiz.co.ke/api/activitiesAll"
         );
         const fetchedActivities = response.data.activities;
         setActivities(fetchedActivities);
@@ -88,7 +88,7 @@ const AddRoles = () => {
 
     try {
       const response = await axios.post(
-        "http://192.168.88.150:8000/api/create_role",
+        "https://agile-pm.agilebiz.co.ke/api/create_role",
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,

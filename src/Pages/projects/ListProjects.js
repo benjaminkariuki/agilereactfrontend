@@ -29,7 +29,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   const fetchProjects = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.88.150:8000/api/allProjects"
+        "https://agile-pm.agilebiz.co.ke/api/allProjects"
       );
 
       const fetchedprojects = response.data.data;
@@ -54,7 +54,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         )
       );
       const response = await axios.post(
-        `http://192.168.88.150:8000/api/archive/${id}`
+        `https://agile-pm.agilebiz.co.ke/api/archive/${id}`
       );
       // If archive was successful
       if (response.status === 200) {

@@ -60,10 +60,8 @@ const CreateUser = () => {
         departmentRoles.includes(role.name)
       );
       setfilteredroles(filteredRoles);
-    } else {
-      onDeparmentError("Department not found in mapping.");
     }
-  }, [selelctedDepartment]);
+  }, [roles, selelctedDepartment]);
 
   const onSuccessCreate = (success) => {
     if (success) {
@@ -98,17 +96,6 @@ const CreateUser = () => {
     }
   };
 
-  const onDeparmentError = (error) => {
-    if (error) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Error fetching department",
-        detail: `${error}`,
-        life: 3000,
-      });
-    }
-  };
-
   const onCreatingUserInfo = (error) => {
     if (error) {
       toast.current.show({
@@ -126,7 +113,9 @@ const CreateUser = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch("http://192.168.88.150:8000/api/allRoles");
+      const response = await fetch(
+        "https://agile-pm.agilebiz.co.ke/api/allRoles"
+      );
       const data = await response.json();
       setRoles(data.roles);
     } catch (error) {
@@ -137,7 +126,7 @@ const CreateUser = () => {
   const createUser = async () => {
     setLoading(true);
     axios
-      .post("http://192.168.88.150:8000/api/register", {
+      .post("https://agile-pm.agilebiz.co.ke/api/register", {
         firstName,
         lastName,
         email,

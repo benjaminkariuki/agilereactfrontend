@@ -74,7 +74,7 @@ const UpdateRoles = () => {
   const fetchRoles = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.88.150:8000/api/allRoles"
+        "https://agile-pm.agilebiz.co.ke/api/allRoles"
       );
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
@@ -87,7 +87,7 @@ const UpdateRoles = () => {
   const fetchAllActivities = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.88.150:8000/api/activitiesAll"
+        "https://agile-pm.agilebiz.co.ke/api/activitiesAll"
       );
       const fetchedActivities = response.data.activities;
       setAllActivities(fetchedActivities);
@@ -100,7 +100,7 @@ const UpdateRoles = () => {
   const getRoleActivitiesWithId = async (roleId) => {
     try {
       const roleResponse = await axios.get(
-        `http://192.168.88.150:8000/api/allRolesWithId/${roleId}`
+        `https://agile-pm.agilebiz.co.ke/api/allRolesWithId/${roleId}`
       );
 
       if (roleResponse.data.roles && roleResponse.data.roles.length > 0) {
@@ -179,7 +179,7 @@ const UpdateRoles = () => {
 
     try {
       const response = await axios.put(
-        `http://192.168.88.150:8000/api/updateRoles/${selectedRole}`,
+        `https://agile-pm.agilebiz.co.ke/api/updateRoles/${selectedRole}`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,

@@ -51,7 +51,7 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
 
   const fetchProjectDetails = (projectId) => {
     axios
-      .get(`http://192.168.88.150:8000/api/allProjectsWithId/${projectId}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
         setProjectData(fetchedprojectsid);

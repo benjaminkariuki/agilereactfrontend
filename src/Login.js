@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { login } from "./slices/userSlices";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 
@@ -15,7 +15,8 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState("");
   const [isPending, setIsPending] = useState(false);
-  const { loggedIn } = useSelector((state) => state.user);
+  const [showPassword, setShowPassword] = useState(false);
+
   const toast = useRef(null);
 
   const handleEmailChange = (event) => {
@@ -26,8 +27,7 @@ const LoginForm = () => {
     setPassword(event.target.value);
   };
 
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateInputs()) {
@@ -36,39 +36,41 @@ const LoginForm = () => {
 
     setIsPending(true);
 
-    axios
-      .post("http://192.168.88.150:8000/api/login", {
-        email,
-        password,
-      })
-      .then((response) => {
-        const loguser = response.data.user;
-        dispatch(login(loguser));
-        setIsPending(false);
-        sessionStorage.setItem("user", JSON.stringify(loguser));
-        console.log("Successful");
-        onLoginSuccess(response.data.message);
-        setTimeout(() => {
-          navigate("/dashboard/home");
-        }, 1000);
-      })
-      .catch((error) => {
-        let errorMessage = "An error occurred. Please try again.";
-
-        if (error.response) {
-          if (error.response.status === 401) {
-            errorMessage = "Invalid email or password";
-          } else {
-            errorMessage = "Request error";
-          }
-        } else {
-          errorMessage = "Connection error";
+    try {
+      const response = await axios.post(
+        "https://agile-pm.agilebiz.co.ke/api/login",
+        {
+          email,
+          password,
         }
+      );
 
-        setAuthError(errorMessage);
-        onLoginError(authError);
-        setIsPending(false);
-      });
+      const loguser = response.data.user;
+      dispatch(login(loguser));
+      setIsPending(false);
+      sessionStorage.setItem("user", JSON.stringify(loguser));
+      console.log("Successful");
+      onLoginSuccess(response.data.message);
+      setTimeout(() => {
+        navigate("/dashboard/home");
+      }, 1000);
+    } catch (error) {
+      let errorMessage = "An error occurred. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = "Invalid email or password";
+        } else {
+          errorMessage = "Request error";
+        }
+      } else {
+        errorMessage = "Connection error";
+      }
+
+      setAuthError(errorMessage);
+      onLoginError(errorMessage);
+      setIsPending(false);
+    }
   };
 
   const validateInputs = () => {
@@ -97,108 +99,117 @@ const LoginForm = () => {
     return true;
   };
 
-  const onLoginSuccess = (authError) => {
+  const onLoginSuccess = (message) => {
     toast.current.show({
       severity: "success",
       summary: "Successful",
-      detail: `${authError}`,
+      detail: message,
       life: 1000,
     });
   };
 
-  const onLoginError = (authError) => {
+  const onLoginError = (errorMessage) => {
     toast.current.show({
       severity: "error",
       summary: "Unsuccessful",
-      detail: `${authError}`,
+      detail: errorMessage,
       life: 3000,
     });
   };
 
   return (
-    <div className="container">
-      <div className="login-form">
+    <div className="bg-blue-100 h-screen flex justify-center items-center">
+      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full min-w-[400px]">
         <Toast ref={toast} />
-        <div className="logo-container">
+        <div className="text-center">
           <img
             src={process.env.PUBLIC_URL + "/logo192.png"}
             alt="Logo"
-            className="logo"
+            className="mx-auto w-20"
           />
         </div>
-        <div className="Loginform">
-          <div className="top_Loginform">
-            <h5 className="title_Login">Login to Your Dashboard</h5>
-            <p className="info_Login">Enter your username and password</p>
-          </div>
+        <h2 className="text-2xl font-semibold text-center mt-4">
+          Login to Your Dashboard
+        </h2>
+        <p className="text-center text-gray-600 mt-2">
+          Enter your username and password
+        </p>
 
-          <form className="the_form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email" className="form_lable">
-                Username
-              </label>
-              <div className="input_form">
-                <input
-                  type="email"
-                  name="username"
-                  value={email}
-                  placeholder="firstname.secondname@agilebiz.co.ke"
-                  onChange={handleEmailChange}
-                  required
-                  className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                  id="username"
-                />
-                {errors.email && <p className="Cant_connect">{errors.email}</p>}
-              </div>
+        <form className="mt-4" onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium">
+              Username
+            </label>
+            <input
+              type="email"
+              name="username"
+              value={email}
+              placeholder="firstname.secondname@agilebiz.co.ke"
+              onChange={handleEmailChange}
+              required
+              className={`mt-1 p-2 w-full border ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-blue-500`}
+              id="username"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-sm font-medium">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={password}
+                onChange={handlePasswordChange}
+                className="mt-1 p-2 w-full border rounded focus:outline-none focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-600"
+              >
+                {showPassword ? <FiEye size={20} /> : <FiEyeOff size={20} />}
+              </button>
             </div>
-            <div className="form-group">
-              <label htmlFor="password" className="form_lable">
-                Password
-              </label>
-              <div className="input_form">
-                <input
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  className={`form-control ${
-                    errors.password ? "is-invalid" : ""
-                  }`}
-                  id="yourPassword"
-                  required
-                />
-                {errors.password && (
-                  <p className="Cant_connect">{errors.password}</p>
-                )}
-              </div>
-            </div>
-            <div className="form-group">
-              {!isPending && <button type="submit">Login</button>}
-              {isPending && (
-                <button disabled type="submit">
-                  Logging in...
-                </button>
-              )}
-            </div>
-            <div className="form-group">
-              <p>
-                <Link className="login_link" to="/forgetpassword">
-                  Forgot Password?
-                </Link>
-              </p>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div className="credits">
-        Designed by{" "}
-        <a
-          href="https://agilebiz.co.ke/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          Agile Business Solutions
-        </a>
+          </div>
+          <div className="mb-4">
+            <button
+              type="submit"
+              className={`w-full bg-blue-500 text-white font-semibold p-2 rounded ${
+                isPending
+                  ? "opacity-75 cursor-not-allowed"
+                  : "hover:bg-blue-600"
+              }`}
+              disabled={isPending}
+            >
+              {isPending ? "Logging in..." : "Login"}
+            </button>
+          </div>
+          <div className="text-center">
+            <p>
+              <Link className="text-blue-500" to="/forgetpassword">
+                Forgot Password?
+              </Link>
+            </p>
+          </div>
+        </form>
+        <footer className="mt-4 text-center text-gray-500 text-sm">
+          Designed by{" "}
+          <a
+            href="https://agilebiz.co.ke/"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="text-blue-500"
+          >
+            Agile Business Solutions
+          </a>
+        </footer>
       </div>
     </div>
   );

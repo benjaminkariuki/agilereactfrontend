@@ -22,7 +22,7 @@ const Home = () => {
   const { userRole, userEmail, userFName, userLName, userProfilePhoto } =
     useSelector((state) => state.user);
 
-  const baseUrl = "http://192.168.88.150:8000/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   // Use useEffect to check login status on component mount
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));

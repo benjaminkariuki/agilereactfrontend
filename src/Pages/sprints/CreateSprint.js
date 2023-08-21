@@ -1,13 +1,14 @@
 import React, { useRef, useState } from "react";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 
 const CreateSprint = ({ rerouting }) => {
   const [sprintData, setSprintData] = useState({
     name: "",
-    start_date: "",
-    end_date: "",
+    start_date: null,
+    end_date: null,
   });
   const toast = useRef(null);
   const [validError, setValidError] = useState({});
@@ -43,7 +44,7 @@ const CreateSprint = ({ rerouting }) => {
 
     try {
       const response = await axios.post(
-        "http://192.168.88.150:8000/api/create_sprint",
+        "https://agile-pm.agilebiz.co.ke/api/create_sprint",
         {
           name: sprintData.name,
           start_date: sprintData.start_date,
@@ -59,7 +60,6 @@ const CreateSprint = ({ rerouting }) => {
         }, 1000);
       }
     } catch (error) {
-      //check if error and response object exist
       if (error && error.response && error.response.data) {
         if (error.response.data.message) {
           onError(error.response.data.message);
@@ -69,7 +69,6 @@ const CreateSprint = ({ rerouting }) => {
           setValidError(error.response.data.errors);
         }
       } else {
-        //add a general error message
         onError("An unexpected error has occurred");
       }
     }
@@ -78,8 +77,8 @@ const CreateSprint = ({ rerouting }) => {
   const handleCancel = () => {
     setSprintData({
       name: "",
-      start_date: "",
-      end_date: "",
+      start_date: null,
+      end_date: null,
     });
     setValidError({});
     rerouting();
@@ -93,59 +92,71 @@ const CreateSprint = ({ rerouting }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div>
       <Toast ref={toast} />
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <label htmlFor="name" className="block font-semibold">
-          Name:
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={sprintData.name}
-          onChange={handleChange}
-          required
-          className="block w-full p-2 border rounded focus:outline-none focus:border-primary"
-        />
-        {displayError("name")}
+      <div
+        className="w-full"
+        style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
+      >
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-sm mx-auto"
+        >
+          <label htmlFor="name" className="block font-semibold">
+            Name:
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={sprintData.name}
+            onChange={handleChange}
+            required
+            className="block w-full p-2 border rounded focus:outline-none focus:border-primary"
+          />
+          {displayError("name")}
 
-        <label htmlFor="start_date" className="block font-semibold">
-          Start Date:
-        </label>
-        <input
-          type="date"
-          id="start_date"
-          name="start_date"
-          value={sprintData.start_date}
-          onChange={handleChange}
-          required
-          className="block w-full p-2 border rounded focus:outline-none focus:border-primary"
-        />
-        {displayError("start_date")}
+          <label htmlFor="start_date" className="block font-semibold">
+            Start Date:
+          </label>
+          <Calendar
+            id="start_date"
+            name="start_date"
+            value={sprintData.start_date}
+            onChange={(e) =>
+              handleChange({ target: { name: "start_date", value: e.value } })
+            }
+            required
+            showIcon
+            className="w-full"
+          />
+          {displayError("start_date")}
 
-        <label htmlFor="end_date" className="block font-semibold">
-          End Date:
-        </label>
-        <input
-          type="date"
-          id="end_date"
-          name="end_date"
-          value={sprintData.end_date}
-          onChange={handleChange}
-          required
-          className="block w-full p-2 border rounded focus:outline-none focus:border-primary"
-        />
-        {displayError("end_date")}
+          <label htmlFor="end_date" className="block font-semibold">
+            End Date:
+          </label>
+          <Calendar
+            id="end_date"
+            name="end_date"
+            value={sprintData.end_date}
+            onChange={(e) =>
+              handleChange({ target: { name: "end_date", value: e.value } })
+            }
+            required
+            showIcon
+            className="w-full"
+          />
+          {displayError("end_date")}
 
-        <Button type="submit" label="Submit" className="p-button-success" />
-        <Button
-          type="button"
-          label="Cancel"
-          onClick={handleCancel}
-          className="p-button-secondary"
-        />
-      </form>
+          <Button type="submit" label="Submit" className="p-button-success" />
+          <Button
+            type="button"
+            label="Cancel"
+            onClick={handleCancel}
+            className="p-button-secondary"
+          />
+        </form>
+      </div>
     </div>
   );
 };

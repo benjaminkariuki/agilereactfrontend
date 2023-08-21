@@ -17,7 +17,7 @@ const EditProfile = () => {
     userContacts,
   } = useSelector((state) => state.user);
 
-  const baseUrl = "http://192.168.88.150:8000/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [firstName, setFirstName] = useState(userFName);
   const [lastName, setLastName] = useState(userLName);
   const [email, setEmail] = useState(userEmail);
@@ -77,11 +77,15 @@ const EditProfile = () => {
     // setIsPending(true);
 
     axios
-      .post(`http://192.168.88.150:8000/api/updateUsers/${userId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .post(
+        `https://agile-pm.agilebiz.co.ke/api/updateUsers/${userId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         const { user } = response.data;
         dispatch(updateUser(user));
@@ -122,7 +126,7 @@ const EditProfile = () => {
   const handlePasswordSave = () => {
     // Save the new password
     axios
-      .post(`http://192.168.88.150:8000/api/changepassword/${userId}`, {
+      .post(`https://agile-pm.agilebiz.co.ke/api/changepassword/${userId}`, {
         password: password,
       })
       .then((response) => {
@@ -145,7 +149,7 @@ const EditProfile = () => {
   const handleDeletePhoto = () => {
     // Delete the photo
     axios
-      .delete(`http://192.168.88.150:8000/api/deleteImage/${userId}`)
+      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteImage/${userId}`)
       .then((response) => {
         const { user } = response.data;
         dispatch(updateUser(user));

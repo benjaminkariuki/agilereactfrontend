@@ -49,7 +49,7 @@ const Archive = ({ onRestoreProject }) => {
   const fetchProjects = async () => {
     try {
       const archivedProjectsResponse = await axios.get(
-        "http://192.168.88.150:8000/api/allProjectsArchived"
+        "https://agile-pm.agilebiz.co.ke/api/allProjectsArchived"
       );
       const archivedProjects = archivedProjectsResponse.data.data;
       setProjects(archivedProjects);
@@ -66,7 +66,7 @@ const Archive = ({ onRestoreProject }) => {
   const handleRestoreProject = async (id) => {
     try {
       const response = await axios.post(
-        `http://192.168.88.150:8000/api/restore/${id}`
+        `https://agile-pm.agilebiz.co.ke/api/restore/${id}`
       );
 
       // If restoration was successful
@@ -100,7 +100,7 @@ const Archive = ({ onRestoreProject }) => {
     ) {
       try {
         const response = await axios.delete(
-          `http://192.168.88.150:8000/api/deletePermanently/${id}`
+          `https://agile-pm.agilebiz.co.ke/api/deletePermanently/${id}`
         );
 
         // If deletion was successful

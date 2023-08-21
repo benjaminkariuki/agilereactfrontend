@@ -26,7 +26,7 @@ const MicroTask = ({
   teamLeads,
   developers,
 }) => {
-  const baseUrl = "http://192.168.88.150:8000/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const toast = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [subtasks, setSubtasks] = useState([]);
@@ -212,7 +212,7 @@ const MicroTask = ({
     const formData = new FormData();
     formData.append("excel_file", selectedFile);
     axios
-      .post("http://192.168.88.150:8000/api/create_tasks", formData, {
+      .post("https://agile-pm.agilebiz.co.ke/api/create_tasks", formData, {
         params: {
           projectId: projectId,
           phaseId: phaseId,
@@ -237,7 +237,7 @@ const MicroTask = ({
 
   const handleDownloadTemplate = () => {
     axios
-      .get("http://192.168.88.150:8000/api/download-excel-tasks", {
+      .get("https://agile-pm.agilebiz.co.ke/api/download-excel-tasks", {
         responseType: "blob",
       })
       .then((response) => {
@@ -296,7 +296,7 @@ const MicroTask = ({
   };
   const handleMicroTaskDelete = (id) => {
     axios
-      .delete(`http://192.168.88.150:8000/api/deleteSubtask/${id}`, {
+      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteSubtask/${id}`, {
         params: {
           projectId: projectId,
           phaseId: phaseId,
@@ -316,7 +316,7 @@ const MicroTask = ({
   const fetchSubtasks = (projectId, phaseId, activityId) => {
     axios
       .get(
-        `http://192.168.88.150:8000/api/getSubtasks/${projectId}/${phaseId}/${activityId}`
+        `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}`
       )
       .then((response) => {
         setSubtasks(response.data.data);
@@ -357,7 +357,7 @@ const MicroTask = ({
     setTaskCreate(true);
 
     axios
-      .post("http://192.168.88.150:8000/api/create_tasks_ui", {
+      .post("https://agile-pm.agilebiz.co.ke/api/create_tasks_ui", {
         projectId,
         phaseId,
         phaseActivityId: activityId,
@@ -412,18 +412,21 @@ const MicroTask = ({
   const handleEditTaskSave = () => {
     setEditLoading(true);
     axios
-      .put(`http://192.168.88.150:8000/api/updateSubtask/${editingTask.id}`, {
-        projectId,
-        phaseId,
-        phaseActivityId: activityId,
-        task: editingTask.task,
-        department: editingTask.department,
-        assigned_to: selectedUsers,
-        baassigned_to: [editingTask.assigneBa],
-        description: editingTask.description,
-        start_date: formatDate(editingTask.start_date),
-        end_date: formatDate(editingTask.end_date),
-      })
+      .put(
+        `https://agile-pm.agilebiz.co.ke/api/updateSubtask/${editingTask.id}`,
+        {
+          projectId,
+          phaseId,
+          phaseActivityId: activityId,
+          task: editingTask.task,
+          department: editingTask.department,
+          assigned_to: selectedUsers,
+          baassigned_to: [editingTask.assigneBa],
+          description: editingTask.description,
+          start_date: formatDate(editingTask.start_date),
+          end_date: formatDate(editingTask.end_date),
+        }
+      )
       .then((response) => {
         onSuccess(response.data.message);
         handleCloseEditModal();

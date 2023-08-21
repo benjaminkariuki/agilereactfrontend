@@ -44,7 +44,7 @@ const Users = () => {
     ],
   };
   const [roles, setRoles] = useState([]);
-  const baseUrl = "http://192.168.88.150:8000/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [filteredRoles, setfilteredroles] = useState([]);
   const toast = useRef(null);
 
@@ -112,7 +112,7 @@ const Users = () => {
 
   const fetchUsers = () => {
     axios
-      .get("http://192.168.88.150:8000/api/allUsers")
+      .get("https://agile-pm.agilebiz.co.ke/api/allUsers")
       .then((response) => {
         setUsers(response.data.users);
       })
@@ -123,7 +123,7 @@ const Users = () => {
 
   const fetchRoles = () => {
     axios
-      .get("http://192.168.88.150:8000/api/allRoles")
+      .get("https://agile-pm.agilebiz.co.ke/api/allRoles")
       .then((response) => {
         setRoles(response.data.roles);
       })
@@ -134,7 +134,7 @@ const Users = () => {
 
   const handleDeleteUser = (userId) => {
     axios
-      .delete(`http://192.168.88.150:8000/api/deleteUsers/${userId}`)
+      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteUsers/${userId}`)
       .then(() => {
         setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
       })
@@ -152,7 +152,7 @@ const Users = () => {
     console.log(updatedUser);
     axios
       .put(
-        `http://192.168.88.150:8000/api/updateUsers/${updatedUser.id}`,
+        `https://agile-pm.agilebiz.co.ke/api/updateUsers/${updatedUser.id}`,
         updatedUser
       )
       .then((response) => {

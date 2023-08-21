@@ -59,7 +59,7 @@ const CreateProject = ({ routeToListProjects }) => {
 
   const fetchUsers = () => {
     axios
-      .get("http://192.168.88.150:8000/api/allUsers")
+      .get("https://agile-pm.agilebiz.co.ke/api/allUsers")
       .then((response) => {
         setUsersData(response.data.users);
       })
@@ -125,7 +125,7 @@ const CreateProject = ({ routeToListProjects }) => {
     });
     setisloading(true);
     axios
-      .post("http://192.168.88.150:8000/api/create_projects", formData, {
+      .post("https://agile-pm.agilebiz.co.ke/api/create_projects", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -163,7 +163,7 @@ const CreateProject = ({ routeToListProjects }) => {
   const downloadExcelFile = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.88.150:8000/api/download-excel",
+        "https://agile-pm.agilebiz.co.ke/api/download-excel",
         {
           responseType: "blob",
         }

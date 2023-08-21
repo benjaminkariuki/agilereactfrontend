@@ -82,7 +82,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   const fetchUsers = () => {
     axios
-      .get("http://192.168.88.150:8000/api/allUsers")
+      .get("https://agile-pm.agilebiz.co.ke/api/allUsers")
       .then((response) => {
         setUsersData(response.data.users);
       })
@@ -93,7 +93,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   const fetchProjectDetails = (projectId) => {
     axios
-      .get(`http://192.168.88.150:8000/api/allProjectsWithId/${projectId}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
         const sDate = new Date(fetchedprojectsid.start_date);
@@ -138,9 +138,9 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         }
       });
   };
-  const getOptionsForRole = (role) => {
-    return usersData.filter((user) => user.role.name === role);
-  };
+  // const getOptionsForRole = (role) => {
+  //   return usersData.filter((user) => user.role.name === role);
+  // };
 
   const handleRoleCheckboxChange = (role, userId, checked) => {
     setProjectData((prevState) => {
@@ -252,7 +252,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     }
     axios
       .post(
-        `http://192.168.88.150:8000/api/edit_projects/${projectId}`,
+        `https://agile-pm.agilebiz.co.ke/api/edit_projects/${projectId}`,
         formData,
         {
           headers: {
@@ -275,7 +275,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   const downloadExcelFile = async () => {
     try {
       const response = await axios.get(
-        `http://192.168.88.150:8000/api/download-excel-edit/${projectId}`,
+        `https://agile-pm.agilebiz.co.ke/api/download-excel-edit/${projectId}`,
         {
           responseType: "blob",
         }
@@ -312,6 +312,56 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       </div>
     );
   }
+
+  // Filter users based on department and role
+  const filterUsersByRoleAndDepartment = (roleName, department) => {
+    return usersData.filter(
+      (user) => user.department === department && user.role.name === roleName
+    );
+  };
+  // Filter users for team leads
+  const filterWithTeamLead = () => {
+    return filterUsersByRoleAndDepartment(
+      "Team lead business central",
+      "Business Central Department"
+    )
+      .concat(
+        filterUsersByRoleAndDepartment(
+          "Team lead infrastructure",
+          "Infrastructure Department"
+        )
+      )
+      .concat(
+        filterUsersByRoleAndDepartment(
+          "Team lead business analyst",
+          "Business Analyst Department"
+        )
+      )
+      .concat(
+        filterUsersByRoleAndDepartment(
+          "Team lead Implementation",
+          "Implementation Department"
+        )
+      )
+      .concat(
+        filterUsersByRoleAndDepartment("Team lead web", "Web Department")
+      );
+  };
+
+  // Filter users for project managers and senior project managers
+  const getProjectManagers = (department) => {
+    return filterUsersByRoleAndDepartment("Project manager", department);
+  };
+
+  // Filter users for business analysts
+  const getBusinessAnalysts = (department) => {
+    return filterUsersByRoleAndDepartment("business analyst", department);
+  };
+
+  // Filter users for developers
+  const getDevelopers = (department) => {
+    return filterUsersByRoleAndDepartment("developer", department);
+  };
 
   return (
     <div className="bg-white rounded-lg  shadow p-4">
@@ -482,39 +532,41 @@ const EditProject = ({ projectId, routeToListProjects }) => {
               >
                 Project Manager
               </label>
-              {getOptionsForRole("Project manager").map((user) => (
-                <div key={user.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`projectManager-${user.id}`}
-                    name="projectManager"
-                    value={user.id}
-                    onChange={(e) =>
-                      handleRoleCheckboxChange(
-                        "editedProjectManager",
-                        user.id,
-                        e.target.checked
-                      )
-                    }
-                    //new update
-                    className={`form-checkbox ${
-                      projectData.projectManager.includes(user.id)
-                        ? "checked:bg-red-500"
-                        : "checked:bg-blue-500"
-                    } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:border-transparent focus:outline-none`}
-                  />
-                  <label
-                    htmlFor={`projectManager-${user.id}`}
-                    className={`ml-2 text-sm ${
-                      projectData.projectManager.includes(user.id.toString())
-                        ? "text-blue-600"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {user.firstName} {user.lastName}
-                  </label>
-                </div>
-              ))}
+              {getProjectManagers("Porfolio Managers Department").map(
+                (user) => (
+                  <div key={user.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`projectManager-${user.id}`}
+                      name="projectManager"
+                      value={user.id}
+                      onChange={(e) =>
+                        handleRoleCheckboxChange(
+                          "editedProjectManager",
+                          user.id,
+                          e.target.checked
+                        )
+                      }
+                      //new update
+                      className={`form-checkbox ${
+                        projectData.projectManager.includes(user.id)
+                          ? "checked:bg-red-500"
+                          : "checked:bg-blue-500"
+                      } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:border-transparent focus:outline-none`}
+                    />
+                    <label
+                      htmlFor={`projectManager-${user.id}`}
+                      className={`ml-2 text-sm ${
+                        projectData.projectManager.includes(user.id.toString())
+                          ? "text-blue-600"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {user.firstName} {user.lastName}
+                    </label>
+                  </div>
+                )
+              )}
             </div>
             {/* Business Analyst */}
             <div className="mb-4">
@@ -524,49 +576,51 @@ const EditProject = ({ projectId, routeToListProjects }) => {
               >
                 Business Analyst
               </label>
-              {getOptionsForRole("business analyst").map((user) => (
-                <div key={user.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`businessAnalyst-${user.id}`}
-                    name="businessAnalyst"
-                    value={user.id}
-                    // defaultChecked={projectData.businessAnalyst.includes(
-                    //   user.id.toString()
-                    // )}
-                    onChange={(e) =>
-                      handleRoleCheckboxChange(
-                        "editedBusinessAnalyst",
-                        user.id,
-                        e.target.checked
-                      )
-                    }
-                    //new update
-                    className={`form-checkbox ${
-                      projectData.businessAnalyst.includes(user.id.toString())
-                        ? "checked:bg-red-500"
-                        : "checked:bg-blue-500"
-                    } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
-                  />
-                  <label
-                    htmlFor={`businessAnalyst-${user.id}`}
-                    className={`ml-2 text-sm ${
-                      projectData.businessAnalyst.includes(user.id.toString())
-                        ? "text-blue-600"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {user.firstName} {user.lastName}
-                  </label>
-                </div>
-              ))}
+              {getBusinessAnalysts("Business Analyst Department").map(
+                (user) => (
+                  <div key={user.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`businessAnalyst-${user.id}`}
+                      name="businessAnalyst"
+                      value={user.id}
+                      // defaultChecked={projectData.businessAnalyst.includes(
+                      //   user.id.toString()
+                      // )}
+                      onChange={(e) =>
+                        handleRoleCheckboxChange(
+                          "editedBusinessAnalyst",
+                          user.id,
+                          e.target.checked
+                        )
+                      }
+                      //new update
+                      className={`form-checkbox ${
+                        projectData.businessAnalyst.includes(user.id.toString())
+                          ? "checked:bg-red-500"
+                          : "checked:bg-blue-500"
+                      } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
+                    />
+                    <label
+                      htmlFor={`businessAnalyst-${user.id}`}
+                      className={`ml-2 text-sm ${
+                        projectData.businessAnalyst.includes(user.id.toString())
+                          ? "text-blue-600"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {user.firstName} {user.lastName}
+                    </label>
+                  </div>
+                )
+              )}
             </div>
             {/* Team Leads */}
             <div className="mb-4">
               <label htmlFor="teamLeads" className="block text-sm font-medium">
                 Team Leads
               </label>
-              {getOptionsForRole("Team Lead").map((user) => (
+              {filterWithTeamLead().map((user) => (
                 <div key={user.id} className="flex items-center">
                   <input
                     type="checkbox"
@@ -580,7 +634,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                         e.target.checked
                       )
                     }
-                    //new update
                     className={`form-checkbox ${
                       projectData.teamLeads.includes(user.id.toString())
                         ? "checked:bg-red-500"
@@ -600,13 +653,12 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                 </div>
               ))}
             </div>
-
             {/* Developers */}
             <div className="mb-4">
               <label htmlFor="developers" className="block text-sm font-medium">
                 Developers
               </label>
-              {getOptionsForRole("developer").map((user) => (
+              {getDevelopers("Web Department").map((user) => (
                 <div key={user.id} className="flex items-center">
                   <input
                     type="checkbox"

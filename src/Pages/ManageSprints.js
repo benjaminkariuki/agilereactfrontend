@@ -61,7 +61,9 @@ const App = () => {
         Manage Sprints
       </h1>
       <Menubar model={menuItems} className="p-mb-2" />
-      <div className="p-d-flex p-jc-center">{renderComponent()}</div>
+      <div style={{ overflowY: "auto", maxHeight: "calc(100vh - 220px)" }}>
+        {renderComponent()}
+      </div>
     </div>
   );
 };

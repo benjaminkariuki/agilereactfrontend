@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FileDownload from "react-file-download";
 import { Editor } from "primereact/editor";
+import { Dropdown } from "primereact/dropdown";
 
 const CreateProject = ({ routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -23,6 +24,19 @@ const CreateProject = ({ routeToListProjects }) => {
   const [isloading, setisloading] = useState(false);
   const [usersData, setUsersData] = useState([]);
   const [create, setCreate] = useState(false);
+  const categoryOptions = [
+    { label: "Implementation", value: "implementation" },
+    { label: "Support", value: "support" },
+  ];
+
+  const systemOptions = [
+    { label: "Business Applications", value: "business applications" },
+    { label: "CRM Solutions", value: "CRM solutions" },
+    { label: "Analytics", value: "analytics" },
+    { label: "EDMs", value: "EDMs" },
+    { label: "Cloud Solutions", value: "cloud solutions" },
+    { label: "ICT Infrastructure", value: "ict infrastructure" },
+  ];
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -66,9 +80,6 @@ const CreateProject = ({ routeToListProjects }) => {
       .catch((error) => {
         console.log("Error fetching users:", error);
       });
-  };
-  const getOptionsForRole = (role) => {
-    return usersData.filter((user) => user.role.name === role);
   };
 
   const handleRoleCheckboxChange = (role, userId, checked) => {
@@ -243,8 +254,6 @@ const CreateProject = ({ routeToListProjects }) => {
       );
   };
 
-  console.log("team leads ", filterWithTeamLead());
-
   // Filter users for project managers and senior project managers
   const getProjectManagers = (department) => {
     return filterUsersByRoleAndDepartment("Project manager", department);
@@ -338,49 +347,31 @@ const CreateProject = ({ routeToListProjects }) => {
               <label htmlFor="category" className="block text-sm font-medium">
                 Category
               </label>
-              <select
+              <Dropdown
                 id="category"
-                name="category"
+                name="editedcategory"
                 value={projectData.category}
+                options={categoryOptions}
                 onChange={handleInputChange}
-                className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
-                required
-              >
-                <option value="" disabled required>
-                  Select Category
-                </option>
-                <option value="implementation">Implementation</option>
-                <option value="support">Support</option>
-              </select>
+                placeholder="Select Category"
+                className="w-full"
+              />
             </div>
-
             {/* System */}
             <div className="mb-4">
               <label htmlFor="system" className="block text-sm font-medium">
                 System
               </label>
-              <select
+              <Dropdown
                 id="system"
-                name="system"
+                name="editedsystem"
                 value={projectData.system}
+                options={systemOptions}
                 onChange={handleInputChange}
-                className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
-                required
-              >
-                <option value="" disabled required>
-                  Select System
-                </option>
-                <option value="business applications">
-                  Business Applications
-                </option>
-                <option value="CRM solutions">CRM Solutions</option>
-                <option value="analytics">Analytics</option>
-                <option value="EDMs">EDMs</option>
-                <option value="cloud solutions">Cloud Solutions</option>
-                <option value="ict infrastructure">ICT Infrastructure</option>
-              </select>
+                placeholder="Select System"
+                className="w-full"
+              />
             </div>
-
             {/* Date inputs */}
             <div className="grid grid-cols-2 gap-4">
               {/* Start Date */}
@@ -638,7 +629,7 @@ const CreateProject = ({ routeToListProjects }) => {
             {isloading ? (
               <i
                 className="pi pi-spin pi-spinner"
-                style={{ fontSize: "2rem" }}
+                style={{ fontSize: "1.5rem" }}
               ></i>
             ) : (
               "Create Project"

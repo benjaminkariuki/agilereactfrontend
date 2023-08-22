@@ -71,6 +71,8 @@ const MicroTask = ({
   const [projectUsers, setProjectUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   // const [wasTo, setWasAssignedTo] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+
   // Move this effect to handle selectedIcon changes
   useEffect(() => {
     if (selectedIcon === "add") {
@@ -101,7 +103,8 @@ const MicroTask = ({
     switch (status) {
       case "highpriority":
         return "danger";
-
+      case "open":
+        return "info";
       case "completed":
         return "success";
 
@@ -335,15 +338,24 @@ const MicroTask = ({
     axios.get("");
   };
 
+  //function for [ushing to sprint
   const handlePushtoSprint = () => {
     setPushLoading(true);
-    // if (!selectedMicroTasks) {
-    //   setPushLoading(false);
-    //   return;
-    // }
+    const selectedIds = selectedRows.map((row) => row.id);
+    axios
+      .post("https://agile-pm.agilebiz.co.ke/api/pushToSprint", {
+        taskIds: selectedIds,
+      })
+      .then((response) => {
+        onInfo(response.data.message);
+        setPushLoading(false);
+        setIsViewModalOpen(false);
+      })
+      .catch((error) => {
+        onError(error.response.message);
+        setPushLoading(false);
+      });
   };
-
-  // New state for the create task form
 
   const formatDate = (date) => {
     if (!date) return ""; // Return an empty string if the date is not provided
@@ -577,7 +589,16 @@ const MicroTask = ({
             emptyMessage="No subtasks found."
             className="p-datatable-gridlines"
             removableSort
+            selectionMode="checkbox"
+            selection={selectedRows}
+            onSelectionChange={(e) => setSelectedRows(e.value)}
+            dataKey="id"
           >
+            <Column
+              selectionMode="multiple"
+              headerStyle={{ width: "3rem" }}
+            ></Column>
+
             <Column
               field="task"
               header="Task Name"
@@ -669,9 +690,7 @@ const MicroTask = ({
                     type="text"
                     id="task"
                     value={newTask.task}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, task: e.target.value })
-                    }
+                    onChange={(e) => setNewTask({ ...newTask, task: e.value })}
                     className="w-full border rounded py-2 px-3"
                     required
                   />

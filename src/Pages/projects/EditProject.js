@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FileDownload from "react-file-download";
+import { Dropdown } from "primereact/dropdown";
 
 const EditProject = ({ projectId, routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -40,9 +41,28 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
     endDate: "",
     editedEndDate: "", //updating end date
-  });
 
+    category: "", // Original category value
+    editedcategory: "", // New category value
+
+    system: "", // Original system value
+    editedsystem: "", // New system value
+  });
   const [usersData, setUsersData] = useState([]);
+
+  const categoryOptions = [
+    { label: "Implementation", value: "implementation" },
+    { label: "Support", value: "support" },
+  ];
+
+  const systemOptions = [
+    { label: "Business Applications", value: "business applications" },
+    { label: "CRM Solutions", value: "CRM solutions" },
+    { label: "Analytics", value: "analytics" },
+    { label: "EDMs", value: "EDMs" },
+    { label: "Cloud Solutions", value: "cloud solutions" },
+    { label: "ICT Infrastructure", value: "ict infrastructure" },
+  ];
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -125,6 +145,8 @@ const EditProject = ({ projectId, routeToListProjects }) => {
           clientEmail: fetchedprojectsid.clientemail,
           startDate: sDate,
           endDate: eDate,
+          category: fetchedprojectsid.category,
+          system: fetchedprojectsid.system_type,
         });
       })
       .catch((error) => {
@@ -138,10 +160,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         }
       });
   };
-  // const getOptionsForRole = (role) => {
-  //   return usersData.filter((user) => user.role.name === role);
-  // };
-
   const handleRoleCheckboxChange = (role, userId, checked) => {
     setProjectData((prevState) => {
       const existingRoleData = prevState[role];
@@ -175,7 +193,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     if (projectData.editedTitle && projectData.editedTitle.trim() !== "") {
       formData.append("title", projectData.editedTitle);
     }
-    console.log(projectData.editedTitle);
 
     if (
       projectData.editedOverview &&
@@ -243,13 +260,19 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         formData.append(`developers[${index}]`, dev);
       });
     }
-
     // Append editedTeamLeads if it exists and is not empty
     if (projectData.editedTeamLeads && projectData.editedTeamLeads.length > 0) {
       projectData.editedTeamLeads.forEach((tl, index) => {
         formData.append(`teamleads[${index}]`, tl);
       });
     }
+    if (projectData.editedcategory && projectData.editedcategory.trim !== "") {
+      formData.append("category", projectData.editedcategory);
+    }
+    if (projectData.editedsystem && projectData.editedsystem.trim !== "") {
+      formData.append("system_type", projectData.editedsystem);
+    }
+
     axios
       .post(
         `https://agile-pm.agilebiz.co.ke/api/edit_projects/${projectId}`,
@@ -260,7 +283,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
           },
         }
       )
-      // console.log("new update ",formData)
       .then((response) => {
         console.log("Project updated successfully:", response.data);
         routeToListProjects();
@@ -437,44 +459,45 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                 </label>
               </div>
             </div>
-            {/* Status */}
+            {/* Category */}
             <div className="mb-4">
-              <label htmlFor="status" className="block text-sm font-medium">
-                Status
+              <label htmlFor="category" className="block text-sm font-medium">
+                Category
               </label>
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleInputChange({
-                      target: { name: "status", value: "active" },
-                    })
-                  }
-                  className={`px-4 py-2 rounded-md focus:outline-none ${
-                    projectData.status === "active"
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  Active
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleInputChange({
-                      target: { name: "status", value: "inactive" },
-                    })
-                  }
-                  className={`px-4 py-2 rounded-md focus:outline-none ${
-                    projectData.status === "inactive"
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  inactive
-                </button>
-              </div>
+              <Dropdown
+                id="category"
+                name="editedcategory"
+                value={
+                  projectData.editedcategory
+                    ? projectData.editedcategory
+                    : projectData.category
+                }
+                options={categoryOptions}
+                onChange={handleInputChange}
+                placeholder="Select Category"
+                className="w-full"
+              />
             </div>
+            {/* System */}
+            <div className="mb-4">
+              <label htmlFor="system" className="block text-sm font-medium">
+                System
+              </label>
+              <Dropdown
+                id="system"
+                name="editedsystem"
+                value={
+                  projectData.editedsystem
+                    ? projectData.editedsystem
+                    : projectData.system
+                }
+                options={systemOptions}
+                onChange={handleInputChange}
+                placeholder="Select System"
+                className="w-full"
+              />
+            </div>
+
             {/* Date inputs */}
             <div className="grid grid-cols-2 gap-4">
               {/* Start Date */}
@@ -542,12 +565,11 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                       value={user.id}
                       onChange={(e) =>
                         handleRoleCheckboxChange(
-                          "editedProjectManager",
+                          "projectManager",
                           user.id,
-                          e.target.checked
+                          e.target.value
                         )
                       }
-                      //new update
                       className={`form-checkbox ${
                         projectData.projectManager.includes(user.id)
                           ? "checked:bg-red-500"
@@ -557,7 +579,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                     <label
                       htmlFor={`projectManager-${user.id}`}
                       className={`ml-2 text-sm ${
-                        projectData.projectManager.includes(user.id.toString())
+                        projectData.projectManager.includes(user.id)
                           ? "text-blue-600"
                           : "text-gray-700"
                       }`}
@@ -584,19 +606,15 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                       id={`businessAnalyst-${user.id}`}
                       name="businessAnalyst"
                       value={user.id}
-                      // defaultChecked={projectData.businessAnalyst.includes(
-                      //   user.id.toString()
-                      // )}
                       onChange={(e) =>
                         handleRoleCheckboxChange(
-                          "editedBusinessAnalyst",
+                          "businessAnalyst",
                           user.id,
-                          e.target.checked
+                          e.target.value
                         )
                       }
-                      //new update
                       className={`form-checkbox ${
-                        projectData.businessAnalyst.includes(user.id.toString())
+                        projectData.businessAnalyst.includes(user.id)
                           ? "checked:bg-red-500"
                           : "checked:bg-blue-500"
                       } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
@@ -604,7 +622,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                     <label
                       htmlFor={`businessAnalyst-${user.id}`}
                       className={`ml-2 text-sm ${
-                        projectData.businessAnalyst.includes(user.id.toString())
+                        projectData.businessAnalyst.includes(user.id)
                           ? "text-blue-600"
                           : "text-gray-700"
                       }`}
@@ -629,13 +647,13 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                     value={user.id}
                     onChange={(e) =>
                       handleRoleCheckboxChange(
-                        "editedTeamLeads",
+                        "teamLeads",
                         user.id,
-                        e.target.checked
+                        e.target.value
                       )
                     }
                     className={`form-checkbox ${
-                      projectData.teamLeads.includes(user.id.toString())
+                      projectData.teamLeads.includes(user.id)
                         ? "checked:bg-red-500"
                         : "checked:bg-blue-500"
                     } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
@@ -643,12 +661,12 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                   <label
                     htmlFor={`teamLead-${user.id}`}
                     className={`ml-2 text-sm ${
-                      projectData.teamLeads.includes(user.id.toString())
+                      projectData.teamLeads.includes(user.id)
                         ? "text-blue-600"
                         : "text-gray-700"
                     }`}
                   >
-                    {user.firstName} {user.lastName}
+                    {user.firstName} {user.lastName} - {user.department}
                   </label>
                 </div>
               ))}
@@ -667,14 +685,13 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                     value={user.id}
                     onChange={(e) =>
                       handleRoleCheckboxChange(
-                        "editedDevelopers",
+                        "developers",
                         user.id,
-                        e.target.checked
+                        e.target.value
                       )
                     }
-                    //new update
                     className={`form-checkbox ${
-                      projectData.developers.includes(user.id.toString())
+                      projectData.developers.includes(user.id)
                         ? "checked:bg-red-500"
                         : "checked:bg-blue-500"
                     } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md  checked:border-transparent focus:outline-none`}
@@ -682,7 +699,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                   <label
                     htmlFor={`developer-${user.id}`}
                     className={`ml-2 text-sm ${
-                      projectData.developers.includes(user.id.toString())
+                      projectData.developers.includes(user.id)
                         ? "text-blue-600"
                         : "text-gray-700"
                     }`}

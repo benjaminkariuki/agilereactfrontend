@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import axios from "axios";
 import { Toast } from "primereact/toast";
@@ -12,7 +11,7 @@ const CreateSprint = ({ rerouting }) => {
   });
   const toast = useRef(null);
   const [validError, setValidError] = useState({});
-
+  const [creating, setCreating] = useState(false);
   const onSuccess = (success) => {
     toast.current.show({
       severity: "success",
@@ -39,16 +38,24 @@ const CreateSprint = ({ rerouting }) => {
     }));
   };
 
+  const formatDate = (date) => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    setCreating(true);
     try {
       const response = await axios.post(
         "https://agile-pm.agilebiz.co.ke/api/create_sprint",
         {
           name: sprintData.name,
-          start_date: sprintData.start_date,
-          end_date: sprintData.end_date,
+          start_date: formatDate(sprintData.start_date),
+          end_date: formatDate(sprintData.end_date),
         }
       );
 
@@ -58,6 +65,7 @@ const CreateSprint = ({ rerouting }) => {
           setValidError({});
           rerouting();
         }, 1000);
+        setCreating(false);
       }
     } catch (error) {
       if (error && error.response && error.response.data) {
@@ -71,6 +79,7 @@ const CreateSprint = ({ rerouting }) => {
       } else {
         onError("An unexpected error has occurred");
       }
+      setCreating(false);
     }
   };
 
@@ -92,71 +101,80 @@ const CreateSprint = ({ rerouting }) => {
   };
 
   return (
-    <div>
+    <div className="flex items-center justify-center pt-10">
       <Toast ref={toast} />
-      <div
-        className="w-full"
-        style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-sm mx-auto"
-        >
-          <label htmlFor="name" className="block font-semibold">
-            Name:
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={sprintData.name}
-            onChange={handleChange}
-            required
-            className="block w-full p-2 border rounded focus:outline-none focus:border-primary"
-          />
-          {displayError("name")}
 
-          <label htmlFor="start_date" className="block font-semibold">
-            Start Date:
-          </label>
-          <Calendar
-            id="start_date"
-            name="start_date"
-            value={sprintData.start_date}
-            onChange={(e) =>
-              handleChange({ target: { name: "start_date", value: e.value } })
-            }
-            required
-            showIcon
-            className="w-full"
-          />
-          {displayError("start_date")}
+      <form className="w-full max-w-md p-6 bg-white rounded-lg shadow-md justify-center">
+        <label htmlFor="name" className="block font-semibold">
+          Name:
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={sprintData.name}
+          onChange={handleChange}
+          required
+          className="block w-full p-2 border rounded focus:outline-none focus:border-primary"
+        />
+        {displayError("name")}
 
-          <label htmlFor="end_date" className="block font-semibold">
-            End Date:
-          </label>
-          <Calendar
-            id="end_date"
-            name="end_date"
-            value={sprintData.end_date}
-            onChange={(e) =>
-              handleChange({ target: { name: "end_date", value: e.value } })
-            }
-            required
-            showIcon
-            className="w-full"
-          />
-          {displayError("end_date")}
+        <label htmlFor="start_date" className="block font-semibold">
+          Start Date:
+        </label>
+        <Calendar
+          id="start_date"
+          name="start_date"
+          value={sprintData.start_date}
+          onChange={(e) =>
+            handleChange({ target: { name: "start_date", value: e.value } })
+          }
+          required
+          showIcon
+          className="w-full"
+        />
+        {displayError("start_date")}
 
-          <Button type="submit" label="Submit" className="p-button-success" />
-          <Button
-            type="button"
-            label="Cancel"
+        <label htmlFor="end_date" className="block font-semibold">
+          End Date:
+        </label>
+        <Calendar
+          id="end_date"
+          name="end_date"
+          value={sprintData.end_date}
+          onChange={(e) =>
+            handleChange({ target: { name: "end_date", value: e.value } })
+          }
+          required
+          showIcon
+          className="w-full"
+        />
+        {displayError("end_date")}
+
+        <div className="flex justify-between pt-5">
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleSubmit}
+            disabled={creating}
+          >
+            {creating ? (
+              <i
+                className="pi pi-spin pi-spinner"
+                style={{ fontSize: "1.5rem" }}
+              />
+            ) : (
+              " Create"
+            )}
+          </button>
+          <button
             onClick={handleCancel}
-            className="p-button-secondary"
-          />
-        </form>
-      </div>
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

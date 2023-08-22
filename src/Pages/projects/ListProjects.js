@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { FaThLarge, FaList } from "react-icons/fa";
+
 import * as AiIcons from "react-icons/ai";
 
 const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
@@ -151,17 +151,6 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       </div>
     </div>
   );
-  // const toggleViewMode = () => {
-  //   setViewMode((prevMode) => (prevMode === "grid" ? "list" : "grid"));
-  // };
-  // <div className="flex justify-end">
-  //           {viewMode === "grid" ? (
-  //             <FaList onClick={toggleViewMode} />
-  //           ) : (
-  //             <FaThLarge onClick={toggleViewMode} />
-  //           )}
-
-  //       </div>
 
   return (
     <div>

@@ -15,7 +15,7 @@ import ManageRoles from "../Pages/manageRoles";
 import ProtectedRoute from "./ProtectedRoute";
 
 const Home = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [isOpenProfile, setIsOpenProfile] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();

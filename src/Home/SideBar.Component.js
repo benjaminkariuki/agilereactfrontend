@@ -10,8 +10,7 @@ import {
   UserAddIcon,
   CogIcon,
   CheckCircleIcon,
-} from "@heroicons/react/outline"; 
-import { Tooltip } from "primereact/tooltip";
+} from "@heroicons/react/outline";
 
 import {
   HomeIcon as HomeOutlineIcon,
@@ -21,7 +20,7 @@ import {
   UserAddIcon as UserAddOutlineIcon,
   CogIcon as CogOutlineIcon,
   CheckCircleIcon as CheckCircleOutlineIcon,
-} from "@heroicons/react/solid"; 
+} from "@heroicons/react/solid";
 
 function getSolidIcon(iconName) {
   switch (iconName) {
@@ -87,8 +86,8 @@ function SideBar({ isOpen }) {
                 className={`text-2xl mr-2 ${isOpen ? "" : "text-blue-800"}`}
               >
                 {isOpen
-                  ? getOutlineIcon(activity.iconOpened)
-                  : getSolidIcon(activity.iconClosed)}
+                  ? getSolidIcon(activity.iconClosed)
+                  : getOutlineIcon(activity.iconOpened)}
               </span>
               <span className="font-bold text-blue-800">{activity.name}</span>
             </a>

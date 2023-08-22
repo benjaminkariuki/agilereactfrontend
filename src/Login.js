@@ -13,7 +13,6 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [authError, setAuthError] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -49,26 +48,18 @@ const LoginForm = () => {
       dispatch(login(loguser));
       setIsPending(false);
       sessionStorage.setItem("user", JSON.stringify(loguser));
-      console.log("Successful");
       onLoginSuccess(response.data.message);
       setTimeout(() => {
         navigate("/dashboard/home");
       }, 1000);
     } catch (error) {
-      let errorMessage = "An error occurred. Please try again.";
-
       if (error.response) {
         if (error.response.status === 401) {
-          errorMessage = "Invalid email or password";
-        } else {
-          errorMessage = "Request error";
+          onLoginError(error.response.data.message);
         }
-      } else {
-        errorMessage = "Connection error";
       }
+      onLoginError(error.message);
 
-      setAuthError(errorMessage);
-      onLoginError(errorMessage);
       setIsPending(false);
     }
   };

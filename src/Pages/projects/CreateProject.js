@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FileDownload from "react-file-download";
-import { Editor } from "primereact/editor";
 import { Dropdown } from "primereact/dropdown";
 
 const CreateProject = ({ routeToListProjects }) => {
@@ -113,6 +112,7 @@ const CreateProject = ({ routeToListProjects }) => {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
+    console.log(projectData);
     const formData = new FormData();
     formData.append("title", projectData.title);
     formData.append("overview", projectData.overview);
@@ -146,8 +146,6 @@ const CreateProject = ({ routeToListProjects }) => {
       })
       .then((response) => {
         console.log("Project created successfully:", response.data);
-
-        // Reset the form after successful submission
         setProjectData({
           title: "",
           overview: "",
@@ -301,7 +299,7 @@ const CreateProject = ({ routeToListProjects }) => {
               <label htmlFor="overview" className="block text-sm font-medium">
                 Overview
               </label>
-              <Editor
+              <textarea
                 id="overview"
                 name="overview"
                 value={projectData.overview}

@@ -242,6 +242,7 @@ const MicroTask = ({
     }
     setIsLoading(true);
     const formData = new FormData();
+    console.log(selectedFile);
     formData.append("excel_file", selectedFile);
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/create_tasks", formData, {

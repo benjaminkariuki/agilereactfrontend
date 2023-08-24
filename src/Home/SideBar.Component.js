@@ -66,7 +66,10 @@ function getOutlineIcon(iconName) {
 
 function SideBar({ isOpen }) {
   const userActivities = useSelector((state) => state.user.userActivities);
-
+  const sideBareDisplay = userActivities.filter(
+    (activity) => activity.iconClosed !== "" && activity.iconOpened !== ""
+  );
+  console.log(userActivities);
   return (
     <div
       className={clsx([
@@ -75,7 +78,7 @@ function SideBar({ isOpen }) {
       ])}
     >
       <ul className="flex flex-col items-strecth">
-        {userActivities.map((activity) => (
+        {sideBareDisplay.map((activity) => (
           <li key={activity.id} className="text-blue-900 whitespace-nowrap">
             <a
               href={activity.route}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -70,26 +71,36 @@ const Users = () => {
     }
   };
 
-  const onFetchingRoles = (error) => {
+  const onDeleteUser = (error) => {
     if (error) {
       toast.current.show({
-        severity: "warn",
-        summary: "Error fetching roles",
+        severity: "info",
+        summary: "User deleted successfully",
         detail: `${error}`,
         life: 3000,
       });
     }
   };
 
-  const onCreatingUserInfo = (error) => {
+  const onError = (error) => {
     if (error) {
-      toast.current.show({
-        severity: "info",
-        summary: "Server Error",
+      toast.current?.show({
+        severity: "danger",
+        summary: "Error Encountered",
         detail: `${error}`,
         life: 3000,
       });
     }
+  };
+
+  const confirmDelete = (id) => {
+    confirmDialog({
+      message: "Do you want to delete this record?",
+      header: "Delete Confirmation",
+      icon: "pi pi-info-circle",
+      acceptClassName: "p-button-danger",
+      accept: () => handleDeleteUser(id),
+    });
   };
 
   useEffect(() => {
@@ -118,6 +129,7 @@ const Users = () => {
       })
       .catch((error) => {
         console.log("Error getting users:", error);
+        onError(error.response.data.message);
       });
   };
 
@@ -129,17 +141,20 @@ const Users = () => {
       })
       .catch((error) => {
         console.log("Error getting roles:", error);
+        onError(error.response.data.message);
       });
   };
 
   const handleDeleteUser = (userId) => {
     axios
       .delete(`https://agile-pm.agilebiz.co.ke/api/deleteUsers/${userId}`)
-      .then(() => {
-        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      .then((response) => {
+        onDeleteUser(response.data.message);
+        fetchUsers();
       })
       .catch((error) => {
         console.log("Error deleting user:", error);
+        onError(error.response.data.message);
       });
   };
 
@@ -227,7 +242,7 @@ const Users = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.id)}
+                    onClick={() => confirmDelete(user.id)}
                     className="px-4 py-2 bg-red-500 text-white rounded-md"
                   >
                     Delete
@@ -247,7 +262,7 @@ const Users = () => {
       style={{ overflowY: "auto", maxHeight: "calc(100vh - 90px)" }}
     >
       <Toast ref={toast} position="top-rigth" />
-
+      <ConfirmDialog />
       <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
         Users
       </h1>

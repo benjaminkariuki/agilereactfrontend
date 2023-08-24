@@ -8,13 +8,11 @@ import { Tag } from "primereact/tag";
 import axios from "axios";
 import { Calendar } from "primereact/calendar";
 import FileDownload from "react-file-download";
-import { MultiSelect } from "primereact/multiselect";
-import { Editor } from "primereact/editor";
-import { Card } from "primereact/card";
 import { AiFillEdit } from "react-icons/ai";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { useSelector } from "react-redux";
 
 const MicroTask = ({
   projectId,
@@ -26,13 +24,11 @@ const MicroTask = ({
   teamLeads,
   developers,
 }) => {
-  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const toast = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [subtasks, setSubtasks] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedMicroTasks, setSelectedMicroTasks] = useState([]);
   const [filters, setFilters] = useState(null);
   const [statuses] = useState(["pending", "completed", "highpriority"]);
   const [loading, setIsLoading] = useState(false);
@@ -54,6 +50,7 @@ const MicroTask = ({
     start_date: null,
     end_date: null,
     assigneBa: [],
+    assigneTl: [],
   });
 
   const [editingTask, setEditingTask] = useState({
@@ -63,15 +60,47 @@ const MicroTask = ({
     department: "",
     start_date: null,
     end_date: null,
-    assigned_to: [],
+    assignedTl: [],
     assigneBa: [],
   });
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [projectUsers, setProjectUsers] = useState([]);
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  // const [wasTo, setWasAssignedTo] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const { userActivities } = useSelector((state) => state.user);
+
+  //getting the permission for projects
+  const projectsActivity = userActivities.find(
+    (activity) => activity.name === "Projects"
+  );
+  const hasReadPermissionProject = projectsActivity
+    ? projectsActivity.pivot.permissions.includes("read")
+    : false;
+  const hasWritePermissionProject = projectsActivity
+    ? projectsActivity.pivot.permissions.includes("write")
+    : false;
+
+  //getting permission for tasks
+  const tasksActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasReadPermissionTasks = tasksActivity
+    ? tasksActivity.pivot.permissions.includes("read")
+    : false;
+  const hasWritePermissionTasks = tasksActivity
+    ? tasksActivity.pivot.permissions.includes("write")
+    : false;
+
+  //getting permission for sprints
+  const sprintprioritiesActivity = userActivities.find(
+    (activity) => activity.name === "Sprint priorities"
+  );
+  const hasReadPermissionSprints = sprintprioritiesActivity
+    ? sprintprioritiesActivity.pivot.permissions.includes("read")
+    : false;
+  const hasWritePermissionSprint = sprintprioritiesActivity
+    ? sprintprioritiesActivity.pivot.permissions.includes("write")
+    : false;
 
   // Move this effect to handle selectedIcon changes
   useEffect(() => {
@@ -258,17 +287,9 @@ const MicroTask = ({
   };
 
   const handleTaskSelection = (rowData) => {
-    setSelectedMicroTasks((prevTasks) => {
-      const updatedTasks = prevTasks.map((task) =>
-        task.id === rowData.id ? { ...task, selected: !task.selected } : task
-      );
-      return updatedTasks;
-    });
     const sDate = new Date(rowData.start_date);
     const eDate = new Date(rowData.end_date);
-    const assignedUsers = rowData.assigned_to.map((user) => user.email);
-    // const ba = rowData.assigneBa.map((user) => user.email);
-    console.log(rowData);
+
     setEditingTask({
       id: rowData.id,
       task: rowData.task,
@@ -276,14 +297,13 @@ const MicroTask = ({
       department: rowData.department,
       start_date: sDate,
       end_date: eDate,
-      assigned_to: assignedUsers,
-      assigneBa: editingTask.assigneBa,
-    }); // Store the task details to be edited
+      assignedTl: rowData.assigned_to.map((user) => user.email).toString(),
+      assigneBa: rowData.baassigned_to.map((user) => user.email).toString(),
+    });
     setIsEditTaskModalOpen(true); // Open the edit modal
   };
 
   const handleCloseEditModal = () => {
-    setIsEditTaskModalOpen(false);
     setEditingTask({
       id: null,
       task: "",
@@ -291,11 +311,11 @@ const MicroTask = ({
       department: "",
       start_date: null,
       end_date: null,
-      assigned_to: [],
+      assignedTl: [],
       assigneBa: [],
     });
     setEditLoading(false);
-    setSelectedUsers([]);
+    setIsEditTaskModalOpen(false);
   };
   const handleMicroTaskDelete = (id) => {
     axios
@@ -311,7 +331,11 @@ const MicroTask = ({
         fetchSubtasks(projectId, phaseId, activityId);
       })
       .catch((error) => {
-        onError(error.response.message);
+        if (error.response.status === 422) {
+          onError(error.response.data.message);
+        } else {
+          onError(error.response.message);
+        }
       });
   };
 
@@ -352,7 +376,11 @@ const MicroTask = ({
         setIsViewModalOpen(false);
       })
       .catch((error) => {
-        onError(error.response.message);
+        if (error.response.status === 400) {
+          onError(error.response.data.error);
+        } else {
+          onError(error.response.message);
+        }
         setPushLoading(false);
       });
   };
@@ -378,7 +406,8 @@ const MicroTask = ({
         department: newTask.department,
         start_date: formatDate(newTask.start_date),
         end_date: formatDate(newTask.end_date),
-        businessanalysts: newTask.assigneBa,
+        baassigned_to: [newTask.assigneBa],
+        assigned_to: [newTask.assigneTl],
       })
       .then((response) => {
         onSuccess(response.data.message);
@@ -400,27 +429,30 @@ const MicroTask = ({
       });
   };
 
-  //filter for displaying project crew to be assigned
-  const filterUserData = () => {
-    return projectUsers.filter(
-      (user) => user.user.department === editingTask.department
-    );
-  };
-  //options based on department
-  const userOptions = filterUserData().map((user, index) => ({
-    key: index,
-    label: user.user.firstName + " " + user.user.lastName,
-    value: user.user.email, // Use the appropriate property for email
-  }));
   //option based on business analyst in the project
   const bas = businessAnalysts.map((user, index) => ({
     key: index,
     label: user.user.firstName + " " + user.user.lastName,
-    value: user.user.email, // Use the appropriate property for email
+    value: user.user.email,
   }));
+  //option based on team leads in the project
+  const tls = (department) => {
+    const filteredUser = projectManagers
+      .filter((user) => user.user.department === department)
+      .concat(teamLeads.filter((user) => user.user.department === department));
 
+    return filteredUser.map((user, index) => ({
+      key: index,
+      label:
+        user.user.firstName +
+        " " +
+        user.user.lastName +
+        "-" +
+        user.user.role.name,
+      value: user.user.email,
+    }));
+  };
   //updtaing the task details
-
   const handleEditTaskSave = () => {
     setEditLoading(true);
     axios
@@ -432,7 +464,7 @@ const MicroTask = ({
           phaseActivityId: activityId,
           task: editingTask.task,
           department: editingTask.department,
-          assigned_to: selectedUsers,
+          assigned_to: [editingTask.assignedTl],
           baassigned_to: [editingTask.assigneBa],
           description: editingTask.description,
           start_date: formatDate(editingTask.start_date),
@@ -450,48 +482,18 @@ const MicroTask = ({
           department: "",
           start_date: null,
           end_date: null,
-          assigned_to: [],
+          assignedTl: [],
           assigneBa: [],
         });
       })
       .catch((error) => {
         // Handle error, display an error message
-        console.log(error);
         onError("Error updating task details.");
         setEditLoading(false);
       })
       .finally(() => {
         setEditLoading(false); // Hide loading spinner
       });
-  };
-  //Obtaining the already assigned users
-  const selected = filterUserData().filter((user) =>
-    editingTask.assigned_to.includes(user.user.email)
-  );
-
-  const UserCard = ({ user }) => {
-    return (
-      <Card title={`${user.user.firstName} ${user.user.lastName}`}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ flex: 1 }}>
-            <strong>Email:</strong> {user.user.email}
-            <br />
-            <strong>Contacts:</strong> {user.user.contacts}
-          </div>
-          <div className="w-20 h-20 rounded-full overflow-hidden">
-            <img
-              src={
-                user.user.profile_pic
-                  ? baseUrl + user.user.profile_pic
-                  : process.env.PUBLIC_URL + "/profile2.jpeg"
-              }
-              alt="User"
-              className="w-full h-full rounded-full object-cover"
-            />
-          </div>
-        </div>
-      </Card>
-    );
   };
 
   return (
@@ -576,12 +578,14 @@ const MicroTask = ({
           onHide={() => setIsViewModalOpen(false)}
           style={{ width: "80vw" }}
           header={
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-              onClick={() => setCreateTaskDialogVisible(true)}
-            >
-              Add Task
-            </button>
+            hasWritePermissionTasks && (
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                onClick={() => setCreateTaskDialogVisible(true)}
+              >
+                Add Task
+              </button>
+            )
           }
         >
           <DataTable
@@ -594,10 +598,12 @@ const MicroTask = ({
             onSelectionChange={(e) => setSelectedRows(e.value)}
             dataKey="id"
           >
-            <Column
-              selectionMode="multiple"
-              headerStyle={{ width: "3rem" }}
-            ></Column>
+            {hasWritePermissionSprint && (
+              <Column
+                selectionMode="multiple"
+                headerStyle={{ width: "3rem" }}
+              ></Column>
+            )}
 
             <Column
               field="task"
@@ -630,7 +636,7 @@ const MicroTask = ({
             ></Column>
             <Column
               field="assigned_to"
-              header="Assigned To"
+              header="Assigned Team Lead"
               body={(rowData) => (
                 <div key={rowData.id}>
                   {rowData.assigned_to.map((user) => (
@@ -652,25 +658,27 @@ const MicroTask = ({
               filterElement={statusFilterTemplate}
               filterPlaceholder="Search by status"
             ></Column>
-            <Column
-              header="Edit"
-              body={(rowData) => (
-                <div className="flex" key={rowData.id}>
-                  <AiFillEdit
-                    className="bg-blue-500 text-white rounded"
-                    size={30}
-                    style={{ marginRight: 4 }}
-                    onClick={() => handleTaskSelection(rowData)} // Add this line
-                  />
-                  <RiDeleteBin5Fill
-                    className="bg-red-500 text-white rounded"
-                    size={30}
-                    style={{ marginRight: 4 }}
-                    onClick={() => confirmDelete(rowData.id)}
-                  />
-                </div>
-              )}
-            ></Column>
+            {hasWritePermissionTasks && (
+              <Column
+                header="Edit"
+                body={(rowData) => (
+                  <div className="flex" key={rowData.id}>
+                    <AiFillEdit
+                      className="bg-blue-500 text-white rounded"
+                      size={30}
+                      style={{ marginRight: 4 }}
+                      onClick={() => handleTaskSelection(rowData)} // Add this line
+                    />
+                    <RiDeleteBin5Fill
+                      className="bg-red-500 text-white rounded"
+                      size={30}
+                      style={{ marginRight: 4 }}
+                      onClick={() => confirmDelete(rowData.id)}
+                    />
+                  </div>
+                )}
+              ></Column>
+            )}
           </DataTable>
           {/*Add/Create task Modal */}
           <Dialog
@@ -690,7 +698,9 @@ const MicroTask = ({
                     type="text"
                     id="task"
                     value={newTask.task}
-                    onChange={(e) => setNewTask({ ...newTask, task: e.value })}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, task: e.target.value })
+                    }
                     className="w-full border rounded py-2 px-3"
                     required
                   />
@@ -702,13 +712,13 @@ const MicroTask = ({
                   >
                     Task Description:
                   </label>
-                  <Editor
+                  <textarea
                     type="text"
                     id="description"
                     value={newTask.description}
-                    onTextChange={(e) =>
-                      setNewTask({ ...newTask, description: e.textValue })
-                    }
+                    onChange={(e) => {
+                      setNewTask({ ...newTask, description: e.target.value });
+                    }}
                     className="w-full border rounded py-2 px-3"
                     style={{ height: "320px" }}
                   />
@@ -785,6 +795,22 @@ const MicroTask = ({
                     required
                   />
                 </div>
+                <div className="mb-4">
+                  <label htmlFor="teamLead">
+                    Assign Team Lead/Project Manager:
+                  </label>
+                  <Dropdown
+                    id="team-lead"
+                    value={newTask.assigneTl}
+                    options={tls(newTask.department ? newTask.department : "")}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, assigneTl: e.value })
+                    }
+                    placeholder="Select a Team Lead"
+                    className="w-full border rounded py-2 px-3"
+                    required
+                  />
+                </div>
               </div>
             </div>
             <div className="flex justify-between">
@@ -811,19 +837,21 @@ const MicroTask = ({
           </Dialog>
 
           <div className="flex justify-between">
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-              onClick={handlePushtoSprint}
-            >
-              {pustLoading ? (
-                <i
-                  className="pi pi-spin pi-cog"
-                  style={{ fontSize: "1.5rem" }}
-                ></i>
-              ) : (
-                "Push to sprint"
-              )}
-            </button>
+            {hasWritePermissionSprint && (
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                onClick={handlePushtoSprint}
+              >
+                {pustLoading ? (
+                  <i
+                    className="pi pi-spin pi-cog"
+                    style={{ fontSize: "1.5rem" }}
+                  ></i>
+                ) : (
+                  "Push to sprint"
+                )}
+              </button>
+            )}
 
             <button
               className="px-4 py-2 bg-red-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
@@ -851,7 +879,7 @@ const MicroTask = ({
                 <input
                   type="text"
                   id="edit-task"
-                  value={editingTask?.task || ""}
+                  value={editingTask.task}
                   onChange={(e) =>
                     setEditingTask({ ...editingTask, task: e.target.value })
                   }
@@ -866,7 +894,7 @@ const MicroTask = ({
                 >
                   Task Description:
                 </label>
-                <Editor
+                <textarea
                   id="edit-description"
                   value={editingTask.description}
                   onTextChange={(newText) =>
@@ -954,30 +982,20 @@ const MicroTask = ({
                   />
                 </div>
                 <div className="mb-4">
-                  <label htmlFor="Assigned" className="block font-medium mb-1">
-                    Assign:
-                  </label>
-                  <MultiSelect
-                    id="assigned_to"
-                    value={selectedUsers}
-                    options={userOptions}
-                    onChange={(e) => setSelectedUsers(e.value)}
-                    placeholder="Select users"
-                    optionLabel="label"
-                    filter
-                    showClear
+                  <label htmlFor="teamLead">Assign Team Lead:</label>
+                  <Dropdown
+                    id="team-lead"
+                    value={editingTask.assignedTl}
+                    options={tls(
+                      editingTask.department ? editingTask.department : ""
+                    )}
+                    onChange={(e) =>
+                      setEditingTask({ ...editingTask, assignedTl: e.value })
+                    }
+                    placeholder="Select a Team Lead"
                     className="w-full border rounded py-2 px-3"
-                    maxSelectedLabels={3}
+                    required
                   />
-                </div>
-                <div className="mb-4">
-                  {selected && (
-                    <div style={{ overflowY: "auto", height: "250px" }}>
-                      {selected.map((user, index) => (
-                        <UserCard key={index} user={user} />
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -991,7 +1009,7 @@ const MicroTask = ({
               {editLoading ? (
                 <i
                   className="pi pi-spin pi-spinner"
-                  style={{ fontSize: "1.5rem" }}
+                  style={{ fontSize: "1.4rem" }}
                 ></i>
               ) : (
                 "Save"

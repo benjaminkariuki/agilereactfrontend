@@ -1,201 +1,229 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card } from "primereact/card";
-import { Chart } from "primereact/chart";
 import { ProgressBar } from "primereact/progressbar";
-import { Button } from "primereact/button";
+import { Chart } from "primereact/chart";
 import { Dialog } from "primereact/dialog";
-import { Chart as ChartJS } from "chart.js";
+import { FiInfo } from "react-icons/fi";
 
-const Dashboard = () => {
-  const [sprints, setSprints] = useState([]);
-  const [loading, setLoading] = useState(true);
+const ActiveSprint = () => {
+  const [sprintData, setSprintData] = useState(null);
   const [selectedSubtask, setSelectedSubtask] = useState(null);
-  const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchSprintData() {
       try {
         const response = await axios.get(
           "https://agile-pm.agilebiz.co.ke/api/activeSprint"
         );
-        setSprints([response.data]);
-        setLoading(false);
+        setSprintData(response.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
+        console.error("Error fetching sprint data:", error);
       }
-    };
+    }
 
-    fetchData();
+    fetchSprintData();
   }, []);
 
-  const getTaskStatusData = () => {
-    const statusCounts = {
-      Completed: 0,
-      Incomplete: 0,
-    };
+  const calculateProgress = (startDate, endDate) => {
+    const currentDate = new Date();
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const totalDuration = endDateObj - startDateObj;
+    const elapsedDuration = currentDate - startDateObj;
+    const progress = (elapsedDuration / totalDuration) * 100;
+    return Math.min(100, Math.max(0, progress));
+  };
 
-    sprints.forEach((sprint) => {
-      sprint.subtasks.forEach((subtask) => {
-        if (subtask.status === "Completed") {
-          statusCounts.Completed++;
-        } else {
-          statusCounts.Incomplete++;
-        }
-      });
-    });
+  const subtaskProgressData = sprintData
+    ? sprintData.subtasks.map((subtask) => ({
+        id: subtask.id,
+        label: subtask.task,
+        progress: calculateProgress(subtask.start_date, subtask.end_date),
+        project: subtask.project.title,
+        status: subtask.status,
+      }))
+    : [];
 
-    return {
-      labels: Object.keys(statusCounts),
-      datasets: [
-        {
-          data: Object.values(statusCounts),
-          backgroundColor: ["#36A2EB", "#FFCE56"], // Customize the colors as per your preference
+  const groupedSubtasks = subtaskProgressData.reduce((groups, subtask) => {
+    const group = subtask.project;
+    if (!groups[group]) {
+      groups[group] = [];
+    }
+    groups[group].push(subtask);
+    return groups;
+  }, {});
+
+  const primaryColor = "#007BFF";
+  const highPriorityColor = "#FF073A";
+  const completedColor = "#28A745";
+
+  const chartData = {
+    labels: sprintData
+      ? sprintData.subtasks.map((subtask) => subtask.task)
+      : [],
+    datasets: [
+      {
+        label: "Open",
+        data: subtaskProgressData
+          .filter((data) => data.status === "open")
+          .map((data) => data.progress),
+        backgroundColor: primaryColor,
+        borderColor: primaryColor,
+        borderWidth: 1,
+      },
+      {
+        label: "High Priority",
+        data: subtaskProgressData
+          .filter((data) => data.status === "highpriority")
+          .map((data) => data.progress),
+        backgroundColor: highPriorityColor,
+        borderColor: highPriorityColor,
+        borderWidth: 1,
+      },
+      {
+        label: "Completed",
+        data: subtaskProgressData
+          .filter((data) => data.status === "completed")
+          .map((data) => data.progress),
+        backgroundColor: completedColor,
+        borderColor: completedColor,
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          stepSize: 10,
         },
-      ],
-    };
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+      },
+    },
   };
 
-  const calculateProgress = () => {
-    let completedTasks = 0;
-    let totalTasks = 0;
+  const chartPlugins = [
+    {
+      id: "customLegend",
+      beforeDraw(chart) {
+        const width = chart.width;
+        const height = chart.height;
+        const ctx = chart.ctx;
 
-    sprints.forEach((sprint) => {
-      sprint.subtasks.forEach((subtask) => {
-        totalTasks++;
-        if (subtask.status === "Completed") {
-          completedTasks++;
-        }
-      });
-    });
+        ctx.restore();
+        const fontSize = 12;
+        ctx.font = fontSize + "px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const legendColors = chart.data.datasets.map(
+          (dataset) => dataset.backgroundColor
+        );
 
-    return (completedTasks / totalTasks) * 100;
-  };
+        const legendItems = chart.data.datasets.flatMap((dataset, index) => {
+          const color = legendColors[index];
+          return dataset.data.map((data, dataIndex) => ({
+            text: dataset.label,
+            fillStyle: color,
+            dataIndex,
+          }));
+        });
 
-  const getTaskTimeData = () => {
-    const data = {
-      labels: [],
-      datasets: [
-        {
-          label: "Time Taken",
-          data: [],
-          backgroundColor: "#36A2EB", // Customize the color as per your preference
-        },
-      ],
-    };
+        let offsetX = 0;
+        legendItems.forEach((legendItem, index) => {
+          const textWidth = ctx.measureText(legendItem.text).width;
+          const x = (width - textWidth) / 2 + offsetX;
+          const y = height - fontSize - 10;
+          offsetX += textWidth + 30;
 
-    sprints.forEach((sprint) => {
-      sprint.subtasks.forEach((subtask) => {
-        const startDate = new Date(subtask.start_date);
-        const endDate = new Date(subtask.end_date);
-        const timeTaken = endDate.getTime() - startDate.getTime();
-
-        data.labels.push(subtask.task);
-        data.datasets[0].data.push(timeTaken);
-      });
-    });
-
-    return data;
-  };
-
-  const openSubtaskDialog = (subtask) => {
-    setSelectedSubtask(subtask);
-    setDialogVisible(true);
-  };
-
-  const closeSubtaskDialog = () => {
-    setSelectedSubtask(null);
-    setDialogVisible(false);
-  };
-
-  // useEffect(() => {
-  //   ChartJS.defaults.global.defaultFontSize = 12;
-  // }, []);
-  const calculateDuration = (sDate, eDate) => {
-    const startDate = new Date(sDate);
-    const endDate = new Date(eDate);
-    const timeDifference = endDate.getTime() - startDate.getTime();
-    const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-    return daysDifference;
-  };
+          ctx.fillStyle = legendItem.fillStyle;
+          ctx.fillRect(x, y, fontSize, fontSize);
+          ctx.fillStyle = "black";
+          ctx.fillText(legendItem.text, x + fontSize + 5, y + fontSize / 2);
+        });
+        ctx.save();
+      },
+    },
+  ];
 
   return (
-    <div className="p-grid p-dir-col">
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div>
-          <h2>
-            Total Tasks:{" "}
-            {sprints.reduce(
-              (total, sprint) => total + sprint.subtasks.length,
-              0
-            )}
-          </h2>
-          <div className="p-grid p-justify-center">
-            <div className="p-col-6">
-              <Card>
-                <h2>Task Progress</h2>
-                <ProgressBar value={calculateProgress()} showValue={false} />
-              </Card>
-            </div>
-            <div className="p-col-6">
-              <Card>
-                <h2>Task Status</h2>
-                <Chart type="pie" data={getTaskStatusData()} height="150" />
-              </Card>
-            </div>
+    <div className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Object.entries(groupedSubtasks).map(([project, subtasks]) => (
+          <div key={project} className="mb-6 bg-white rounded-lg shadow p-4 ">
+            <h2 className="text-xl font-semibold mb-2">{project}</h2>
+            {subtasks.map((subtask) => (
+              <div
+                key={subtask.id}
+                className="bg-white rounded-lg p-4 hover:shadow-xl transition duration-300 cursor-pointer m-2"
+                onClick={() => setSelectedSubtask(subtask)}
+              >
+                <h3 className="text-lg font-medium mb-2">{subtask.label}</h3>
+                <div className="flex items-center">
+                  <ProgressBar
+                    value={subtask.progress}
+                    className="flex-1"
+                    style={{
+                      backgroundColor:
+                        subtask.status === "open"
+                          ? primaryColor
+                          : subtask.status === "highpriority"
+                          ? highPriorityColor
+                          : completedColor,
+                    }}
+                  />
+                  <span className="ml-2">{`${subtask.progress.toFixed(
+                    2
+                  )}%`}</span>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {sprints.map((sprint) => (
-            <Card key={sprint.id} className="p-mb-2">
-              <h2>{sprint.name}</h2>
-              <p>Start Date: {sprint.start_date}</p>
-              <p>End Date: {sprint.end_date}</p>
-              <p>
-                Duration:{" "}
-                {calculateDuration(sprint.start_date, sprint.end_date)}
-              </p>
-              <h3>Subtasks:</h3>
-              {sprint.subtasks.map((subtask) => (
-                <Card
-                  key={subtask.id}
-                  className="p-mb-2"
-                  onClick={() => openSubtaskDialog(subtask)}
-                >
-                  <h4>{subtask.task}</h4>
-                  <p>Start Date: {subtask.start_date}</p>
-                  <p>End Date: {subtask.end_date}</p>
-                  <p>Description: {subtask.description}</p>
-                  <p>Department: {subtask.department}</p>
-                  <p>Status: {subtask.status}</p>
-                </Card>
-              ))}
-            </Card>
-          ))}
-
-          <Card className="p-mb-2">
-            <h2>Task Time</h2>
-            <Chart type="bar" data={getTaskTimeData()} height="300" />
-          </Card>
+        ))}
+        <div className="mb-6 bg-white rounded-lg shadow p-4 ">
+          <Chart
+            type="bar"
+            data={chartData}
+            options={chartOptions}
+            plugins={chartPlugins}
+            style={{ width: "100%", height: "100%" }}
+          />
         </div>
-      )}
-
+      </div>
       <Dialog
-        visible={dialogVisible}
-        onHide={closeSubtaskDialog}
+        visible={selectedSubtask !== null}
+        onHide={() => setSelectedSubtask(null)}
         header="Subtask Details"
         style={{ width: "50vw" }}
+        footer={
+          <button
+            className="p-button p-button-text p-button-rounded"
+            onClick={() => setSelectedSubtask(null)}
+          >
+            Close
+          </button>
+        }
       >
         {selectedSubtask && (
           <div>
-            <h4>{selectedSubtask.task}</h4>
-            <p>Start Date: {selectedSubtask.start_date}</p>
-            <p>End Date: {selectedSubtask.end_date}</p>
-            <p>Description: {selectedSubtask.description}</p>
-            <p>Department: {selectedSubtask.department}</p>
-            <p>Status: {selectedSubtask.status}</p>
+            <h2 className="text-xl font-semibold mb-2">
+              {selectedSubtask.label}
+            </h2>
+            <p className="mb-4">
+              <span className="font-semibold">Start Date: </span>
+              {selectedSubtask.start_date}
+            </p>
+            <p className="mb-4">
+              <span className="font-semibold">End Date: </span>
+              {selectedSubtask.end_date}
+            </p>
+            <ProgressBar value={selectedSubtask.progress} />
           </div>
         )}
       </Dialog>
@@ -203,4 +231,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default ActiveSprint;

@@ -6,6 +6,7 @@ import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { FaPlus } from "react-icons/fa";
 import MicroTask from "./MicroTask2.jsx";
+import { useSelector } from "react-redux";
 
 const ProjectDetails = ({ projectId, routeToListProjects }) => {
   const [projectData, setProjectData] = useState([]);
@@ -14,6 +15,34 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
   const [selectedPhase, setSelectedPhase] = useState(null);
   const [selectedIcon, setSelectedIcon] = useState("");
   const toast = useRef(null);
+  const { userActivities } = useSelector((state) => state.user);
+
+  //getting the permission for projects
+  const projectsActivity = userActivities.find(
+    (activity) => activity.name === "Projects"
+  );
+  const hasReadPermissionProject =
+    projectsActivity.pivot.permissions.includes("read");
+  const hasWritePermissionProject =
+    projectsActivity.pivot.permissions.includes("write");
+
+  //getting permission for tasks
+  const tasksActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasReadPermissionTasks =
+    tasksActivity.pivot.permissions.includes("read");
+  const hasWritePermissionTasks =
+    tasksActivity.pivot.permissions.includes("write");
+
+  //getting permission for sprints
+  const sprintsActivity = userActivities.find(
+    (activity) => activity.name === "Sprints"
+  );
+  const hasReadPermissionSprints =
+    sprintsActivity.pivot.permissions.includes("read");
+  const hasWritePermissionSprint =
+    sprintsActivity.pivot.permissions.includes("write");
 
   useEffect(() => {
     if (projectId) {
@@ -154,18 +183,20 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
                             size={30}
                             style={{ marginRight: 4 }}
                           />
-                          <FaPlus
-                            className="bg-blue-500 text-white rounded"
-                            size={30}
-                            onClick={() =>
-                              handleMicroTasksModal(
-                                projectId,
-                                rowData.id,
-                                phase.id,
-                                "add"
-                              )
-                            }
-                          />
+                          {hasWritePermissionTasks && (
+                            <FaPlus
+                              className="bg-blue-500 text-white rounded"
+                              size={30}
+                              onClick={() =>
+                                handleMicroTasksModal(
+                                  projectId,
+                                  rowData.id,
+                                  phase.id,
+                                  "add"
+                                )
+                              }
+                            />
+                          )}
                         </div>
                       )}
                     />

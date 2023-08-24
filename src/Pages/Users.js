@@ -106,13 +106,10 @@ const Users = () => {
   useEffect(() => {
     if (selectedUser && selectedUser.department in departmentRolesMapping) {
       const departmentRoles = departmentRolesMapping[selectedUser.department];
-      console.log(roles);
       const filteredRoles = roles.filter((role) =>
         departmentRoles.includes(role.name)
       );
       setfilteredroles(filteredRoles);
-    } else {
-      console.log("Department not found in mapping.");
     }
   }, [selectedUser]);
 
@@ -128,7 +125,6 @@ const Users = () => {
         setUsers(response.data.users);
       })
       .catch((error) => {
-        console.log("Error getting users:", error);
         onError(error.response.data.message);
       });
   };
@@ -140,7 +136,6 @@ const Users = () => {
         setRoles(response.data.roles);
       })
       .catch((error) => {
-        console.log("Error getting roles:", error);
         onError(error.response.data.message);
       });
   };
@@ -153,7 +148,6 @@ const Users = () => {
         fetchUsers();
       })
       .catch((error) => {
-        console.log("Error deleting user:", error);
         onError(error.response.data.message);
       });
   };
@@ -164,7 +158,6 @@ const Users = () => {
   };
 
   const handleUpdateUser = (updatedUser) => {
-    console.log(updatedUser);
     axios
       .put(
         `https://agile-pm.agilebiz.co.ke/api/updateUsers/${updatedUser.id}`,
@@ -173,7 +166,6 @@ const Users = () => {
       .then((response) => {
         if (response.status === 200) {
           onSuccessUpdate(response.data.message);
-          console.log(response);
           setUsers((prevUsers) =>
             prevUsers.map((user) =>
               user.id === response.data.id ? response.data : user
@@ -186,7 +178,6 @@ const Users = () => {
       })
       .catch((error) => {
         onErrorUpdate(error.message);
-        console.log("Error updating user:", error);
       });
   };
 

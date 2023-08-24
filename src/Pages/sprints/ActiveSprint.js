@@ -1,232 +1,107 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { ProgressBar } from "primereact/progressbar";
 import { Chart } from "primereact/chart";
-import { Dialog } from "primereact/dialog";
-import { FiInfo } from "react-icons/fi";
+import { Button } from "primereact/button";
+import { ConfirmDialog } from "primereact/confirmdialog";
+import Subtasks from "./Subtasks";
 
 const ActiveSprint = () => {
-  const [sprintData, setSprintData] = useState(null);
-  const [selectedSubtask, setSelectedSubtask] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    async function fetchSprintData() {
-      try {
-        const response = await axios.get(
-          "https://agile-pm.agilebiz.co.ke/api/activeSprint"
-        );
-        setSprintData(response.data);
-      } catch (error) {
-        console.error("Error fetching sprint data:", error);
-      }
-    }
-
-    fetchSprintData();
+    axios
+      .get("https://agile-pm.agilebiz.co.ke/api/activeSprint")
+      .then((response) => setData(response.data))
+      .catch((error) => setError(error.message));
   }, []);
 
-  const calculateProgress = (startDate, endDate) => {
-    const currentDate = new Date();
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
-    const totalDuration = endDateObj - startDateObj;
-    const elapsedDuration = currentDate - startDateObj;
-    const progress = (elapsedDuration / totalDuration) * 100;
-    return Math.min(100, Math.max(0, progress));
-  };
+  if (!data) {
+    return <div>Loading...</div>;
+  }
 
-  const subtaskProgressData = sprintData
-    ? sprintData.subtasks.map((subtask) => ({
-        id: subtask.id,
-        label: subtask.task,
-        progress: calculateProgress(subtask.start_date, subtask.end_date),
-        project: subtask.project.title,
-        status: subtask.status,
-      }))
-    : [];
+  const totalTasks = data.subtasks.length;
+  const completedTasks = data.subtasks.filter(
+    (task) => task.status === "completed"
+  ).length;
+  const openTasks = data.subtasks.filter(
+    (task) => task.status === "open"
+  ).length;
 
-  const groupedSubtasks = subtaskProgressData.reduce((groups, subtask) => {
-    const group = subtask.project;
-    if (!groups[group]) {
-      groups[group] = [];
+  let projectTasks = {};
+  data.subtasks.forEach((task) => {
+    if (projectTasks[task.project.title]) {
+      projectTasks[task.project.title] += 1;
+    } else {
+      projectTasks[task.project.title] = 1;
     }
-    groups[group].push(subtask);
-    return groups;
-  }, {});
+  });
 
-  const primaryColor = "#007BFF";
-  const highPriorityColor = "#FF073A";
-  const completedColor = "#28A745";
-
-  const chartData = {
-    labels: sprintData
-      ? sprintData.subtasks.map((subtask) => subtask.task)
-      : [],
+  const tasksData = {
+    labels: ["Open", "Completed"],
     datasets: [
       {
-        label: "Open",
-        data: subtaskProgressData
-          .filter((data) => data.status === "open")
-          .map((data) => data.progress),
-        backgroundColor: primaryColor,
-        borderColor: primaryColor,
-        borderWidth: 1,
-      },
-      {
-        label: "High Priority",
-        data: subtaskProgressData
-          .filter((data) => data.status === "highpriority")
-          .map((data) => data.progress),
-        backgroundColor: highPriorityColor,
-        borderColor: highPriorityColor,
-        borderWidth: 1,
-      },
-      {
-        label: "Completed",
-        data: subtaskProgressData
-          .filter((data) => data.status === "completed")
-          .map((data) => data.progress),
-        backgroundColor: completedColor,
-        borderColor: completedColor,
-        borderWidth: 1,
+        data: [openTasks, completedTasks],
+        backgroundColor: ["#42A5F5", "#66BB6A"],
+        hoverBackgroundColor: ["#64B5F6", "#81C784"],
       },
     ],
   };
 
-  const chartOptions = {
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          stepSize: 10,
-        },
+  const projectData = {
+    labels: Object.keys(projectTasks),
+    datasets: [
+      {
+        data: Object.values(projectTasks),
+        backgroundColor: ["#42A5F5", "#66BB6A"], // add more colors if there are more than two projects
+        hoverBackgroundColor: ["#64B5F6", "#81C784"], // add more hover colors if there are more than two projects
       },
-    },
-    plugins: {
-      legend: {
-        display: true,
-      },
-    },
+    ],
   };
 
-  const chartPlugins = [
-    {
-      id: "customLegend",
-      beforeDraw(chart) {
-        const width = chart.width;
-        const height = chart.height;
-        const ctx = chart.ctx;
+  const click = () => {
+    setVisible(true);
+  };
 
-        ctx.restore();
-        const fontSize = 12;
-        ctx.font = fontSize + "px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const legendColors = chart.data.datasets.map(
-          (dataset) => dataset.backgroundColor
-        );
+  const hide = () => {
+    setVisible(false);
+  };
 
-        const legendItems = chart.data.datasets.flatMap((dataset, index) => {
-          const color = legendColors[index];
-          return dataset.data.map((data, dataIndex) => ({
-            text: dataset.label,
-            fillStyle: color,
-            dataIndex,
-          }));
-        });
+  const accept = () => {
+    // implement your functionality here
+    hide();
+  };
 
-        let offsetX = 0;
-        legendItems.forEach((legendItem, index) => {
-          const textWidth = ctx.measureText(legendItem.text).width;
-          const x = (width - textWidth) / 2 + offsetX;
-          const y = height - fontSize - 10;
-          offsetX += textWidth + 30;
-
-          ctx.fillStyle = legendItem.fillStyle;
-          ctx.fillRect(x, y, fontSize, fontSize);
-          ctx.fillStyle = "black";
-          ctx.fillText(legendItem.text, x + fontSize + 5, y + fontSize / 2);
-        });
-        ctx.save();
-      },
-    },
-  ];
+  const reject = () => {
+    // implement your functionality here
+    hide();
+  };
 
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {Object.entries(groupedSubtasks).map(([project, subtasks]) => (
-          <div key={project} className="mb-6 bg-white rounded-lg shadow p-4 ">
-            <h2 className="text-xl font-semibold mb-2">{project}</h2>
-            {subtasks.map((subtask) => (
-              <div
-                key={subtask.id}
-                className="bg-white rounded-lg p-4 hover:shadow-xl transition duration-300 cursor-pointer m-2"
-                onClick={() => setSelectedSubtask(subtask)}
-              >
-                <h3 className="text-lg font-medium mb-2">{subtask.label}</h3>
-                <div className="flex items-center">
-                  <ProgressBar
-                    value={subtask.progress}
-                    className="flex-1"
-                    style={{
-                      backgroundColor:
-                        subtask.status === "open"
-                          ? primaryColor
-                          : subtask.status === "highpriority"
-                          ? highPriorityColor
-                          : completedColor,
-                    }}
-                  />
-                  <span className="ml-2">{`${subtask.progress.toFixed(
-                    2
-                  )}%`}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-        <div className="mb-6 bg-white rounded-lg shadow p-4 ">
-          <Chart
-            type="bar"
-            data={chartData}
-            options={chartOptions}
-            plugins={chartPlugins}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
+    <div className="active-sprint">
+      <h1 className="text-2xl font-bold mb-4">Active Sprint</h1>
+      <div className="card mb-4">
+        <Chart type="bar" data={tasksData} />
       </div>
-      <Dialog
-        visible={selectedSubtask !== null}
-        onHide={() => setSelectedSubtask(null)}
-        header="Subtask Details"
-        style={{ width: "50vw" }}
-        footer={
-          <button
-            className="p-button p-button-text p-button-rounded"
-            onClick={() => setSelectedSubtask(null)}
-          >
-            Close
-          </button>
-        }
-      >
-        {selectedSubtask && (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">
-              {selectedSubtask.label}
-            </h2>
-            <p className="mb-4">
-              <span className="font-semibold">Start Date: </span>
-              {selectedSubtask.start_date}
-            </p>
-            <p className="mb-4">
-              <span className="font-semibold">End Date: </span>
-              {selectedSubtask.end_date}
-            </p>
-            <ProgressBar value={selectedSubtask.progress} />
-          </div>
-        )}
-      </Dialog>
+      <div className="card mb-4">
+        <Chart type="bar" data={projectData} />
+      </div>
+      <Button
+        label="Close Sprint"
+        className="p-button-danger"
+        onClick={click}
+      />
+      <ConfirmDialog
+        visible={visible}
+        onHide={hide}
+        message="Are you sure you want to close this sprint?"
+        header="Confirmation"
+        icon="pi pi-exclamation-triangle"
+        accept={accept}
+        reject={reject}
+      />
+      <Subtasks subtasks={data.subtasks} />
     </div>
   );
 };

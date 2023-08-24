@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import * as AiIcons from "react-icons/ai";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 const Archive = ({ onRestoreProject }) => {
   const [projects, setProjects] = useState([]);
-  const [archiveStatus, setArchivedStatus] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
   const toast = useRef(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const onSuccess = (success) => {
     if (success) {
@@ -42,6 +43,25 @@ const Archive = ({ onRestoreProject }) => {
     }
   };
 
+  const confirmDelete = (id) => {
+    confirmDialog({
+      message: "Do you want to delete this record?",
+      header: "Delete Confirmation",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName: "p-button-danger",
+      accept: () => handleDeleteProject(id),
+    });
+  };
+
+  const confirmRestore = (id) => {
+    confirmDialog({
+      message: "Do you want to restore this record?",
+      header: "Restore Confirmation",
+      icon: "pi pi-info-circle",
+      accept: () => handleRestoreProject(id),
+    });
+  };
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -64,18 +84,19 @@ const Archive = ({ onRestoreProject }) => {
   };
 
   const handleRestoreProject = async (id) => {
+    setIsRestoring(true);
     try {
       const response = await axios.post(
         `https://agile-pm.agilebiz.co.ke/api/restore/${id}`
       );
 
-      // If restoration was successful
       if (response.status === 200) {
-        console.log("Restored");
-        await fetchProjects(); // Refetch the projects to update the listing
+        onSuccess("Restored");
+        setIsRestoring(false);
+        await fetchProjects();
       } else {
-        console.log("Failed to restore project:", response.data.message);
-        setArchivedStatus(response.data.message);
+        onError("Failed to restore project:");
+        setIsRestoring(false);
       }
     } catch (error) {
       if (
@@ -83,54 +104,41 @@ const Archive = ({ onRestoreProject }) => {
         error.response.data &&
         error.response.data.message
       ) {
-        setArchivedStatus(error.response.data.message);
-        setErrorMessage(error.response.data.message);
+        onError(error.response.data.message);
       } else {
-        setArchivedStatus("Failed to restore project");
-        setErrorMessage("Failed to restore project");
+        onError("Failed to restore project");
       }
+      setIsRestoring(false);
     }
   };
 
   const handleDeleteProject = async (id) => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this project permanently?"
-      )
-    ) {
-      try {
-        const response = await axios.delete(
-          `https://agile-pm.agilebiz.co.ke/api/deletePermanently/${id}`
-        );
-
-        // If deletion was successful
-        if (response.status === 200) {
-          console.log("Project deleted successfully");
-          await fetchProjects(); // Refetch the projects to update the listing
-        } else {
-          console.log("Failed to delete project:", response.data.message);
-          setArchivedStatus(response.data.message);
-        }
-      } catch (error) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.message
-        ) {
-          setArchivedStatus(error.response.data.message);
-          setErrorMessage(error.response.data.message);
-        } else {
-          setArchivedStatus("Failed to delete project");
-          setErrorMessage("Failed to delete project");
-        }
+    setIsDeleting(true);
+    try {
+      const response = await axios.delete(
+        `https://agile-pm.agilebiz.co.ke/api/deletePermanently/${id}`
+      );
+      // If deletion was successful
+      if (response.status === 200) {
+        onSuccess("Project deleted successfully");
+        setIsDeleting(false);
+        await fetchProjects();
       }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        onError(error.response.data.message);
+      } else {
+        onError("Failed to delete project");
+      }
+      setIsDeleting(false);
     }
   };
 
   const ProjectCard = ({ project }) => {
-    const [isRestoring, setIsRestoring] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-
     return (
       <div
         key={project.id}
@@ -157,17 +165,7 @@ const Archive = ({ onRestoreProject }) => {
         <div className="flex space-x-2 mt-2">
           {/* Restore Button */}
           <button
-            onClick={async () => {
-              setIsRestoring(true);
-
-              try {
-                await handleRestoreProject(project.id);
-              } catch (error) {
-                // Handle errors, if necessary
-              } finally {
-                setIsRestoring(false);
-              }
-            }}
+            onClick={confirmRestore(project.id)}
             className="bg-green-500 text-white font-semibold px-2 py-1 rounded-md"
             disabled={isRestoring || isDeleting}
           >
@@ -176,17 +174,7 @@ const Archive = ({ onRestoreProject }) => {
 
           {/* Delete Button */}
           <button
-            onClick={async () => {
-              setIsDeleting(true);
-
-              try {
-                await handleDeleteProject(project.id);
-              } catch (error) {
-                // Handle errors, if necessary
-              } finally {
-                setIsDeleting(false);
-              }
-            }}
+            onClick={confirmDelete(project.id)}
             className="bg-red-500 text-white font-semibold px-2 py-1 rounded-md"
             disabled={isRestoring || isDeleting}
           >
@@ -200,7 +188,7 @@ const Archive = ({ onRestoreProject }) => {
   return (
     <div>
       <Toast ref={toast} />
-      {errorMessage && <p>{errorMessage}</p>}
+      <ConfirmDialog />
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {projects.map((project) => (
           <div key={project.id}>

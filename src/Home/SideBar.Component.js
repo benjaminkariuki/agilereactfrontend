@@ -69,7 +69,6 @@ function SideBar({ isOpen }) {
   const sideBareDisplay = userActivities.filter(
     (activity) => activity.iconClosed !== "" && activity.iconOpened !== ""
   );
-  console.log(userActivities);
   return (
     <div
       className={clsx([

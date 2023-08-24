@@ -9,8 +9,8 @@ const CreateProject = ({ routeToListProjects }) => {
     title: "",
     overview: "",
     excel_file: null,
-    category: "",
-    system: "",
+    category: null,
+    system: null,
     projectManager: [],
     businessAnalyst: [],
     developers: [],
@@ -40,7 +40,10 @@ const CreateProject = ({ routeToListProjects }) => {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setProjectData({ ...projectData, [name]: value });
+    setProjectData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
   const handleStartDateChange = (event) => {
@@ -349,7 +352,7 @@ const CreateProject = ({ routeToListProjects }) => {
               </label>
               <Dropdown
                 id="category"
-                name="editedcategory"
+                name="category"
                 value={projectData.category}
                 options={categoryOptions}
                 onChange={handleInputChange}
@@ -364,7 +367,7 @@ const CreateProject = ({ routeToListProjects }) => {
               </label>
               <Dropdown
                 id="system"
-                name="editedsystem"
+                name="system"
                 value={projectData.system}
                 options={systemOptions}
                 onChange={handleInputChange}

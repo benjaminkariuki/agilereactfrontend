@@ -16,7 +16,6 @@ const AddRoles = () => {
       detail: `Name: ${success}`,
       life: 3000,
     });
-    console.log("success displaying");
   };
 
   const onFetchingActivities = (error) => {

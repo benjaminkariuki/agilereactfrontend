@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 const ViewRoles = () => {
   const [roles, setRoles] = useState([]);
@@ -39,6 +40,16 @@ const ViewRoles = () => {
         life: 3000,
       });
     }
+  };
+
+  const confirmDelete = (id) => {
+    confirmDialog({
+      message: "Do you want to delete this record?",
+      header: "Delete Confirmation",
+      icon: "pi pi-info-circle",
+      acceptClassName: "p-button-danger",
+      accept: () => handleDeleteRole(id),
+    });
   };
 
   useEffect(() => {
@@ -115,6 +126,7 @@ const ViewRoles = () => {
   return (
     <div className="flex justify-center items-center pt-6">
       <Toast ref={toast} />
+      <ConfirmDialog />
       <div className="w-full max-w-md">
         <div className="bg-white p-8 rounded shadow">
           <h2 className="text-2xl font-bold mb-4 text-center">View Roles</h2>
@@ -126,7 +138,7 @@ const ViewRoles = () => {
                 <button
                   className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                   disabled={loadingStates[role.id]}
-                  onClick={() => handleDeleteRole(role.id)}
+                  onClick={() => confirmDelete(role.id)}
                 >
                   {loadingStates[role.id] ? "Deleting..." : "Delete"}
                 </button>

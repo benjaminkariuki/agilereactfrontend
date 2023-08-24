@@ -317,7 +317,9 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
             </div>
 
             {/* Developers 
-          <div>
+          
+          */}
+            <div>
               <h3 className="text-xl font-bold mb-2">Developers</h3>
               {projectData.developers &&
                 projectData.developers.map((developer, index) => (
@@ -334,7 +336,6 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
                   </div>
                 ))}
             </div>
-          */}
           </div>
         </div>
 

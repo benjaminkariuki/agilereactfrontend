@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import FileDownload from "react-file-download";
 import { Dropdown } from "primereact/dropdown";
+import { Toast } from "primereact/toast";
 
 const CreateProject = ({ routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -36,6 +37,29 @@ const CreateProject = ({ routeToListProjects }) => {
     { label: "Cloud Solutions", value: "cloud solutions" },
     { label: "ICT Infrastructure", value: "ict infrastructure" },
   ];
+  const toast = useRef(null);
+
+  const onSuccess = (success) => {
+    if (success) {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successfully",
+        detail: `${success}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onError = (error) => {
+    if (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error occurred",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -145,7 +169,7 @@ const CreateProject = ({ routeToListProjects }) => {
         },
       })
       .then((response) => {
-        console.log("Project created successfully:", response.data);
+        onSuccess(response.data.message);
         setProjectData({
           title: "",
           overview: "",
@@ -162,10 +186,10 @@ const CreateProject = ({ routeToListProjects }) => {
           startDate: "",
           endDate: "",
         });
+        isloading(false);
       })
       .catch((error) => {
-        console.log("This is console log error", error);
-        console.error("Error creating project:", error);
+        onError(error.response.data.error);
         setisloading(false);
         // Handle the error in your application
       });
@@ -272,6 +296,7 @@ const CreateProject = ({ routeToListProjects }) => {
 
   return (
     <div className="bg-white rounded-lg  shadow p-4">
+      <Toast ref={toast} />
       <form onSubmit={handleSubmit}>
         <h2 className="text-xl font-semibold mb-4">Create New Project</h2>
 

@@ -82,10 +82,10 @@ const ActiveSprint = () => {
     <div className="active-sprint">
       <h1 className="text-2xl font-bold mb-4">Active Sprint</h1>
       <div className="card mb-4">
-        <Chart type="bar" data={tasksData} />
+        <Chart type="bar" data={tasksData} className="w-full sm:w-64 h-32" />
       </div>
       <div className="card mb-4">
-        <Chart type="bar" data={projectData} />
+        <Chart type="bar" data={projectData} className="w-full sm:w-64 h-32" />
       </div>
       <Button
         label="Close Sprint"

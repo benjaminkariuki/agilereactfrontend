@@ -182,7 +182,7 @@ const CreateProject = ({ routeToListProjects }) => {
           responseType: "blob",
         }
       );
-      FileDownload(response.data, "project_data_template.xlsx");
+      FileDownload(response.data, "Excel_template.xlsx");
     } catch (error) {
       console.error("Error downloading Excel file:", error);
     }

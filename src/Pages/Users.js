@@ -252,7 +252,7 @@ const Users = () => {
       className="w-full"
       style={{ overflowY: "auto", maxHeight: "calc(100vh - 90px)" }}
     >
-      <Toast ref={toast} position="top-rigth" />
+      <Toast ref={toast} />
       <ConfirmDialog />
       <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
         Users

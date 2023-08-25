@@ -162,10 +162,10 @@ const Archive = ({ onRestoreProject }) => {
           <p className="text-gray-600 break-words">{project.overview}</p>
         </div>
 
-        <div className="flex space-x-2 mt-2">
+        <div key={project.id} className="flex space-x-2 mt-2">
           {/* Restore Button */}
           <button
-            onClick={confirmRestore(project.id)}
+            onClick={() => confirmRestore(project.id)}
             className="bg-green-500 text-white font-semibold px-2 py-1 rounded-md"
             disabled={isRestoring || isDeleting}
           >
@@ -174,7 +174,8 @@ const Archive = ({ onRestoreProject }) => {
 
           {/* Delete Button */}
           <button
-            onClick={confirmDelete(project.id)}
+            key={project.id}
+            onClick={() => confirmDelete(project.id)}
             className="bg-red-500 text-white font-semibold px-2 py-1 rounded-md"
             disabled={isRestoring || isDeleting}
           >

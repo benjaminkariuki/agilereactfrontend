@@ -170,6 +170,7 @@ const CreateProject = ({ routeToListProjects }) => {
       })
       .then((response) => {
         onSuccess(response.data.message);
+        console.log(response.data);
         setProjectData({
           title: "",
           overview: "",

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import FileDownload from "react-file-download";
 import { Dropdown } from "primereact/dropdown";
+import { Toast } from "primereact/toast";
 
 const EditProject = ({ projectId, routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -49,7 +50,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     editedsystem: "", // New system value
   });
   const [usersData, setUsersData] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
   const categoryOptions = [
     { label: "Implementation", value: "implementation" },
     { label: "Support", value: "support" },
@@ -63,6 +64,30 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     { label: "Cloud Solutions", value: "cloud solutions" },
     { label: "ICT Infrastructure", value: "ict infrastructure" },
   ];
+
+  const toast = useRef(null);
+
+  const onSuccess = (success) => {
+    if (success) {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successfully",
+        detail: `${success}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onError = (error) => {
+    if (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error occurred",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -119,17 +144,19 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         const sDate = new Date(fetchedprojectsid.start_date);
         const eDate = new Date(fetchedprojectsid.end_date);
 
-        const projectManagersIds = fetchedprojectsid.projectmanager.map(
-          (pm) => pm.userId
-        );
+        const projectManagersIds = fetchedprojectsid.projectmanager
+          .filter((user) => user.status !== "inactive")
+          .map((pm) => pm.userId);
 
-        const businessAnalystIds = fetchedprojectsid.businessanalyst.map(
-          (ba) => ba.userId
-        );
-        const developersIds = fetchedprojectsid.developers.map(
-          (dev) => dev.userId
-        );
-        const teamLeadsIds = fetchedprojectsid.teamleads.map((tl) => tl.userId);
+        const businessAnalystIds = fetchedprojectsid.businessanalyst
+          .filter((user) => user.status !== "inactive")
+          .map((ba) => ba.userId);
+        const developersIds = fetchedprojectsid.developers
+          .filter((user) => user.status !== "inactive")
+          .map((dev) => dev.userId);
+        const teamLeadsIds = fetchedprojectsid.teamleads
+          .filter((user) => user.status !== "inactive")
+          .map((tl) => tl.userId);
 
         setProjectData({
           title: fetchedprojectsid.title,
@@ -160,6 +187,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         }
       });
   };
+
   const handleRoleCheckboxChange = (role, userId, checked) => {
     setProjectData((prevState) => {
       const existingRoleData = prevState[role];
@@ -188,6 +216,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
+    setIsLoading(true);
     const formData = new FormData();
     // Check and append edited fields if they exist and are not empty
     if (projectData.editedTitle && projectData.editedTitle.trim() !== "") {
@@ -233,39 +262,29 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
     // For array data, we append each element of the array
     // Append editedProjectManager if it exists and is not empty
-    if (
-      projectData.editedProjectManager &&
-      projectData.editedProjectManager.length > 0
-    ) {
-      projectData.editedProjectManager.forEach((pm, index) => {
-        formData.append(`projectmanager[${index}]`, pm);
-      });
-    }
+
+    projectData.editedProjectManager?.forEach((pm, index) => {
+      formData.append(`projectmanager[${index}]`, pm);
+    });
+
     // Append editedBusinessAnalyst if it exists and is not empty
-    if (
-      projectData.editedBusinessAnalyst &&
-      projectData.editedBusinessAnalyst.length > 0
-    ) {
-      projectData.editedBusinessAnalyst.forEach((ba, index) => {
-        formData.append(`businessanalyst[${index}]`, ba);
-      });
-    }
+
+    projectData.editedBusinessAnalyst?.forEach((ba, index) => {
+      formData.append(`businessanalyst[${index}]`, ba);
+    });
 
     // Append editedDevelopers if it exists and is not empty
-    if (
-      projectData.editedDevelopers &&
-      projectData.editedDevelopers.length > 0
-    ) {
-      projectData.editedDevelopers.forEach((dev, index) => {
-        formData.append(`developers[${index}]`, dev);
-      });
-    }
+
+    projectData.editedDevelopers?.forEach((dev, index) => {
+      formData.append(`developers[${index}]`, dev);
+    });
+
     // Append editedTeamLeads if it exists and is not empty
-    if (projectData.editedTeamLeads && projectData.editedTeamLeads.length > 0) {
-      projectData.editedTeamLeads.forEach((tl, index) => {
-        formData.append(`teamleads[${index}]`, tl);
-      });
-    }
+
+    projectData.editedTeamLeads?.forEach((tl, index) => {
+      formData.append(`teamleads[${index}]`, tl);
+    });
+
     if (projectData.editedcategory && projectData.editedcategory.trim !== "") {
       formData.append("category", projectData.editedcategory);
     }
@@ -284,12 +303,16 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         }
       )
       .then((response) => {
-        console.log("Project updated successfully:", response.data);
-        routeToListProjects();
+        onSuccess(response.data.message);
+        setTimeout(() => {
+          setIsLoading(false);
+          routeToListProjects();
+        }, 1000);
+        
       })
       .catch((error) => {
-        console.log("This is console log error", error);
-        console.error("Error creating project:", error);
+        onError(error.response.data.error);
+        setIsLoading(false);
       });
   };
 
@@ -304,8 +327,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       );
       FileDownload(response.data, "project_data.xlsx");
     } catch (error) {
-      console.log(error);
-      console.error("Error downloading Excel file:", error);
+      onError(error.response.data.message);
     }
   };
 
@@ -387,6 +409,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   return (
     <div className="bg-white rounded-lg  shadow p-4">
+      <Toast ref={toast}  />
       <form onSubmit={handleSubmit}>
         <h2 className="text-xl font-semibold mb-4 text-center">
           Edit Project {projectData.title}
@@ -565,7 +588,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                       value={user.id}
                       onChange={(e) =>
                         handleRoleCheckboxChange(
-                          "projectManager",
+                          "editedProjectManager",
                           user.id,
                           e.target.value
                         )
@@ -608,7 +631,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                       value={user.id}
                       onChange={(e) =>
                         handleRoleCheckboxChange(
-                          "businessAnalyst",
+                          "editedBusinessAnalyst",
                           user.id,
                           e.target.value
                         )
@@ -647,7 +670,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                     value={user.id}
                     onChange={(e) =>
                       handleRoleCheckboxChange(
-                        "teamLeads",
+                        "editedTeamLeads",
                         user.id,
                         e.target.value
                       )
@@ -685,7 +708,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                     value={user.id}
                     onChange={(e) =>
                       handleRoleCheckboxChange(
-                        "developers",
+                        "editedDevelopers",
                         user.id,
                         e.target.value
                       )
@@ -771,7 +794,14 @@ const EditProject = ({ projectId, routeToListProjects }) => {
             type="submit" // Add type="submit" to trigger form submission
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
-            Save
+            {isLoading ? (
+              <i
+                className="pi pi-spin pi-spinner"
+                style={{ fontSize: "1.4rem" }}
+              ></i>
+            ) : (
+              "Save"
+            )}
           </button>
           <button
             type="button" // Use type="button" for the cancel button

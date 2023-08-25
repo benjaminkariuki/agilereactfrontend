@@ -16,6 +16,7 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
   const [selectedIcon, setSelectedIcon] = useState("");
   const toast = useRef(null);
   const { userActivities } = useSelector((state) => state.user);
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
 
   //getting the permission for projects
   const projectsActivity = userActivities.find(
@@ -253,24 +254,55 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
             />
           )}
         </div>
-        {/* Project Crew Section */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-center">Project Crew</h2>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {/* Project Managers */}
             <div>
               <h3 className="text-xl font-bold mb-2">Project Managers</h3>
               {projectData.projectmanager &&
                 projectData.projectmanager.map((manager, index) => (
                   <div key={index} className="border rounded-md p-2 break-all">
-                    <p className="text-gray-600">
-                      Name: {manager.user.firstName} {manager.user.lastName}
-                    </p>
-                    <p className="text-gray-600">Email: {manager.user.email}</p>
-                    <p className="text-gray-600">
-                      Contacts: {manager.user.contacts}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div>
+                          <p className="text-gray-600">
+                            Name: {manager.user.firstName}{" "}
+                            {manager.user.lastName}
+                          </p>
+                          <p className="text-gray-600">
+                            Email: {manager.user.email}
+                          </p>
+                          <p className="text-gray-600">
+                            Contacts: {manager.user.contacts}
+                          </p>
+                        </div>
+                        {manager.user.profile_pic && (
+                          <img
+                            src={
+                              manager.profile_pic
+                                ? baseUrl + manager.profile_pic
+                                : process.env.PUBLIC_URL + "/profile2.jpeg"
+                            }
+                            alt="User"
+                            className="w-10 h-10 rounded-full ml-2"
+                          />
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            manager.status === "active"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        ></div>
+                        <p className="text-gray-600 ml-1">
+                          {manager.status === "active" ? "Active" : "Inactive"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
             </div>
@@ -281,58 +313,152 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
               {projectData.teamleads &&
                 projectData.teamleads.map((teamLead, index) => (
                   <div key={index} className="border rounded-md p-2 break-all">
-                    <p className="text-gray-600">
-                      Name: {teamLead.user.firstName} {teamLead.user.lastName}
-                    </p>
-                    <p className="text-gray-600">
-                      Email: {teamLead.user.email}
-                    </p>
-                    <p className="text-gray-600">
-                      Contacts: {teamLead.user.contacts}
-                    </p>
-                    <p className="text-gray-600">
-                      Team Lead : {teamLead.user.role.name}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div>
+                          <p className="text-gray-600">
+                            Name: {teamLead.user.firstName}{" "}
+                            {teamLead.user.lastName}
+                          </p>
+                          <p className="text-gray-600">
+                            Email: {teamLead.user.email}
+                          </p>
+                          <p className="text-gray-600">
+                            Contacts: {teamLead.user.contacts}
+                          </p>
+                          <p className="text-gray-600">
+                            Team Lead: {teamLead.user.role.name}
+                          </p>
+                        </div>
+                        {teamLead.user.profile_pic && (
+                          <img
+                            src={
+                              teamLead.profile_pic
+                                ? baseUrl + teamLead.profile_pic
+                                : process.env.PUBLIC_URL + "/profile2.jpeg"
+                            }
+                            alt="User"
+                            className="w-10 h-10 rounded-full ml-2"
+                          />
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            teamLead.status === "active"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        ></div>
+                        <p className="text-gray-600 ml-1">
+                          {teamLead.status === "active" ? "Active" : "Inactive"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {/* Business Analysts */}
             <div>
               <h3 className="text-xl font-bold mb-2">Business Analysts</h3>
               {projectData.businessanalyst &&
                 projectData.businessanalyst.map((analyst, index) => (
                   <div key={index} className="border rounded-md p-2 break-all">
-                    <p className="text-gray-600">
-                      Name: {analyst.user.firstName} {analyst.user.lastName}
-                    </p>
-                    <p className="text-gray-600">Email: {analyst.user.email}</p>
-                    <p className="text-gray-600">
-                      Contacts: {analyst.user.contacts}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div>
+                          <p className="text-gray-600">
+                            Name: {analyst.user.firstName}{" "}
+                            {analyst.user.lastName}
+                          </p>
+                          <p className="text-gray-600">
+                            Email: {analyst.user.email}
+                          </p>
+                          <p className="text-gray-600">
+                            Contacts: {analyst.user.contacts}
+                          </p>
+                        </div>
+                        {analyst.user.profile_pic && (
+                          <img
+                            src={
+                              analyst.profile_pic
+                                ? baseUrl + analyst.profile_pic
+                                : process.env.PUBLIC_URL + "/profile2.jpeg"
+                            }
+                            alt="User"
+                            className="w-10 h-10 rounded-full ml-2"
+                          />
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            analyst.status === "active"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        ></div>
+                        <p className="text-gray-600 ml-1">
+                          {analyst.status === "active" ? "Active" : "Inactive"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
             </div>
 
-            {/* Developers 
-          
-          */}
+            {/* Developers */}
             <div>
               <h3 className="text-xl font-bold mb-2">Developers</h3>
               {projectData.developers &&
                 projectData.developers.map((developer, index) => (
-                  <div key={index} className="border rounded-md p-2 break-all">
-                    <p className="text-gray-600">
-                      Name: {developer.user.firstName} {developer.user.lastName}
-                    </p>
-                    <p className="text-gray-600">
-                      Email: {developer.user.email}
-                    </p>
-                    <p className="text-gray-600">
-                      Contacts: {developer.user.contacts}
-                    </p>
+                  <div key={index} className="bg-white rounded-lg shadow p-4">
+                    <div className="flex items-start md:items-center">
+                      <div className="w-2/3">
+                        <p className="text-gray-600 break-words">
+                          Name: {developer.user.firstName}{" "}
+                          {developer.user.lastName}
+                        </p>
+                        <p className="text-gray-600 break-words">
+                          Email: {developer.user.email}
+                        </p>
+                        <p className="text-gray-600 break-words">
+                          Contacts: {developer.user.contacts}
+                        </p>
+                      </div>
+                      <div className="w-1/3 flex flex-col items-end justify-between ml-4">
+                        <div className="flex flex-col mt-4">
+                          <div className="w-20 h-20 rounded-full overflow-hidden">
+                            {developer.user.profile_pic && (
+                              <img
+                                src={
+                                  developer.user.profile_pic
+                                    ? baseUrl + developer.user.profile_pic
+                                    : process.env.PUBLIC_URL + "/profile2.jpeg"
+                                }
+                                alt="User"
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            )}
+                          </div>
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              developer.status === "active"
+                                ? "bg-green-500"
+                                : "bg-red-500"
+                            }`}
+                          ></div>
+                          <p className="text-gray-600 ml-1">
+                            {developer.status === "active"
+                              ? "Active"
+                              : "Inactive"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
             </div>

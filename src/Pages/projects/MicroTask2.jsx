@@ -67,6 +67,7 @@ const MicroTask = ({
   const [editLoading, setEditLoading] = useState(false);
   const [projectUsers, setProjectUsers] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [preAssigned, setPreAssigned] = useState([]);
   const { userActivities } = useSelector((state) => state.user);
 
   //getting the permission for projects
@@ -298,11 +299,11 @@ const MicroTask = ({
       department: rowData.department,
       start_date: sDate,
       end_date: eDate,
-      assignedTl: rowData.assigned_to.map((user) => user.email).toString(),
-      assigneBa: rowData.baassigned_to.map((user) => user.email).toString(),
     });
+    setPreAssigned(rowData.assigned_to.concat(rowData.baassigned_to));
     setIsEditTaskModalOpen(true); // Open the edit modal
   };
+  console.log(preAssigned);
 
   const handleCloseEditModal = () => {
     setEditingTask({
@@ -455,6 +456,7 @@ const MicroTask = ({
   };
   //updtaing the task details
   const handleEditTaskSave = () => {
+    console.log(editingTask);
     setEditLoading(true);
     axios
       .put(
@@ -716,7 +718,7 @@ const MicroTask = ({
                   <textarea
                     type="text"
                     id="description"
-                    value={newTask.description}
+                    defaultValue={newTask.description}
                     onChange={(e) => {
                       setNewTask({ ...newTask, description: e.target.value });
                     }}
@@ -960,44 +962,80 @@ const MicroTask = ({
                   className="w-full border rounded"
                   dateFormat="yy/mm/dd"
                 />
-                <div className="mb-4">
-                  <label
-                    htmlFor="edit-department"
-                    className="block font-medium mb-1"
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="edit-department"
+                  className="block font-medium mb-1"
+                >
+                  Department:
+                </label>
+                <Dropdown
+                  id="edit-department"
+                  value={editingTask?.department || ""}
+                  options={departments.map((dep) => ({
+                    label: dep,
+                    value: dep,
+                  }))}
+                  onChange={(e) =>
+                    setEditingTask({ ...editingTask, department: e.value })
+                  }
+                  placeholder="Select a department"
+                  className="w-full border rounded py-2 px-3"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="teamLead">Assign Team Lead:</label>
+                <Dropdown
+                  id="team-lead"
+                  value={editingTask.assignedTl}
+                  options={tls(
+                    editingTask.department ? editingTask.department : ""
+                  )}
+                  onChange={(e) =>
+                    setEditingTask({ ...editingTask, assignedTl: e.value })
+                  }
+                  placeholder="Select a Team Lead"
+                  className="w-full border rounded py-2 px-3"
+                  required
+                />
+              </div>
+              {/*pre-assigned users */}
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold mb-2">
+                  Pre-Assigned Users
+                </h2>
+                {preAssigned.map((data, index) => (
+                  <div
+                    className="border p-4 rounded-md shadow-md bg-white"
+                    key={index}
                   >
-                    Department:
-                  </label>
-                  <Dropdown
-                    id="edit-department"
-                    value={editingTask?.department || ""}
-                    options={departments.map((dep) => ({
-                      label: dep,
-                      value: dep,
-                    }))}
-                    onChange={(e) =>
-                      setEditingTask({ ...editingTask, department: e.value })
-                    }
-                    placeholder="Select a department"
-                    className="w-full border rounded py-2 px-3"
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="teamLead">Assign Team Lead:</label>
-                  <Dropdown
-                    id="team-lead"
-                    value={editingTask.assignedTl}
-                    options={tls(
-                      editingTask.department ? editingTask.department : ""
+                    <p>
+                      <strong>Email:</strong> {data.email}
+                    </p>
+                    <p>
+                      <strong>Assigned Date:</strong> {data.date}
+                    </p>
+                    <p>
+                      <strong>Assigned Time:</strong> {data.time}
+                    </p>
+                    <p>
+                    </p>
+                    {data.deassigned === 0 ? (
+                      <p>
+                        <strong>Deassigned Date:</strong> Not deassigned
+                      </p>
+                    ) : (
+                      <p>
+                        <strong>Deassigned Date:</strong> {data.deassigned_date}
+                      </p>
                     )}
-                    onChange={(e) =>
-                      setEditingTask({ ...editingTask, assignedTl: e.value })
-                    }
-                    placeholder="Select a Team Lead"
-                    className="w-full border rounded py-2 px-3"
-                    required
-                  />
-                </div>
+                    <p>
+                      <strong>Deassigned Time:</strong> {data.deassigned_time}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

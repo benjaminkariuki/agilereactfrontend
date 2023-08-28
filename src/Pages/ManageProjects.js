@@ -20,7 +20,7 @@ const ManageProjects = () => {
   );
   const hasReadPermission = projectsActivity.pivot.permissions.includes("read");
   const hasWritePermission =
-  projectsActivity.pivot.permissions.includes("write");
+    projectsActivity.pivot.permissions.includes("write");
 
   const handleEditProject = (projectId) => {
     setActiveComponent("EditProject");
@@ -34,6 +34,12 @@ const ManageProjects = () => {
 
   const routeToListProjects = () => {
     setActiveComponent("list");
+  };
+  const routetoEdit = (id) => {
+    handleEditProject(id);
+  };
+  const routeToviewMore = (id) => {
+    handleProjectDetails(id);
   };
 
   const menuItems = [
@@ -115,8 +121,8 @@ const ManageProjects = () => {
   if (activeComponent === "list") {
     activeContent = (
       <ListProjects
-        onEditProject={handleEditProject}
-        onViewProjectDetails={handleProjectDetails}
+        onEditProject={(projectId) => handleEditProject(projectId)}
+        onViewProjectDetails={(projectId) => handleProjectDetails(projectId)}
         viewMode={viewMode}
       />
     );
@@ -127,6 +133,7 @@ const ManageProjects = () => {
       <EditProject
         projectId={editProjectId}
         routeToListProjects={routeToListProjects}
+        routeToviewMore={() => routeToviewMore(editProjectId)}
       />
     );
   } else if (activeComponent === "ProjectDetails") {
@@ -134,6 +141,7 @@ const ManageProjects = () => {
       <ProjectDetails
         projectId={projectDetailsId}
         routeToListProjects={routeToListProjects}
+        routetoEdit={() => routetoEdit(projectDetailsId)}
       />
     );
   } else if (activeComponent === "ArchivedProjects") {

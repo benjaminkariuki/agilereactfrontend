@@ -8,7 +8,7 @@ import { FaPlus } from "react-icons/fa";
 import MicroTask from "./MicroTask2.jsx";
 import { useSelector } from "react-redux";
 
-const ProjectDetails = ({ projectId, routeToListProjects }) => {
+const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const [projectData, setProjectData] = useState([]);
   const [showMicroTasksModal, setShowMicroTasksModal] = useState(false);
   const [selectedActivty, setSelectedActivitiy] = useState(null);
@@ -122,7 +122,9 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
       </div>
     );
   }
-
+  const handleEdit = () => {
+    routetoEdit(projectId);
+  };
   return (
     <div>
       <Toast ref={toast} />
@@ -150,7 +152,10 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
             {projectData.phases &&
               projectData.phases.map((phase, index) => (
                 <div key={index} className="min-w-1000 overflow-x-auto">
-                  <h3 className="text-xl font-bold mb-2">{phase.name}</h3>
+                  <h3 className="text-xl font-bold mb-2">
+                    <strong>Phase: </strong>
+                    {phase.name}
+                  </h3>
                   <h4 className="text-lg font-bold mt-4 mb-2">Activities</h4>
                   <DataTable
                     key={phase.id}
@@ -254,218 +259,190 @@ const ProjectDetails = ({ projectId, routeToListProjects }) => {
             />
           )}
         </div>
-        <div className="mb-8">
+        <div className="grid gap-4 mb-4">
           <h2 className="text-2xl font-bold mb-4 text-center">Project Crew</h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {/* Project Managers */}
-            <div>
-              <h3 className="text-xl font-bold mb-2">Project Managers</h3>
-              {projectData.projectmanager &&
-                projectData.projectmanager.map((manager, index) => (
-                  <div key={index} className="border rounded-md p-2 break-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div>
-                          <p className="text-gray-600">
-                            Name: {manager.user.firstName}{" "}
-                            {manager.user.lastName}
-                          </p>
-                          <p className="text-gray-600">
-                            Email: {manager.user.email}
-                          </p>
-                          <p className="text-gray-600">
-                            Contacts: {manager.user.contacts}
-                          </p>
-                        </div>
-                        {manager.user.profile_pic && (
-                          <img
-                            src={
-                              manager.profile_pic
-                                ? baseUrl + manager.profile_pic
-                                : process.env.PUBLIC_URL + "/profile2.jpeg"
-                            }
-                            alt="User"
-                            className="w-10 h-10 rounded-full ml-2"
-                          />
-                        )}
-                      </div>
-                      <div className="flex items-center">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            manager.status === "active"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                        ></div>
-                        <p className="text-gray-600 ml-1">
-                          {manager.status === "active" ? "Active" : "Inactive"}
-                        </p>
-                      </div>
-                    </div>
+          {/* Project Managers */}
+          <div className="min-w-1000 overflow-x-auto">
+            <h3 className="text-xl font-bold mb-2">Project Managers</h3>
+            <DataTable value={projectData.projectmanager}>
+              <Column
+                header="Name"
+                body={(manager) =>
+                  `${manager.user.firstName} ${manager.user.lastName}`
+                }
+              />
+              <Column header="Email" field="user.email" />
+              <Column header="Contacts" field="user.contacts" />
+              <Column
+                header="Profile Pic"
+                body={(manager) => (
+                  <img
+                    src={
+                      manager.user.profile_pic !== null
+                        ? baseUrl + manager.user.profile_pic
+                        : process.env.PUBLIC_URL + "/profile2.jpeg"
+                    }
+                    alt="User"
+                    className="w-12 h-12 rounded-md ml-2"
+                  />
+                )}
+              />
+              <Column
+                header="Status"
+                body={(manager) => (
+                  <div className="flex items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        manager.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    ></div>
+                    <p className="text-gray-600 ml-1">
+                      {manager.status === "active" ? "Active" : "Inactive"}
+                    </p>
                   </div>
-                ))}
-            </div>
-
-            {/* Team Leads */}
-            <div>
-              <h3 className="text-xl font-bold mb-2">Team Leads</h3>
-              {projectData.teamleads &&
-                projectData.teamleads.map((teamLead, index) => (
-                  <div key={index} className="border rounded-md p-2 break-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div>
-                          <p className="text-gray-600">
-                            Name: {teamLead.user.firstName}{" "}
-                            {teamLead.user.lastName}
-                          </p>
-                          <p className="text-gray-600">
-                            Email: {teamLead.user.email}
-                          </p>
-                          <p className="text-gray-600">
-                            Contacts: {teamLead.user.contacts}
-                          </p>
-                          <p className="text-gray-600">
-                            Team Lead: {teamLead.user.role.name}
-                          </p>
-                        </div>
-                        {teamLead.user.profile_pic && (
-                          <img
-                            src={
-                              teamLead.profile_pic
-                                ? baseUrl + teamLead.profile_pic
-                                : process.env.PUBLIC_URL + "/profile2.jpeg"
-                            }
-                            alt="User"
-                            className="w-10 h-10 rounded-full ml-2"
-                          />
-                        )}
-                      </div>
-                      <div className="flex items-center">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            teamLead.status === "active"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                        ></div>
-                        <p className="text-gray-600 ml-1">
-                          {teamLead.status === "active" ? "Active" : "Inactive"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
+                )}
+              />
+            </DataTable>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {/* Business Analysts */}
-            <div>
-              <h3 className="text-xl font-bold mb-2">Business Analysts</h3>
-              {projectData.businessanalyst &&
-                projectData.businessanalyst.map((analyst, index) => (
-                  <div key={index} className="border rounded-md p-2 break-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div>
-                          <p className="text-gray-600">
-                            Name: {analyst.user.firstName}{" "}
-                            {analyst.user.lastName}
-                          </p>
-                          <p className="text-gray-600">
-                            Email: {analyst.user.email}
-                          </p>
-                          <p className="text-gray-600">
-                            Contacts: {analyst.user.contacts}
-                          </p>
-                        </div>
-                        {analyst.user.profile_pic && (
-                          <img
-                            src={
-                              analyst.profile_pic
-                                ? baseUrl + analyst.profile_pic
-                                : process.env.PUBLIC_URL + "/profile2.jpeg"
-                            }
-                            alt="User"
-                            className="w-10 h-10 rounded-full ml-2"
-                          />
-                        )}
-                      </div>
-                      <div className="flex items-center">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            analyst.status === "active"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                        ></div>
-                        <p className="text-gray-600 ml-1">
-                          {analyst.status === "active" ? "Active" : "Inactive"}
-                        </p>
-                      </div>
-                    </div>
+          {/* Team Leads */}
+          <div className="min-w-1000 overflow-x-auto">
+            <h3 className="text-xl font-bold mb-2">Team Leads</h3>
+            <DataTable value={projectData.teamleads}>
+              <Column field="user.firstName" header="First Name" />
+              <Column field="user.lastName" header="Last Name" />
+              <Column field="user.email" header="Email" />
+              <Column field="user.contacts" header="Contacts" />
+              <Column
+                header="Profile Pic"
+                body={(teamLead) => (
+                  <img
+                    src={
+                      teamLead.user.profile_pic !== null
+                        ? baseUrl + teamLead.user.profile_pic
+                        : process.env.PUBLIC_URL + "/profile2.jpeg"
+                    }
+                    alt="User"
+                    className="w-12 h-12 rounded-md ml-2"
+                  />
+                )}
+              />
+              <Column
+                header="Status"
+                body={(teamLead) => (
+                  <div className="flex items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        teamLead.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    ></div>
+                    <p className="text-gray-600 ml-1">
+                      {teamLead.status === "active" ? "Active" : "Inactive"}
+                    </p>
                   </div>
-                ))}
-            </div>
+                )}
+              />
+            </DataTable>
+          </div>
 
-            {/* Developers */}
-            <div>
-              <h3 className="text-xl font-bold mb-2">Developers</h3>
-              {projectData.developers &&
-                projectData.developers.map((developer, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow p-4">
-                    <div className="flex items-start md:items-center">
-                      <div className="w-2/3">
-                        <p className="text-gray-600 break-words">
-                          Name: {developer.user.firstName}{" "}
-                          {developer.user.lastName}
-                        </p>
-                        <p className="text-gray-600 break-words">
-                          Email: {developer.user.email}
-                        </p>
-                        <p className="text-gray-600 break-words">
-                          Contacts: {developer.user.contacts}
-                        </p>
-                      </div>
-                      <div className="w-1/3 flex flex-col items-end justify-between ml-4">
-                        <div className="flex flex-col mt-4">
-                          <div className="w-20 h-20 rounded-full overflow-hidden">
-                            {developer.user.profile_pic && (
-                              <img
-                                src={
-                                  developer.user.profile_pic
-                                    ? baseUrl + developer.user.profile_pic
-                                    : process.env.PUBLIC_URL + "/profile2.jpeg"
-                                }
-                                alt="User"
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            )}
-                          </div>
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              developer.status === "active"
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }`}
-                          ></div>
-                          <p className="text-gray-600 ml-1">
-                            {developer.status === "active"
-                              ? "Active"
-                              : "Inactive"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+          {/* Business Analysts */}
+          <div className="min-w-1000 overflow-x-auto">
+            <h3 className="text-xl font-bold mb-2">Business Analysts</h3>
+            <DataTable value={projectData.businessanalyst}>
+              <Column field="user.firstName" header="First Name" />
+              <Column field="user.lastName" header="Last Name" />
+              <Column field="user.email" header="Email" />
+              <Column field="user.contacts" header="Contacts" />
+              <Column
+                header="Profile Pic"
+                body={(analyst) => (
+                  <img
+                    src={
+                      analyst.user.profile_pic !== null
+                        ? baseUrl + analyst.user.profile_pic
+                        : process.env.PUBLIC_URL + "/profile2.jpeg"
+                    }
+                    alt="User"
+                    className="w-12 h-12 rounded-md ml-2"
+                  />
+                )}
+              />
+              <Column
+                header="Status"
+                body={(analyst) => (
+                  <div className="flex items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        analyst.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    ></div>
+                    <p className="text-gray-600 ml-1">
+                      {analyst.status === "active" ? "Active" : "Inactive"}
+                    </p>
                   </div>
-                ))}
-            </div>
+                )}
+              />
+            </DataTable>
+          </div>
+
+          {/* Developers */}
+          <div className="min-w-1000 overflow-x-auto">
+            <h3 className="text-xl font-bold mb-2">Developers</h3>
+            <DataTable value={projectData.developers}>
+              <Column field="user.firstName" header="First Name" />
+              <Column field="user.lastName" header="Last Name" />
+              <Column field="user.email" header="Email" />
+              <Column field="user.contacts" header="Contacts" />
+              <Column
+                header="Profile Pic"
+                body={(developer) => (
+                  <img
+                    src={
+                      developer.user.profile_pic !== null
+                        ? baseUrl + developer.user.profile_pic
+                        : process.env.PUBLIC_URL + "/profile2.jpeg"
+                    }
+                    alt="User"
+                    className="w-12 h-12 rounded-md ml-2"
+                  />
+                )}
+              />
+              <Column
+                header="Status"
+                body={(developer) => (
+                  <div className="flex items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        developer.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    ></div>
+                    <p className="text-gray-600 ml-1">
+                      {developer.status === "active" ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                )}
+              />
+            </DataTable>
           </div>
         </div>
+        <div className="flex justify-between">
+          {hasWritePermissionProject && (
+            <button
+              className="px-4 py-2 bg-yellow-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+              onClick={handleEdit}
+            >
+              Edit
+            </button>
+          )}
 
-        <div className="flex justify-end">
           <button
             className="px-4 py-2 bg-red-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
             onClick={handleCancel}

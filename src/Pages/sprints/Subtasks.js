@@ -3,7 +3,7 @@ import { Dialog } from "primereact/dialog";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import _ from "lodash"; // Add this line
+import _ from "lodash";
 
 const Subtasks = ({ subtasks }) => {
   const [visible, setVisible] = useState(false);
@@ -22,11 +22,11 @@ const Subtasks = ({ subtasks }) => {
   };
 
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow p-4 ">
       {Object.entries(_.groupBy(subtasks, "project.title")).map(
         ([projectTitle, projectSubtasks], index) => (
-          <div key={index} className="bg-white rounded-lg shadow p-4 h-64">
-            <h2>{projectTitle}</h2>
+          <div key={index} className="border">
+            <h2 className="font-bold mb-4 text-center">{projectTitle}</h2>
             {projectSubtasks.slice(0, 3).map((subtask, index) => (
               <p key={index}>{subtask.description}</p>
             ))}
@@ -46,6 +46,7 @@ const Subtasks = ({ subtasks }) => {
             <Column field="end_date" header="End Date" />
             <Column field="department" header="Department" />
             <Column field="task" header="Task" />
+            <Column header="Remove"></Column>
           </DataTable>
         )}
       </Dialog>

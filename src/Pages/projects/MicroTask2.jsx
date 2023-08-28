@@ -4,6 +4,7 @@ import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import axios from "axios";
 import { Calendar } from "primereact/calendar";
@@ -69,6 +70,7 @@ const MicroTask = ({
   const [selectedRows, setSelectedRows] = useState([]);
   const [preAssigned, setPreAssigned] = useState([]);
   const { userActivities } = useSelector((state) => state.user);
+  const [showPreassigned, setShowPreassigned] = useState(false);
 
   //getting the permission for projects
   const projectsActivity = userActivities.find(
@@ -243,7 +245,6 @@ const MicroTask = ({
     }
     setIsLoading(true);
     const formData = new FormData();
-    console.log(selectedFile);
     formData.append("excel_file", selectedFile);
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/create_tasks", formData, {
@@ -264,7 +265,6 @@ const MicroTask = ({
       })
       .catch((error) => {
         onError("Error uploading file:");
-        console.error("Error uploading file:", error);
         setIsLoading(false);
       });
   };
@@ -303,7 +303,6 @@ const MicroTask = ({
     setPreAssigned(rowData.assigned_to.concat(rowData.baassigned_to));
     setIsEditTaskModalOpen(true); // Open the edit modal
   };
-  console.log(preAssigned);
 
   const handleCloseEditModal = () => {
     setEditingTask({
@@ -432,31 +431,33 @@ const MicroTask = ({
   };
 
   //option based on business analyst in the project
-  const bas = businessAnalysts.map((user, index) => ({
-    key: index,
-    label: user.user.firstName + " " + user.user.lastName,
-    value: user.user.email,
-  }));
+  const bas = businessAnalysts
+    .filter((user) => user.status === "active")
+    .map((user, index) => ({
+      key: index,
+      label: user.user.firstName + " " + user.user.lastName,
+      value: user.user.email,
+    }));
   //option based on team leads in the project
   const tls = (department) => {
     const filteredUser = projectManagers
       .filter((user) => user.user.department === department)
       .concat(teamLeads.filter((user) => user.user.department === department));
-
-    return filteredUser.map((user, index) => ({
-      key: index,
-      label:
-        user.user.firstName +
-        " " +
-        user.user.lastName +
-        "-" +
-        user.user.role.name,
-      value: user.user.email,
-    }));
+    return filteredUser
+      .filter((user) => user.status === "active")
+      .map((user, index) => ({
+        key: index,
+        label:
+          user.user.firstName +
+          " " +
+          user.user.lastName +
+          "-" +
+          user.user.role.name,
+        value: user.user.email,
+      }));
   };
   //updtaing the task details
   const handleEditTaskSave = () => {
-    console.log(editingTask);
     setEditLoading(true);
     axios
       .put(
@@ -499,6 +500,7 @@ const MicroTask = ({
       });
   };
 
+  //the return statement
   return (
     <div>
       <Toast ref={toast} />
@@ -624,9 +626,11 @@ const MicroTask = ({
               sortable
               body={(rowData) => (
                 <div key={rowData.id}>
-                  {rowData.baassigned_to.map((user) => (
-                    <div key={user.id}>{user.email}</div>
-                  ))}
+                  {rowData.baassigned_to
+                    .filter((user) => user.deassigned === 0)
+                    .map((user) => (
+                      <div key={user.id}>{user.email}</div>
+                    ))}
                 </div>
               )}
             ></Column>
@@ -642,9 +646,11 @@ const MicroTask = ({
               header="Assigned Team Lead"
               body={(rowData) => (
                 <div key={rowData.id}>
-                  {rowData.assigned_to.map((user) => (
-                    <div key={user.id}>{user.email}</div>
-                  ))}
+                  {rowData.assigned_to
+                    .filter((user) => user.deassigned === 0)
+                    .map((user) => (
+                      <div key={user.id}>{user.email}</div>
+                    ))}
                 </div>
               )}
               sortable
@@ -867,7 +873,7 @@ const MicroTask = ({
 
         {/*Edit Micro-task Modal */}
         <Dialog
-          header="Add Task"
+          header="Edit Task"
           visible={isEditTaskModalOpen}
           onHide={() => setIsEditTaskModalOpen(false)}
           className="w-4/5"
@@ -899,8 +905,8 @@ const MicroTask = ({
                 </label>
                 <textarea
                   id="edit-description"
-                  value={editingTask.description}
-                  onTextChange={(newText) =>
+                  defaultValue={editingTask.description}
+                  onChange={(newText) =>
                     setEditingTask({
                       ...editingTask,
                       description: newText.textValue,
@@ -1003,39 +1009,72 @@ const MicroTask = ({
               </div>
               {/*pre-assigned users */}
               <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">
-                  Pre-Assigned Users
-                </h2>
-                {preAssigned.map((data, index) => (
-                  <div
-                    className="border p-4 rounded-md shadow-md bg-white"
-                    key={index}
+                <div className="flex justify-center">
+                  <Button
+                    label="Show Assignments Audit Trail"
+                    onClick={() => setShowPreassigned(true)}
+                  />
+
+                  <Dialog
+                    header="Audit Trail for Assignments"
+                    visible={showPreassigned}
+                    onHide={() => setShowPreassigned(false)}
+                    style={{ width: "80vw", height: "80vw" }}
                   >
-                    <p>
-                      <strong>Email:</strong> {data.email}
-                    </p>
-                    <p>
-                      <strong>Assigned Date:</strong> {data.date}
-                    </p>
-                    <p>
-                      <strong>Assigned Time:</strong> {data.time}
-                    </p>
-                    <p>
-                    </p>
-                    {data.deassigned === 0 ? (
-                      <p>
-                        <strong>Deassigned Date:</strong> Not deassigned
-                      </p>
-                    ) : (
-                      <p>
-                        <strong>Deassigned Date:</strong> {data.deassigned_date}
-                      </p>
-                    )}
-                    <p>
-                      <strong>Deassigned Time:</strong> {data.deassigned_time}
-                    </p>
-                  </div>
-                ))}
+                    <DataTable
+                      value={preAssigned.filter(
+                        (user) => user.deassigned === 0
+                      )}
+                      header="Assigned Team"
+                      className="mt-3"
+                    >
+                      <Column field="email" header="Email" />
+                      <Column field="date" header="Assigned Date" />
+                      <Column field="time" header="Assigned Time" />
+                      <Column
+                        header="Deassigned"
+                        body={
+                          <Tag
+                            value="Not Deassigned"
+                            className="p-tag-success"
+                          />
+                        }
+                      />
+                      <Column
+                        field="deassigned_date"
+                        header="Deassigned Date"
+                      />
+                      <Column
+                        field="deassigned_time"
+                        header="Deassigned Time"
+                      />
+                    </DataTable>
+                    <DataTable
+                      value={preAssigned.filter(
+                        (user) => user.deassigned === 1
+                      )}
+                      header="Deassigned Team"
+                    >
+                      <Column field="email" header="Email" />
+                      <Column field="date" header="Assigned Date" />
+                      <Column field="time" header="Assigned Time" />
+                      <Column
+                        header="Deassigned"
+                        body={
+                          <Tag value="Deassigned" className="p-tag-danger" />
+                        }
+                      />
+                      <Column
+                        field="deassigned_date"
+                        header="Deassigned Date"
+                      />
+                      <Column
+                        field="deassigned_time"
+                        header="Deassigned Time"
+                      />
+                    </DataTable>
+                  </Dialog>
+                </div>
               </div>
             </div>
           </div>

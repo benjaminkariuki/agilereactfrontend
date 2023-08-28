@@ -278,7 +278,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                 body={(manager) => (
                   <img
                     src={
-                      manager.user.profile_pic !== null
+                      manager.user && manager.user.profile_pic
                         ? baseUrl + manager.user.profile_pic
                         : process.env.PUBLIC_URL + "/profile2.jpeg"
                     }
@@ -287,6 +287,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                   />
                 )}
               />
+
               <Column
                 header="Status"
                 body={(manager) => (
@@ -320,7 +321,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                 body={(teamLead) => (
                   <img
                     src={
-                      teamLead.user.profile_pic !== null
+                      teamLead.user && teamLead.user.profile_pic
                         ? baseUrl + teamLead.user.profile_pic
                         : process.env.PUBLIC_URL + "/profile2.jpeg"
                     }
@@ -362,7 +363,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                 body={(analyst) => (
                   <img
                     src={
-                      analyst.user.profile_pic !== null
+                      analyst.user && analyst.user.profile_pic
                         ? baseUrl + analyst.user.profile_pic
                         : process.env.PUBLIC_URL + "/profile2.jpeg"
                     }
@@ -394,6 +395,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
           {/* Developers */}
           <div className="min-w-1000 overflow-x-auto">
             <h3 className="text-xl font-bold mb-2">Developers</h3>
+
             <DataTable value={projectData.developers}>
               <Column field="user.firstName" header="First Name" />
               <Column field="user.lastName" header="Last Name" />
@@ -404,7 +406,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                 body={(developer) => (
                   <img
                     src={
-                      developer.user.profile_pic !== null
+                      developer.user && developer.user.profile_pic
                         ? baseUrl + developer.user.profile_pic
                         : process.env.PUBLIC_URL + "/profile2.jpeg"
                     }

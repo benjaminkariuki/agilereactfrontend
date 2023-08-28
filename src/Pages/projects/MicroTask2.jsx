@@ -407,8 +407,12 @@ const MicroTask = ({
         department: newTask.department,
         start_date: formatDate(newTask.start_date),
         end_date: formatDate(newTask.end_date),
-        baassigned_to: [newTask.assigneBa],
-        assigned_to: [newTask.assigneTl],
+        baassigned_to: newTask.assigneBa
+          ? [newTask.assigneBa]
+          : newTask.assigneBa,
+        assigned_to: newTask.assigneTl
+          ? [newTask.assigneTl]
+          : newTask.assigneTl,
       })
       .then((response) => {
         onSuccess(response.data.message);
@@ -468,8 +472,12 @@ const MicroTask = ({
           phaseActivityId: activityId,
           task: editingTask.task,
           department: editingTask.department,
-          assigned_to: [editingTask.assignedTl],
-          baassigned_to: [editingTask.assigneBa],
+          assigned_to: editingTask.assignedTl
+            ? [editingTask.assignedTl]
+            : editingTask.assignedTl,
+          baassigned_to: editingTask.assigneBa
+            ? [editingTask.assigneBa]
+            : editingTask.assigneBa,
           description: editingTask.description,
           start_date: formatDate(editingTask.start_date),
           end_date: formatDate(editingTask.end_date),

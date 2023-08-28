@@ -10,12 +10,12 @@ const ActiveSprint = () => {
   const toast = useRef(null);
   const [closeLoading, setCloseLoading] = useState(false);
 
-  const confirmClose = () => {
+  const confirmClose = (id) => {
     confirmDialog({
       message: "Are you sure you want to close this sprint?",
       header: "Close Confirmation",
       icon: "pi pi-exclamation-triangle",
-      accept: () => handleCloseSprint(),
+      accept: () => handleCloseSprint(id),
     });
   };
   const onSuccess = (success) => {
@@ -51,6 +51,9 @@ const ActiveSprint = () => {
     }
   };
   useEffect(() => {
+    fetchActiveSprint();
+  }, []);
+  const fetchActiveSprint = () => {
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/activeSprint")
       .then((response) => {
@@ -61,8 +64,7 @@ const ActiveSprint = () => {
         onError(error.message);
         onWarn("Warning");
       });
-  }, []);
-
+  };
   if (!data) {
     return <div>Loading...</div>;
   }
@@ -105,7 +107,24 @@ const ActiveSprint = () => {
     ],
   };
 
-  const handleCloseSprint = () => {};
+  //fucntion to refetch data when task(s) is removed
+  const reloadData = () => {
+    fetchActiveSprint();
+  }
+  //function to close sprint
+  const handleCloseSprint = (id) => {
+    setCloseLoading(true);
+    axios
+      .post(`https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`)
+      .then((response) => {
+        onSuccess("Closed successfuly");
+        setCloseLoading(true);
+      })
+      .catch((error) => {
+        onError("Error closing sprint");
+        setCloseLoading(true);
+      });
+  };
 
   return (
     <div>
@@ -121,7 +140,8 @@ const ActiveSprint = () => {
           </h2>
           <button
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={confirmClose}
+            onClick={() => confirmClose(data.id)}
+            disabled={closeLoading}
           >
             {closeLoading ? (
               <i
@@ -141,7 +161,7 @@ const ActiveSprint = () => {
             <Chart type="bar" data={projectData} />
           </div>
         </div>
-        <Subtasks subtasks={data.subtasks} />
+        <Subtasks subtasks={data.subtasks} sprintId={data.id} reloadData={reloadData}/>
       </div>
     </div>
   );

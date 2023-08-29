@@ -50,8 +50,8 @@ const MicroTask = ({
     description: "",
     start_date: null,
     end_date: null,
-    assigneBa: [],
-    assigneTl: [],
+    assigneBa: "",
+    assigneTl: "",
   });
 
   const [editingTask, setEditingTask] = useState({
@@ -61,8 +61,8 @@ const MicroTask = ({
     department: "",
     start_date: null,
     end_date: null,
-    assignedTl: [],
-    assigneBa: [],
+    assignedTl: "",
+    assigneBa: "",
   });
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
@@ -407,12 +407,8 @@ const MicroTask = ({
         department: newTask.department,
         start_date: formatDate(newTask.start_date),
         end_date: formatDate(newTask.end_date),
-        baassigned_to: newTask.assigneBa
-          ? [newTask.assigneBa]
-          : newTask.assigneBa,
-        assigned_to: newTask.assigneTl
-          ? [newTask.assigneTl]
-          : newTask.assigneTl,
+        baassigned_to: newTask.assigneBa ? [newTask.assigneBa] : "",
+        assigned_to: newTask.assigneTl ? [newTask.assigneTl] : "",
       })
       .then((response) => {
         onSuccess(response.data.message);
@@ -423,13 +419,14 @@ const MicroTask = ({
           description: "",
           start_date: null,
           end_date: null,
-          assigneBa: [],
+          assigneBa: "",
+          assigneTl: "",
         });
         setTaskCreate(false);
         fetchSubtasks(projectId, phaseId, activityId);
       })
       .catch((error) => {
-        onError(error.response.message);
+        onError(error.response.data.message);
         setTaskCreate(false);
       });
   };
@@ -472,12 +469,8 @@ const MicroTask = ({
           phaseActivityId: activityId,
           task: editingTask.task,
           department: editingTask.department,
-          assigned_to: editingTask.assignedTl
-            ? [editingTask.assignedTl]
-            : editingTask.assignedTl,
-          baassigned_to: editingTask.assigneBa
-            ? [editingTask.assigneBa]
-            : editingTask.assigneBa,
+          assigned_to: editingTask.assignedTl ? [editingTask.assignedTl] : "",
+          baassigned_to: editingTask.assigneBa ? [editingTask.assigneBa] : "",
           description: editingTask.description,
           start_date: formatDate(editingTask.start_date),
           end_date: formatDate(editingTask.end_date),
@@ -494,21 +487,16 @@ const MicroTask = ({
           department: "",
           start_date: null,
           end_date: null,
-          assignedTl: [],
-          assigneBa: [],
+          assignedTl: "",
+          assigneBa: "",
         });
       })
       .catch((error) => {
-        // Handle error, display an error message
         onError("Error updating task details.");
         setEditLoading(false);
-      })
-      .finally(() => {
-        setEditLoading(false); // Hide loading spinner
       });
   };
 
-  //the return statement
   return (
     <div>
       <Toast ref={toast} />

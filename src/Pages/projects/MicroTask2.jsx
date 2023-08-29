@@ -407,8 +407,8 @@ const MicroTask = ({
         department: newTask.department,
         start_date: formatDate(newTask.start_date),
         end_date: formatDate(newTask.end_date),
-        baassigned_to: newTask.assigneBa ? [newTask.assigneBa] : "",
-        assigned_to: newTask.assigneTl ? [newTask.assigneTl] : "",
+        baassigned_to: newTask.assigneBa ? [newTask.assigneBa] : [],
+        assigned_to: newTask.assigneTl ? [newTask.assigneTl] : [],
       })
       .then((response) => {
         onSuccess(response.data.message);
@@ -431,6 +431,19 @@ const MicroTask = ({
       });
   };
 
+  //closing the create rask modal
+  const closeTaskCreate = () => {
+    setNewTask({
+      task: "",
+      department: "",
+      description: "",
+      start_date: null,
+      end_date: null,
+      assigneBa: "",
+      assigneTl: "",
+    });
+    setCreateTaskDialogVisible(false);
+  };
   //option based on business analyst in the project
   const bas = businessAnalysts
     .filter((user) => user.status === "active")
@@ -469,8 +482,8 @@ const MicroTask = ({
           phaseActivityId: activityId,
           task: editingTask.task,
           department: editingTask.department,
-          assigned_to: editingTask.assignedTl ? [editingTask.assignedTl] : "",
-          baassigned_to: editingTask.assigneBa ? [editingTask.assigneBa] : "",
+          assigned_to: editingTask.assignedTl ? [editingTask.assignedTl] : [],
+          baassigned_to: editingTask.assigneBa ? [editingTask.assigneBa] : [],
           description: editingTask.description,
           start_date: formatDate(editingTask.start_date),
           end_date: formatDate(editingTask.end_date),
@@ -689,7 +702,7 @@ const MicroTask = ({
           <Dialog
             header="Add Task"
             visible={createTaskDialogVisible}
-            onHide={() => setCreateTaskDialogVisible(false)}
+            onHide={closeTaskCreate}
             className="w-2/3"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
@@ -834,7 +847,7 @@ const MicroTask = ({
               </button>
               <button
                 className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
-                onClick={() => setCreateTaskDialogVisible(false)}
+                onClick={closeTaskCreate}
               >
                 Cancel
               </button>

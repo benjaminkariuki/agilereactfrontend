@@ -66,7 +66,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData }) => {
   const closeDialogue = () => {
     setSelectedTask([]);
     setVisible(false);
-  }
+  };
 
   const handleRemoveFromSprint = () => {
     if (selectedTask.length > 0) {
@@ -98,15 +98,15 @@ const Subtasks = ({ subtasks, sprintId, reloadData }) => {
       <div className="bg-white rounded-lg shadow p-4 ">
         {Object.entries(_.groupBy(subtasks, "project.title")).map(
           ([projectTitle, projectSubtasks], index) => (
-            <div key={index} className="border">
+            <div key={index} className="border rounded-lg p-4 mb-4 shadow">
               <h2 className="font-bold mb-4 text-center">{projectTitle}</h2>
               {projectSubtasks.slice(0, 3).map((subtask, index) => (
                 <p key={index}>{subtask.description}</p>
               ))}
-              <Button
-                label="View More"
+              <button
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
                 onClick={() => openDialog(projectTitle)}
-              />
+              >View More</button>
             </div>
           )
         )}
@@ -114,6 +114,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData }) => {
           header="Subtask Details"
           visible={visible}
           onHide={closeDialogue}
+          style={{ width: "80vw" }}
         >
           {selectedSubtasks && (
             <DataTable

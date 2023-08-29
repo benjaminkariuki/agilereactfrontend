@@ -4,19 +4,31 @@ import { Chart } from "primereact/chart";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import Subtasks from "./Subtasks";
 import { Toast } from "primereact/toast";
+import { Dialog } from "primereact/dialog";
 
 const ActiveSprint = () => {
   const [data, setData] = useState(null);
   const toast = useRef(null);
   const [closeLoading, setCloseLoading] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [viewSummaryDialogue, setViewSummaryDialogue] = useState(false);
+  const [visible, setVisible] = useState(false);
 
-  const confirmClose = (id) => {
+  const confirmClose = () => {
     confirmDialog({
       message: "Are you sure you want to close this sprint?",
       header: "Close Confirmation",
       icon: "pi pi-exclamation-triangle",
-      accept: () => handleCloseSprint(id),
+      accept: handleConfirmClose,
     });
+  };
+  const handleConfirmClose = () => {
+    setViewSummaryDialogue(true);
+    setVisible(false);
+  };
+  const handleConfirmOpen = () => {
+    setVisible(true);
+    confirmClose();
   };
   const onSuccess = (success) => {
     if (success) {
@@ -61,23 +73,20 @@ const ActiveSprint = () => {
         onSuccess("message found successfully");
       })
       .catch((error) => {
-        onError(error.message);
-        onWarn("Warning");
+        onError(error.response.data.error);
+        onWarn("Create a Sprint");
       });
   };
-  if (!data) {
-    return <div>Loading...</div>;
-  }
 
-  const completedTasks = data.subtasks.filter(
+  const completedTasks = data?.subtasks?.filter(
     (task) => task.status === "completed"
   ).length;
-  const openTasks = data.subtasks.filter(
+  const openTasks = data?.subtasks?.filter(
     (task) => task.status === "open"
   ).length;
 
   let projectTasks = {};
-  data.subtasks.forEach((task) => {
+  data?.subtasks?.forEach((task) => {
     if (projectTasks[task.project.title]) {
       projectTasks[task.project.title] += 1;
     } else {
@@ -110,12 +119,14 @@ const ActiveSprint = () => {
   //fucntion to refetch data when task(s) is removed
   const reloadData = () => {
     fetchActiveSprint();
-  }
+  };
   //function to close sprint
   const handleCloseSprint = (id) => {
     setCloseLoading(true);
     axios
-      .post(`https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`)
+      .post(`https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`, {
+        summary,
+      })
       .then((response) => {
         onSuccess("Closed successfuly");
         setCloseLoading(true);
@@ -129,40 +140,78 @@ const ActiveSprint = () => {
   return (
     <div>
       <Toast ref={toast} />
-      <ConfirmDialog />
-      <div className="bg-white rounded-lg shadow p-4">
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          <strong>Active Sprint: </strong>
-        </h1>
-        <div className="flex justify-between mb-2">
-          <h2 className="text-1xl font-bold mb-4 text-center">
-            <strong>{data.name}</strong>
-          </h2>
-          <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={() => confirmClose(data.id)}
-            disabled={closeLoading}
+      <ConfirmDialog visible={visible} />
+      {data ? (
+        <div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <h1 className="text-2xl font-bold mb-4 text-center">
+              <strong>Active Sprint: </strong>
+            </h1>
+            <div className="flex justify-between mb-2">
+              <h2 className="text-1xl font-bold mb-4 text-center">
+                <strong>{data.name}</strong>
+              </h2>
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={() => handleConfirmOpen()}
+                disabled={closeLoading}
+              >
+                Close
+              </button>
+            </div>
+            <div className="mb-4 flex flex-col sm:flex-row justify-start">
+              <div className="w-full sm:w-64 h-32 mb-2 sm:mb-0 rounded border p-2">
+                <Chart type="bar" data={tasksData} />
+              </div>
+              <div className="w-full sm:w-64 h-32 rounded border p-2">
+                <Chart type="bar" data={projectData} />
+              </div>
+            </div>
+            <Subtasks
+              subtasks={data.subtasks}
+              sprintId={data.id}
+              reloadData={reloadData}
+            />
+          </div>
+          <Dialog
+            header="Add Summary before closing the sprint"
+            visible={viewSummaryDialogue}
+            onHide={() => setViewSummaryDialogue(false)}
+            style={{ width: "70vw" }}
+            footer={
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={() => handleCloseSprint(data.id)}
+                disabled={closeLoading}
+              >
+                {closeLoading ? (
+                  <i
+                    className="pi pi-spin pi-spinner"
+                    style={{ fontSize: "1.4rem" }}
+                  ></i>
+                ) : (
+                  "Submit and Close Sprint"
+                )}
+              </button>
+            }
           >
-            {closeLoading ? (
-              <i
-                className="pi pi-spin pi-spinner"
-                style={{ fontSize: "1.4rem" }}
-              ></i>
-            ) : (
-              "Close"
-            )}
-          </button>
+            <textarea
+              name="summary"
+              id="sprint-summary"
+              className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
+              onChange={(e) => setSummary(e.target.value)}
+              required
+              style={{ height: "320px" }}
+            />
+          </Dialog>
         </div>
-        <div className="mb-4 flex flex-col sm:flex-row justify-start">
-          <div className="w-full sm:w-64 h-32 mb-2 sm:mb-0 rounded border p-2">
-            <Chart type="bar" data={tasksData} />
-          </div>
-          <div className="w-full sm:w-64 h-32 rounded border p-2">
-            <Chart type="bar" data={projectData} />
+      ) : (
+        <div className="flex items-center justify-center pt-10">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md justify-center">
+            <h1 className="text-center font-bold">No Active Sprint</h1>
           </div>
         </div>
-        <Subtasks subtasks={data.subtasks} sprintId={data.id} reloadData={reloadData}/>
-      </div>
+      )}
     </div>
   );
 };

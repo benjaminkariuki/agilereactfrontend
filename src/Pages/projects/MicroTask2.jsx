@@ -133,7 +133,7 @@ const MicroTask = ({
 
   const getSeverity = (status) => {
     switch (status) {
-      case "highpriority":
+      case "incomplete":
         return "danger";
       case "open":
         return "info";

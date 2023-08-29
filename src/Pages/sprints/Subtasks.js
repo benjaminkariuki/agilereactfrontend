@@ -2,13 +2,12 @@ import React, { useRef, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Button } from "primereact/button";
 import _ from "lodash";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
-const Subtasks = ({ subtasks, sprintId, reloadData }) => {
+const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [visible, setVisible] = useState(false);
   const [selectedSubtasks, setSelectedSubtasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState([]);
@@ -106,7 +105,9 @@ const Subtasks = ({ subtasks, sprintId, reloadData }) => {
               <button
                 className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
                 onClick={() => openDialog(projectTitle)}
-              >View More</button>
+              >
+                View More
+              </button>
             </div>
           )
         )}
@@ -137,22 +138,24 @@ const Subtasks = ({ subtasks, sprintId, reloadData }) => {
               <Column header="stages" />
             </DataTable>
           )}
-          <div className="flex ">
-            <button
-              className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
-              onClick={() => confirmRemove(sprintId)}
-              disabled={removeLoading}
-            >
-              {removeLoading ? (
-                <i
-                  className="pi pi-spin pi-spinner"
-                  style={{ fontSize: "1.4rem" }}
-                ></i>
-              ) : (
-                "Remove from current sprint"
-              )}
-            </button>
-          </div>
+          {component === "active" && (
+            <div className="flex">
+              <button
+                className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
+                onClick={() => confirmRemove(sprintId)}
+                disabled={removeLoading}
+              >
+                {removeLoading ? (
+                  <i
+                    className="pi pi-spin pi-spinner"
+                    style={{ fontSize: "1.4rem" }}
+                  ></i>
+                ) : (
+                  "Remove from current sprint"
+                )}
+              </button>
+            </div>
+          )}
         </Dialog>
       </div>
     </div>

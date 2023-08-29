@@ -84,6 +84,9 @@ const ActiveSprint = () => {
   const openTasks = data?.subtasks?.filter(
     (task) => task.status === "open"
   ).length;
+  const highPriorityTasks = data?.subtasks?.filter(
+    (task) => task.status === "high priority"
+  ).length;
 
   let projectTasks = {};
   data?.subtasks?.forEach((task) => {
@@ -95,12 +98,12 @@ const ActiveSprint = () => {
   });
 
   const tasksData = {
-    labels: ["Open", "Completed"],
+    labels: ["Open", "Completed", "incomplete"],
     datasets: [
       {
-        data: [openTasks, completedTasks],
-        backgroundColor: ["#42A5F5", "#66BB6A"],
-        hoverBackgroundColor: ["#64B5F6", "#81C784"],
+        data: [openTasks, completedTasks, highPriorityTasks ],
+        backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
+        hoverBackgroundColor: ["#64B5F6", "#81C784", "#FF9800"],
       },
     ],
   };
@@ -171,6 +174,7 @@ const ActiveSprint = () => {
               subtasks={data.subtasks}
               sprintId={data.id}
               reloadData={reloadData}
+              component = {"active"}
             />
           </div>
           <Dialog

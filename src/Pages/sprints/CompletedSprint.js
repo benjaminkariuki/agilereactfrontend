@@ -4,6 +4,7 @@ import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { Toast } from "primereact/toast";
 import { Chart } from "primereact/chart";
 import Subtasks from "./Subtasks";
+import { Doughnut, Bar } from "react-chartjs-2";
 
 const CompletedSprints = () => {
   const [completeSprints, setCompleteSprints] = useState([]);
@@ -82,7 +83,7 @@ const CompletedSprints = () => {
   });
 
   const tasksData = {
-    labels: ["Open", "Completed", "incomplete"],
+    labels: ["Open", "Completed", "Incomplete"],
     datasets: [
       {
         data: [openTasks, completedTasks, incompleteTasks],
@@ -149,7 +150,7 @@ const CompletedSprints = () => {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <Toast ref={toast} />
       {viewMoreActive ? (
         <div className="bg-white rounded-lg shadow p-4">
@@ -161,17 +162,17 @@ const CompletedSprints = () => {
               <strong>{data.name}</strong>
             </h2>
           </div>
-          <div className="mb-4 flex flex-col sm:flex-row justify-start">
-            <div className="w-full sm:w-64 h-32 mb-2 sm:mb-0 rounded border p-2">
+          <div className="mb-4 flex flex-col sm:flex-row justify-start ">
+            <div className=" border rounded-lg p-4  shadow">
               <Chart type="bar" data={tasksData} />
             </div>
-            <div className="w-full sm:w-64 h-32 rounded border p-2">
-              <Chart type="bar" data={projectData} />
+            <div className=" border rounded-lg p-4 mb-4 shadow">
+              <Bar data={projectData} />
             </div>
           </div>
           {data &&
             data.subtasks && ( // Check if data and data.subtasks exist
-              <Subtasks subtasks={data.subtasks} sprintId={data.id} />
+              <Subtasks subtasks={data.subtasks} sprintId={data.id} component={"complete"} />
             )}
         </div>
       ) : (

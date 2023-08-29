@@ -98,10 +98,10 @@ const ActiveSprint = () => {
   });
 
   const tasksData = {
-    labels: ["Open", "Completed", "incomplete"],
+    labels: ["Open", "Completed", "High priority"],
     datasets: [
       {
-        data: [openTasks, completedTasks, highPriorityTasks ],
+        data: [openTasks, completedTasks, highPriorityTasks],
         backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
         hoverBackgroundColor: ["#64B5F6", "#81C784", "#FF9800"],
       },
@@ -163,10 +163,10 @@ const ActiveSprint = () => {
               </button>
             </div>
             <div className="mb-4 flex flex-col sm:flex-row justify-start">
-              <div className="w-full sm:w-64 h-32 mb-2 sm:mb-0 rounded border p-2">
+              <div className="w-full sm:w-80 h-40 mb-2 sm:mb-2 rounded border p-2">
                 <Chart type="bar" data={tasksData} />
               </div>
-              <div className="w-full sm:w-64 h-32 rounded border p-2">
+              <div className="w-full sm:w-80 h-40 mb-2 sm:mb-2 rounded border p-2">
                 <Chart type="bar" data={projectData} />
               </div>
             </div>
@@ -174,7 +174,7 @@ const ActiveSprint = () => {
               subtasks={data.subtasks}
               sprintId={data.id}
               reloadData={reloadData}
-              component = {"active"}
+              component={"active"}
             />
           </div>
           <Dialog

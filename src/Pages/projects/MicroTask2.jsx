@@ -446,28 +446,30 @@ const MicroTask = ({
   };
   //option based on business analyst in the project
   const bas = businessAnalysts
-    .filter((user) => user.status === "active")
+    ?.filter((user) => user.status === "active")
     .map((user, index) => ({
       key: index,
-      label: user.user.firstName + " " + user.user.lastName,
-      value: user.user.email,
+      label: user.user?.firstName + " " + user.user?.lastName,
+      value: user.user?.email,
     }));
   //option based on team leads in the project
   const tls = (department) => {
     const filteredUser = projectManagers
-      .filter((user) => user.user.department === department)
-      .concat(teamLeads.filter((user) => user.user.department === department));
+      ?.filter((user) => user.user?.department === department)
+      .concat(
+        teamLeads?.filter((user) => user.user?.department === department)
+      );
     return filteredUser
-      .filter((user) => user.status === "active")
+      .filter((user) => user?.status === "active")
       .map((user, index) => ({
         key: index,
         label:
-          user.user.firstName +
+          user.user?.firstName +
           " " +
-          user.user.lastName +
+          user.user?.lastName +
           "-" +
-          user.user.role.name,
-        value: user.user.email,
+          user.user?.role.name,
+        value: user?.user.email,
       }));
   };
   //updtaing the task details
@@ -600,6 +602,32 @@ const MicroTask = ({
                 Add Task
               </button>
             )
+          }
+          footer={
+            <div className="flex justify-between">
+              {hasWritePermissionSprint && (
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                  onClick={handlePushtoSprint}
+                >
+                  {pustLoading ? (
+                    <i
+                      className="pi pi-spin pi-cog"
+                      style={{ fontSize: "1.5rem" }}
+                    ></i>
+                  ) : (
+                    "Push to sprint"
+                  )}
+                </button>
+              )}
+
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                onClick={() => setIsViewModalOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
           }
         >
           <DataTable
@@ -853,31 +881,6 @@ const MicroTask = ({
               </button>
             </div>
           </Dialog>
-
-          <div className="flex justify-between">
-            {hasWritePermissionSprint && (
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                onClick={handlePushtoSprint}
-              >
-                {pustLoading ? (
-                  <i
-                    className="pi pi-spin pi-cog"
-                    style={{ fontSize: "1.5rem" }}
-                  ></i>
-                ) : (
-                  "Push to sprint"
-                )}
-              </button>
-            )}
-
-            <button
-              className="px-4 py-2 bg-red-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-              onClick={() => setIsViewModalOpen(false)}
-            >
-              Cancel
-            </button>
-          </div>
         </Dialog>
 
         {/*Edit Micro-task Modal */}

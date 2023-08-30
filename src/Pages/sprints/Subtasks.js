@@ -91,55 +91,47 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   };
 
   return (
-    <div>
+    <div className="w-full ">
       <Toast ref={toast} />
       <ConfirmDialog />
-      <div className="bg-white rounded-lg shadow p-4 ">
+      <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
         {Object.entries(_.groupBy(subtasks, "project.title")).map(
           ([projectTitle, projectSubtasks], index) => (
-            <div key={index} className="border rounded-lg p-4 mb-4 shadow">
-              <h2 className="font-bold mb-4 text-center">{projectTitle}</h2>
+            <div
+              key={index}
+              className="mb-4 border bg-white rounded-lg shadow-lg p-4"
+            >
+            <div>
+            <h2 className="font-bold mb-4 text-center">{projectTitle}</h2>
+          
+            <ol>
               {projectSubtasks.slice(0, 3).map((subtask, index) => (
-                <p key={index}>{subtask.description}</p>
+                <li key={index}>{subtask.task}</li>
               ))}
-              <button
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                onClick={() => openDialog(projectTitle)}
-              >
-                View More
-              </button>
+            </ol>
+          </div>
+          
+
+              <div className="flex justify-end me-0" key={index}>
+                <button
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                  onClick={() => openDialog(projectTitle)}
+                >
+                  View More
+                </button>
+              </div>
             </div>
           )
         )}
-        <Dialog
-          header="Subtask Details"
-          visible={visible}
-          onHide={closeDialogue}
-          style={{ width: "80vw" }}
-        >
-          {selectedSubtasks && (
-            <DataTable
-              value={selectedSubtasks}
-              selectionMode="checkbox"
-              selection={selectedTask}
-              onSelectionChange={(e) => setSelectedTask(e.value)}
-              dataKey="id"
-            >
-              <Column
-                selectionMode="multiple"
-                headerStyle={{ width: "3rem" }}
-              ></Column>
-              <Column field="task" header="Task" />
-              <Column field="description" header="Description" />
-              <Column field="start_date" header="Start Date" />
-              <Column field="end_date" header="End Date" />
-              <Column field="department" header="Department" />
-              <Column field="status" header="Status" />
-              <Column header="stages" />
-            </DataTable>
-          )}
-          {component === "active" && (
-            <div className="flex">
+      </div>
+      <Dialog
+        header="Subtask Details"
+        visible={visible}
+        onHide={closeDialogue}
+        style={{ width: "80vw" }}
+        footer={
+          component === "active" && (
+            <div className="flex justify-end">
               <button
                 className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
                 onClick={() => confirmRemove(sprintId)}
@@ -155,9 +147,31 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
                 )}
               </button>
             </div>
-          )}
-        </Dialog>
-      </div>
+          )
+        }
+      >
+        {selectedSubtasks && (
+          <DataTable
+            value={selectedSubtasks}
+            selectionMode="checkbox"
+            selection={selectedTask}
+            onSelectionChange={(e) => setSelectedTask(e.value)}
+            dataKey="id"
+          >
+            <Column
+              selectionMode="multiple"
+              headerStyle={{ width: "3rem" }}
+            ></Column>
+            <Column field="task" header="Task" />
+            <Column field="description" header="Description" />
+            <Column field="start_date" header="Start Date" />
+            <Column field="end_date" header="End Date" />
+            <Column field="department" header="Department" />
+            <Column field="status" header="Status" />
+            <Column header="stages" />
+          </DataTable>
+        )}
+      </Dialog>
     </div>
   );
 };

@@ -103,6 +103,39 @@ const CompletedSprints = () => {
       },
     ],
   };
+  //display the chart options for tasks chart
+  const chartOptionsTasks = {
+    plugins: {
+      legend: {
+        display: false,
+        position: "top",
+        labels: {
+          usePointStyle: true,
+        },
+      },
+      title: {
+        display: true,
+        text: "Task Status",
+      },
+    },
+  };
+
+  //display the chart options for project-tasks chart
+  const chartOptionsProject_Tasks = {
+    plugins: {
+      legend: {
+        display: false,
+        position: "top",
+        labels: {
+          usePointStyle: true,
+        },
+      },
+      title: {
+        display: true,
+        text: "Projects and Task Status",
+      },
+    },
+  };
 
   //display the total completed sprints
   const SprintCard = ({ sprint }) => {
@@ -153,7 +186,7 @@ const CompletedSprints = () => {
     <div className="w-full">
       <Toast ref={toast} />
       {viewMoreActive ? (
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="p-4">
           <h1 className="text-2xl font-bold mb-4 text-center">
             <strong>Completed Sprint: </strong>
           </h1>
@@ -162,17 +195,25 @@ const CompletedSprints = () => {
               <strong>{data.name}</strong>
             </h2>
           </div>
-          <div className="mb-4 flex flex-col sm:flex-row justify-start ">
-            <div className=" border rounded-lg p-4  shadow">
-              <Chart type="bar" data={tasksData} />
+          <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
+            <div className="h-25vw rounded-lg shadow-md border p-2 bg-white">
+              <Chart type="bar" data={tasksData} options={chartOptionsTasks} />
             </div>
-            <div className=" border rounded-lg p-4 mb-4 shadow">
-              <Bar data={projectData} />
+            <div className="h-25vw rounded-lg shadow-md border p-2 bg-white">
+              <Chart
+                type="bar"
+                data={projectData}
+                options={chartOptionsProject_Tasks}
+              />
             </div>
           </div>
           {data &&
             data.subtasks && ( // Check if data and data.subtasks exist
-              <Subtasks subtasks={data.subtasks} sprintId={data.id} component={"complete"} />
+              <Subtasks
+                subtasks={data.subtasks}
+                sprintId={data.id}
+                component={"complete"}
+              />
             )}
         </div>
       ) : (

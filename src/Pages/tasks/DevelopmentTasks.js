@@ -122,7 +122,7 @@ const DevelopmentTasks = () => {
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
-            fetchMyTasks();
+            fetchMyTasks(userEmail, userRole);
             setPushLoading(false);
           }, 1000);
           setViewMore(false);

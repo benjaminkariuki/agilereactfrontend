@@ -453,12 +453,9 @@ const MicroTask = ({
       value: user.user?.email,
     }));
   //option based on team leads in the project
-  const tls = (department) => {
-    const filteredUser = projectManagers
-      ?.filter((user) => user.user?.department === department)
-      .concat(
-        teamLeads?.filter((user) => user.user?.department === department)
-      );
+  const assigningUser = (department) => {
+    const filteredUser = projectUsers
+      ?.filter((user) => user.user?.department === department);
     return filteredUser
       .filter((user) => user?.status === "active")
       .map((user, index) => ({
@@ -848,7 +845,7 @@ const MicroTask = ({
                   <Dropdown
                     id="team-lead"
                     value={newTask.assigneTl}
-                    options={tls(newTask.department ? newTask.department : "")}
+                    options={assigningUser(newTask.department ? newTask.department : "")}
                     onChange={(e) =>
                       setNewTask({ ...newTask, assigneTl: e.value })
                     }
@@ -1008,7 +1005,7 @@ const MicroTask = ({
                 <Dropdown
                   id="team-lead"
                   value={editingTask.assignedTl}
-                  options={tls(
+                  options={assigningUser(
                     editingTask.department ? editingTask.department : ""
                   )}
                   onChange={(e) =>

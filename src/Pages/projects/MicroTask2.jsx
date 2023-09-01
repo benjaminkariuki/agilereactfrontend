@@ -137,7 +137,7 @@ const MicroTask = ({
         return "danger";
       case "open":
         return "info";
-      case "completed":
+      case "complete":
         return "success";
 
       case "pending":

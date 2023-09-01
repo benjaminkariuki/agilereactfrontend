@@ -205,7 +205,7 @@ const TestingTasks = () => {
                     style={{ fontSize: "1.4rem" }}
                   ></i>
                 ) : (
-                  "Push to Testing"
+                  "Push to Review"
                 )}
               </button>
             }

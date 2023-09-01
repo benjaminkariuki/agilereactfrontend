@@ -111,12 +111,12 @@ const ReviewTasks = () => {
   };
 
   //function to push to the next stage(i.e Development)
-  const pushToReview = () => {
+  const pushToApproval = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
       axios
-        .post("https://agile-pm.agilebiz.co.ke/api/pushToReview", {
+        .post("https://agile-pm.agilebiz.co.ke/api/pushToApproval", {
           taskIds: selectedIds,
         })
         .then((response) => {
@@ -196,8 +196,8 @@ const ReviewTasks = () => {
             style={{ width: "80vw" }}
             footer={
               <button
-                className="px-4 py-2 bg-green-500 text-white rounded-md"
-                onClick={pushToReview}
+                className="px-4 py-2 bg-red-500 text-white rounded-md"
+                onClick={pushToApproval}
                 disabled={pushLoading} // Disable the button while loading
               >
                 {pushLoading ? (
@@ -206,7 +206,7 @@ const ReviewTasks = () => {
                     style={{ fontSize: "1.4rem" }}
                   ></i>
                 ) : (
-                  "Push to Testing"
+                  "Close the task (s)"
                 )}
               </button>
             }

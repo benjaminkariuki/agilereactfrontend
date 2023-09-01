@@ -7,6 +7,7 @@ import _ from "lodash";
 import { Dialog } from "primereact/dialog";
 import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
+import { FileUpload } from "primereact/fileupload";
 
 const TestingTasks = () => {
   const { userRole, userEmail } = useSelector((state) => state.user);
@@ -17,7 +18,12 @@ const TestingTasks = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const [pushLoading, setPushLoading] = useState(false);
+  const [showSubmit, setShowSubmit] = useState(false);
   const toast = useRef(null);
+  const [selectedFile, setSelectedFile] = useState();
+  const [previewFile, setPreviewFile] = useState();
+  const [comment, setComment] = useState("");
+  const [pushLoadingDev, setPushLoadingDev] = useState(false);
 
   //toast display functions
   const onSuccess = (success) => {
@@ -136,15 +142,61 @@ const TestingTasks = () => {
     }
   };
 
+  //conditions to check before opening the dialog
+  const openSubmitDialog = () => {
+    if (selectedTasks.length === 1) setShowSubmit(true);
+    else if (selectedTasks.length > 1)
+      onWarn("Only one Micro-task should be selected");
+    else onWarn("Select atleast one Micro-task");
+  };
+  //handle file upload
+  const onFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewFile(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setSelectedFile(file);
+    }
+  };
+
+  //submit the reason to push back
+  const submitPushBack = () => {
+    setPushLoadingDev(true);
+    axios
+      .post("https://agile-pm.agilebiz.co.ke/api/returnToDevelopment", {
+        taskId: selectedTasks[0].id,
+        comment,
+        imageUpload: selectedFile,
+      })
+      .then((response) => {
+        setTimeout(() => {
+          onInfo(response.data.message);
+          fetchMyTasks(userEmail, userRole);
+          setPushLoadingDev(false);
+        }, 1000);
+        setShowSubmit(false);
+        setSelectedFile(null);
+        setComment("");
+      })
+      .catch((error) => {
+        onError("Error encountered");
+        setPushLoadingDev(false);
+      });
+  };
+
   return (
     <div>
-    <Toast ref={toast} />
-      <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
-        <h1>My progress chart</h1>
-      </div>
+      <Toast ref={toast} />
+
       <div>
         {tasksData && microTasksData.length > 0 ? (
           <div>
+            <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
+              <h1>My progress chart</h1>
+            </div>
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
               {Object.entries(_.groupBy(microTasksData, "project.title")).map(
                 ([projectTitle, projectSubtasks], index) => (
@@ -194,20 +246,29 @@ const TestingTasks = () => {
             onHide={() => setViewMore(false)}
             style={{ width: "80vw" }}
             footer={
-              <button
-                className="px-4 py-2 bg-green-500 text-white rounded-md"
-                onClick={pushToReview}
-                disabled={pushLoading} // Disable the button while loading
-              >
-                {pushLoading ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                ) : (
-                  "Push to Review"
-                )}
-              </button>
+              <div className="justify-between flex">
+                <button
+                  className="px-4 py-2 bg-yellow-700 text-white rounded-md"
+                  onClick={openSubmitDialog}
+                  disabled={showSubmit} // Disable the button while loading
+                >
+                  Push Back to development
+                </button>
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded-md"
+                  onClick={pushToReview}
+                  disabled={pushLoading} // Disable the button while loading
+                >
+                  {pushLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Push to Review"
+                  )}
+                </button>
+              </div>
             }
           >
             <DataTable
@@ -246,6 +307,53 @@ const TestingTasks = () => {
                 )}
               ></Column>
             </DataTable>
+          </Dialog>
+        </div>
+        <div>
+          <Dialog
+            header="Reason to Push back"
+            visible={showSubmit}
+            onHide={() => setShowSubmit(false)}
+            style={{ width: "50vw", height: "60vw" }}
+          >
+            <div className="flex flex-col items-center">
+              <h2 className="mb-4">Add Comment</h2>
+              <textarea
+                type="text"
+                name="comment"
+                placeholder="Comment section"
+                onChange={(e) => {
+                  setComment(e.target.value);
+                }}
+                className="w-full border rounded py-2 px-3 mb-4"
+                style={{ height: "200px" }}
+              />
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="proof-file"
+                >
+                  Upload File
+                </label>
+                <input type="file" onChange={onFileUpload} name="proof-file" />
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={submitPushBack}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-2"
+                  disabled={pushLoadingDev}
+                >
+                  {pushLoadingDev ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
+            </div>
           </Dialog>
         </div>
         <div>

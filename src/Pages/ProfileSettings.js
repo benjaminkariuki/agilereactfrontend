@@ -93,7 +93,6 @@ const EditProfile = () => {
       setPhoto(file);
     }
   };
-
   const handleSubmit = (event) => {
     event.preventDefault();
     setIsLoading(true);
@@ -141,7 +140,7 @@ const EditProfile = () => {
       });
   };
 
-  //CHANGING THE PASSWORD 
+  //CHANGING THE PASSWORD
   const handleTogglePasswordModal = () => {
     setNewPassword("");
     setConfirmPassword("");

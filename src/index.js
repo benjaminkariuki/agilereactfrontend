@@ -16,7 +16,7 @@ import PasswordReset from "./PasswordReset";
 import Dashboard from "./Pages/Dashboard";
 import Home from "./Home/Home";
 import ManageSprints from "./Pages/ManageSprints";
-import Task from "./Pages/Task";
+import ManageTasks from "./Pages/ManageTasks";
 import Users from "./Pages/Users";
 import CreateUser from "./Pages/Create";
 import ProfileSettings from "./Pages/ProfileSettings";
@@ -72,7 +72,7 @@ const router = createBrowserRouter([
       },
       {
         path: "tasks",
-        element: <ProtectedRoute element={<Task />} redirectPath="/" />,
+        element: <ProtectedRoute element={<ManageTasks />} redirectPath="/" />,
       },
       {
         path: "users",

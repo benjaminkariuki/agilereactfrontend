@@ -3,7 +3,7 @@ import SideBar from "./SideBar.Component";
 import * as AiIcons from "react-icons/ai";
 import Dashboard from "../Pages/Dashboard";
 import ManageSprints from "../Pages/ManageSprints";
-import Task from "../Pages/Task";
+import ManageTasks from "../Pages/ManageTasks";
 import Users from "../Pages/Users";
 import CreateUser from "../Pages/Create";
 import { Route, Routes, useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import ManageProjects from "../Pages/ManageProjects";
 import ProfileSettings from "../Pages/ProfileSettings";
 import { useDispatch, useSelector } from "react-redux";
 import { login, logout } from "../slices/userSlices";
-import ManageRoles from "../Pages/manageRoles";
+import ManageRoles from "../Pages/ManageRoles";
 import ProtectedRoute from "./ProtectedRoute";
 
 const Home = () => {
@@ -156,7 +156,7 @@ const Home = () => {
               path="/tasks"
               element={
                 <ProtectedRoute
-                  page={<Task />}
+                  page={<ManageTasks />}
                   requiredActivity={"../dashboard/tasks"}
                 />
               }

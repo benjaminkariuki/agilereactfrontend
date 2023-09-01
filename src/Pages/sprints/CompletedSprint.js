@@ -4,7 +4,6 @@ import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { Toast } from "primereact/toast";
 import { Chart } from "primereact/chart";
 import Subtasks from "./Subtasks";
-import { Doughnut, Bar } from "react-chartjs-2";
 
 const CompletedSprints = () => {
   const [completeSprints, setCompleteSprints] = useState([]);
@@ -86,6 +85,7 @@ const CompletedSprints = () => {
     labels: ["Open", "Completed", "Incomplete"],
     datasets: [
       {
+        label: "Total tasks",
         data: [openTasks, completedTasks, incompleteTasks],
         backgroundColor: ["#42A5F5", "#66BB6A", "#FF0000"],
         hoverBackgroundColor: ["#64B5F6", "#81C784", "#FF0000"],
@@ -97,6 +97,7 @@ const CompletedSprints = () => {
     labels: Object.keys(projectTasks),
     datasets: [
       {
+        label: "Tasks per project",
         data: Object.values(projectTasks),
         backgroundColor: ["#42A5F5", "#66BB6A"],
         hoverBackgroundColor: ["#64B5F6", "#81C784"],

@@ -11,28 +11,28 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/outline";
 
-const App = () => {
+const ManageSprints = () => {
   const [activeComponent, setActiveComponent] = useState("ActiveSprint");
 
   const menuItems = [
     {
       label: "Create Sprint",
-      icon: <PlusCircleIcon className="h-6 w-6" />,
+      icon: <PlusCircleIcon className="h-5 w-4 mr-2" />,
       command: () => setActiveComponent("CreateSprint"),
     },
     {
       label: "Active Sprint",
-      icon: <PlayIcon className="h-6 w-6" />,
+      icon: <PlayIcon className="h-5 w-4 mr-2" />,
       command: () => setActiveComponent("ActiveSprint"),
     },
     {
       label: "Inactive Sprint",
-      icon: <CalendarIcon className="h-6 w-5" />,
+      icon: <CalendarIcon className="h-5 w-4 mr-2" />,
       command: () => setActiveComponent("InActiveSprint"),
     },
     {
       label: "Completed Sprints",
-      icon: <CheckCircleIcon className="h-6 w-6" />,
+      icon: <CheckCircleIcon className="h-5 w-4 mr-2" />,
       command: () => setActiveComponent("CompletedSprints"),
     },
   ];
@@ -68,4 +68,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default ManageSprints;

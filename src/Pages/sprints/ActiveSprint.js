@@ -80,7 +80,7 @@ const ActiveSprint = () => {
 
   //getting total number of completed tasks pushed to the sprint
   const completedTasks = data?.subtasks?.filter(
-    (task) => task.status === "completed"
+    (task) => task.status === "complete"
   ).length;
   //getting total number of open tasks pushed to the sprint
   const openTasks = data?.subtasks?.filter(

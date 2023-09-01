@@ -61,7 +61,7 @@ const ManageTasks = () => {
       <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
         Task Manager
       </h1>
-      <Menubar model={menuItems} className="min-w-4/5d" />
+      <Menubar model={menuItems} className="" />
       <div style={{ overflowY: "auto", maxHeight: "calc(100vh - 220px)" }}>
         {renderActiveComponent()}
       </div>

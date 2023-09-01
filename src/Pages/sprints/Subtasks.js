@@ -112,7 +112,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
           </div>
           
 
-              <div className="flex justify-end me-0" key={index}>
+              <div className="flex justify-end " key={index}>
                 <button
                   className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
                   onClick={() => openDialog(projectTitle)}
@@ -168,7 +168,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
             <Column field="end_date" header="End Date" />
             <Column field="department" header="Department" />
             <Column field="status" header="Status" />
-            <Column header="stages" />
+            <Column header="stages" field="stage"/>
           </DataTable>
         )}
       </Dialog>

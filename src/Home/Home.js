@@ -13,6 +13,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, logout } from "../slices/userSlices";
 import ManageRoles from "../Pages/ManageRoles";
 import ProtectedRoute from "./ProtectedRoute";
+import { FaCog, FaSignOutAlt } from "react-icons/fa";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { GrUserSettings } from "react-icons/gr";
 
 const Home = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -22,6 +25,16 @@ const Home = () => {
   const { userRole, userEmail, userFName, userLName, userProfilePhoto } =
     useSelector((state) => state.user);
 
+  //confirm logout
+  const confirmLogout = () => {
+    confirmDialog({
+      message: "Are you sure you want to logout?",
+      header: "Confirm Logout",
+      icon: "pi pi-info-circle",
+      acceptClassName: "p-button-danger",
+      accept: () => handleLogout(),
+    });
+  };
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   // Use useEffect to check login status on component mount
   useEffect(() => {
@@ -52,6 +65,7 @@ const Home = () => {
 
   return (
     <div className="flex flex-col h-screen min-w-[400px]">
+      <ConfirmDialog />
       {/* Header */}
       <div className="flex items-center justify-start bg-white px-4 py-2">
         {/* Logo */}
@@ -86,9 +100,7 @@ const Home = () => {
           <div className="relative">
             <div className="relative">
               <div
-                className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer ${
-                  isOpenProfile ? "animate-bounce" : ""
-                }`}
+                className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer`}
                 onClick={toggleDropdown}
               >
                 <img
@@ -102,28 +114,18 @@ const Home = () => {
                 />
               </div>
             </div>
-
-            {/* Dropdown menu */}
-            {isOpenProfile && (
-              <div className="absolute right-0 mt-2 bg-white rounded shadow-md">
-                <ul className="flex flex-col w-48 py-2">
-                  <li
-                    className="px-4 py-2 hover:bg-blue-200"
-                    onClick={handleLinkClick}
-                    style={{ cursor: "pointer" }}
-                  >
-                    Profile Settings
-                  </li>
-                  <li
-                    className="border-t px-4 py-2 hover:bg-blue-200"
-                    onClick={handleLogout} // Add the onClick event for logging out
-                    style={{ cursor: "pointer" }}
-                  >
-                    Logout
-                  </li>
-                </ul>
-              </div>
-            )}
+          </div>
+          <div className="relative mx-2">
+            <GrUserSettings
+              className="w-8 h-8 rounded cursor-pointer"
+              onClick={handleLinkClick}
+            />
+          </div>
+          <div className="relative mx-2">
+            <FaSignOutAlt
+              className="w-8 h-8  rounded cursor-pointer"
+              onClick={() => confirmLogout()} // Add the onClick event for logging out
+            />
           </div>
         </div>
       </div>

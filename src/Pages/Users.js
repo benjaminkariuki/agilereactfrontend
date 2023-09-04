@@ -5,7 +5,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [departments] = useState([
     "Porfolio Managers Department",
@@ -48,6 +48,12 @@ const Users = () => {
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [filteredRoles, setfilteredroles] = useState([]);
   const toast = useRef(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updatedUser, setUpdateUser] = useState({
+    contacts: "",
+    department: "",
+    role: "",
+  });
 
   const onSuccessUpdate = (success) => {
     if (success) {
@@ -73,7 +79,7 @@ const Users = () => {
 
   const onDeleteUser = (error) => {
     if (error) {
-      toast.current.show({
+      toast.current?.show({
         severity: "info",
         summary: "User deleted successfully",
         detail: `${error}`,
@@ -157,33 +163,46 @@ const Users = () => {
     setEditModalOpen(true);
   };
 
-  const handleUpdateUser = (updatedUser) => {
+  const handleUpdateUser = () => {
+    console.log(updatedUser);
+    setUpdateLoading(true);
+    const formData = new FormData();
+    formData.append("contacts", updatedUser.contacts);
+    formData.append("department", updatedUser.department);
+    formData.append("role", updatedUser.role);
     axios
-      .put(
-        `https://agile-pm.agilebiz.co.ke/api/updateUsers/${updatedUser.id}`,
-        updatedUser
+      .post(
+        `https://agile-pm.agilebiz.co.ke/api/updateUserDetails/${selectedUser.id}`,
+        formData
       )
       .then((response) => {
-        if (response.status === 200) {
+        setTimeout(() => {
           onSuccessUpdate(response.data.message);
-          setUsers((prevUsers) =>
-            prevUsers.map((user) =>
-              user.id === response.data.id ? response.data : user
-            )
-          );
-          setEditModalOpen(false);
-          setSelectedUser(null);
-          fetchUsers();
-        }
+        }, 1000);
+        setEditModalOpen(false);
+        setSelectedUser([]);
+        setUpdateLoading(false);
+        setUpdateUser({
+          contacts: "",
+          department: "",
+          role: "",
+        });
+        fetchUsers();
       })
       .catch((error) => {
-        onErrorUpdate(error.message);
+        onErrorUpdate(error.response.data.message);
+        setUpdateLoading(false);
       });
   };
 
   const handleModalClose = () => {
     setEditModalOpen(false);
-    setSelectedUser(null);
+    setSelectedUser([]);
+    setUpdateUser({
+      contacts: "",
+      department: "",
+      role: "",
+    });
   };
 
   const renderUserList = () => {
@@ -274,10 +293,8 @@ const Users = () => {
                   type="text"
                   id="email"
                   className="border rounded px-2 py-1 w-full"
-                  defaultValue={selectedUser.email}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, email: e.target.value })
-                  }
+                  value={selectedUser.email}
+                  readOnly
                 />
               </div>
               <div className="mb-4">
@@ -290,8 +307,8 @@ const Users = () => {
                   className="border rounded px-2 py-1 w-full"
                   defaultValue={selectedUser.contacts}
                   onChange={(e) =>
-                    setSelectedUser({
-                      ...selectedUser,
+                    setUpdateUser({
+                      ...updatedUser,
                       contacts: e.target.value,
                     })
                   }
@@ -309,8 +326,8 @@ const Users = () => {
                   id="department"
                   value={selectedUser.department || ""}
                   onChange={(e) =>
-                    setSelectedUser({
-                      ...selectedUser,
+                    setUpdateUser({
+                      ...updatedUser,
                       department: e.target.value,
                     })
                   }
@@ -334,9 +351,9 @@ const Users = () => {
                   id="role"
                   defaultValue={selectedUser.role ? selectedUser.role.id : ""}
                   onChange={(e) =>
-                    setSelectedUser({
-                      ...selectedUser,
-                      role_id: e.target.value,
+                    setUpdateUser({
+                      ...updatedUser,
+                      role: e.target.value,
                     })
                   }
                 >
@@ -351,20 +368,27 @@ const Users = () => {
                 </select>
               </div>
 
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-between mt-4">
                 <button
                   type="button"
                   onClick={handleModalClose}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md mr-2"
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => handleUpdateUser(selectedUser)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
-                  Update
+                  {updateLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.38rem" }}
+                    ></i>
+                  ) : (
+                    "Update"
+                  )}
                 </button>
               </div>
             </form>

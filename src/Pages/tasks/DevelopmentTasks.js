@@ -19,7 +19,12 @@ const DevelopmentTasks = () => {
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const [pushLoading, setPushLoading] = useState(false);
   const toast = useRef(null);
-
+  const [otherData, setOtherData] = useState([]);
+  //getting permission for only pms to view other tasks in different projects
+  const hasPermissionTasksProjects =
+    userRole === "Senior project manager" || userRole === "Project manager"
+      ? true
+      : false;
   //toast display functions
   const onSuccess = (success) => {
     if (success) {
@@ -77,8 +82,9 @@ const DevelopmentTasks = () => {
         },
       })
       .then((response) => {
-        setTasksData(response.data);
-        setMicroTasksData(response.data.subtasks);
+        setTasksData(response.data.activeSprint);
+        setOtherData(response.data.allSubtasks);
+        setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
         onError("Error fetching data");
@@ -168,6 +174,11 @@ const DevelopmentTasks = () => {
       <div>
         {tasksData && microTasksData.length > 0 ? (
           <div>
+            <div className="flex items-center justify-center pt-2">
+              <h1 className="text-xl text-black font-bold mb-4 text-center max-w-md p-3 bg-white rounded-lg shadow-lg justify-center">
+                My Tasks
+              </h1>
+            </div>
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
               {Object.entries(_.groupBy(microTasksData, "project.title")).map(
                 ([projectTitle, projectSubtasks], index) => (
@@ -205,11 +216,60 @@ const DevelopmentTasks = () => {
           <div className="flex items-center justify-center pt-10">
             <div className=" max-w-md p-6 bg-white rounded-lg shadow-lg justify-center">
               <h1 className="text-center font-bold">
-                Not Assigned in the active Sprint
+                You have no Tasks in the active Sprint
               </h1>
             </div>
           </div>
         )}
+        {hasPermissionTasksProjects && otherData && otherData.length > 0 ? (
+          <div>
+            <div className="flex items-center justify-center pt-2">
+              <h1 className="text-xl text-black font-bold mb-4 text-center max-w-md p-3 bg-white rounded-lg shadow-lg justify-center">
+                Other Tasks
+              </h1>
+            </div>
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
+              {Object.entries(_.groupBy(otherData, "project.title")).map(
+                ([projectTitle, projectSubtasks], index) => (
+                  <div
+                    key={index}
+                    className="mb-4 border bg-white rounded-lg shadow-lg p-4"
+                  >
+                    <div>
+                      <h2 className="font-bold mb-4 text-center">
+                        {projectTitle}
+                      </h2>
+
+                      <ol>
+                        {projectSubtasks.slice(0, 3).map((subtask, index) => (
+                          <li key={index}>{subtask.task}</li>
+                        ))}
+                      </ol>
+                    </div>
+                    <div className="flex justify-end " key={index}>
+                      <button
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                        onClick={() => setViewMore(true)}
+                        disabled={viewMore}
+                      >
+                        View More
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center pt-10">
+            <div className=" max-w-md p-6 bg-white rounded-lg shadow-lg justify-center">
+              <h1 className="text-center font-bold">
+                You have not been assigned in any project in the active Sprint
+              </h1>
+            </div>
+          </div>
+        )}
+
         <div>
           <Dialog
             header="Subtask Details"

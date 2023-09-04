@@ -7,6 +7,7 @@ import _ from "lodash";
 import { Dialog } from "primereact/dialog";
 import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
+import { Button } from "primereact/button";
 
 const MyTasks = () => {
   const { userRole, userEmail } = useSelector((state) => state.user);
@@ -96,14 +97,36 @@ const MyTasks = () => {
   };
 
   // Create a download link
+  // Create a download link
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
+    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+
+    const downloadFile = () => {
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "downloaded_file_name.extension"; // Set the desired file name here
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
     return (
-      <a href={rowData.path} download>
-        Download
-      </a>
+      <div>
+        {rowData.path !== null ? (
+          <Button onClick={downloadFile} severity="success">
+            Download File
+          </Button>
+        ) : (
+          <Button disabled severity="warning">
+            File Not Available
+          </Button>
+        )}
+      </div>
     );
   };
-
   // Function to show the details dialog
   const showDetailsDialog = (rowData) => {
     setShowDetails(true);

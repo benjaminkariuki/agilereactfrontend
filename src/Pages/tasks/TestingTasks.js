@@ -7,12 +7,14 @@ import _ from "lodash";
 import { Dialog } from "primereact/dialog";
 import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
-import { FileUpload } from "primereact/fileupload";
+import { Button } from "primereact/button";
 
 const TestingTasks = () => {
-  const { userRole, userEmail } = useSelector((state) => state.user);
+  const { userRole, userEmail, userActivities } = useSelector(
+    (state) => state.user
+  );
   const [selectedTasks, setSelectedTasks] = useState([]);
-  const [tasksData, setTasksData] = useState([]); // State to store API data
+  const [tasksData, setTasksData] = useState([]);
   const [microTasksData, setMicroTasksData] = useState([]);
   const [viewMore, setViewMore] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -21,9 +23,15 @@ const TestingTasks = () => {
   const [showSubmit, setShowSubmit] = useState(false);
   const toast = useRef(null);
   const [selectedFile, setSelectedFile] = useState();
-  const [previewFile, setPreviewFile] = useState();
   const [comment, setComment] = useState("");
   const [pushLoadingDev, setPushLoadingDev] = useState(false);
+  //getting permission for tasks
+  const tasksActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasWritePermissionTasks = tasksActivity
+    ? tasksActivity.pivot.permissions.includes("write")
+    : false;
 
   //toast display functions
   const onSuccess = (success) => {
@@ -102,11 +110,33 @@ const TestingTasks = () => {
   };
 
   // Create a download link
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
+    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+
+    const downloadFile = () => {
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "downloaded_file_name.extension"; // Set the desired file name here
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
     return (
-      <a href={rowData.path} download>
-        Download
-      </a>
+      <div>
+        {rowData.path !== null ? (
+          <Button onClick={downloadFile} severity="success">
+            Download File
+          </Button>
+        ) : (
+          <Button disabled severity="warning">
+            File Not Available
+          </Button>
+        )}
+      </div>
     );
   };
 
@@ -155,7 +185,7 @@ const TestingTasks = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setPreviewFile(reader.result);
+        setSelectedFile(file);
       };
       reader.readAsDataURL(file);
       setSelectedFile(file);
@@ -163,14 +193,23 @@ const TestingTasks = () => {
   };
 
   //submit the reason to push back
-  const submitPushBack = () => {
+  const submitPushBack = (event) => {
+    event.preventDefault();
     setPushLoadingDev(true);
+    const formData = new FormData();
+    formData.append("taskId", selectedTasks[0].id);
+    formData.append("imageUpload", selectedFile);
+    formData.append("comment", comment);
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/returnToDevelopment", {
-        taskId: selectedTasks[0].id,
-        comment,
-        imageUpload: selectedFile,
-      })
+      .post(
+        "https://agile-pm.agilebiz.co.ke/api/returnToDevelopment",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         setTimeout(() => {
           onInfo(response.data.message);
@@ -247,13 +286,15 @@ const TestingTasks = () => {
             style={{ width: "80vw" }}
             footer={
               <div className="justify-between flex">
-                <button
-                  className="px-4 py-2 bg-yellow-700 text-white rounded-md"
-                  onClick={openSubmitDialog}
-                  disabled={showSubmit} // Disable the button while loading
-                >
-                  Push Back to development
-                </button>
+                {hasWritePermissionTasks && (
+                  <button
+                    className="px-4 py-2 bg-yellow-700 text-white rounded-md"
+                    onClick={openSubmitDialog}
+                    disabled={showSubmit} // Disable the button while loading
+                  >
+                    Push Back to development
+                  </button>
+                )}
                 <button
                   className="px-4 py-2 bg-green-500 text-white rounded-md"
                   onClick={pushToReview}
@@ -314,7 +355,7 @@ const TestingTasks = () => {
             header="Reason to Push back"
             visible={showSubmit}
             onHide={() => setShowSubmit(false)}
-            style={{ width: "50vw", height: "60vw" }}
+            style={{ width: "50vw" }}
           >
             <div className="flex flex-col items-center">
               <h2 className="mb-4">Add Comment</h2>
@@ -326,7 +367,7 @@ const TestingTasks = () => {
                   setComment(e.target.value);
                 }}
                 className="w-full border rounded py-2 px-3 mb-4"
-                style={{ height: "200px" }}
+                style={{ height: "150px" }}
               />
               <div className="mb-4">
                 <label
@@ -335,7 +376,12 @@ const TestingTasks = () => {
                 >
                   Upload File
                 </label>
-                <input type="file" onChange={onFileUpload} name="proof-file" />
+                <input
+                  type="file"
+                  onChange={onFileUpload}
+                  name="imageUpload"
+                  accept="*"
+                />
               </div>
               <div className="mt-4">
                 <button

@@ -7,9 +7,13 @@ import _ from "lodash";
 import { Dialog } from "primereact/dialog";
 import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
+import { Button } from "primereact/button";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 const ReviewTasks = () => {
-  const { userRole, userEmail } = useSelector((state) => state.user);
+  const { userRole, userEmail, userActivities } = useSelector(
+    (state) => state.user
+  );
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [tasksData, setTasksData] = useState([]); // State to store API data
   const [microTasksData, setMicroTasksData] = useState([]);
@@ -18,7 +22,22 @@ const ReviewTasks = () => {
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const [pushLoading, setPushLoading] = useState(false);
   const toast = useRef(null);
-
+  const [selectedFile, setSelectedFile] = useState();
+  const [comment, setComment] = useState("");
+  const [pushLoadingTest, setPushLoadingTest] = useState(false);
+  const [showSubmit, setShowSubmit] = useState(false);
+  //getting permission for tasks
+  const tasksActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasWritePermissionTasks = tasksActivity
+    ? tasksActivity.pivot.permissions.includes("write")
+    : false;
+  //getting permission for only pms to close tasks
+  const hasClosePermissionTasks =
+    userRole === "Senior project manager" || userRole === "Project manager"
+      ? true
+      : false;
   //toast display functions
   const onSuccess = (success) => {
     if (success) {
@@ -63,6 +82,23 @@ const ReviewTasks = () => {
     }
   };
 
+  //confirm dialoge to close the task(s)
+  const confirmClose = () => {
+    confirmDialog({
+      message: "Do you want to close this task(S)?",
+      header: "Close Confirmation",
+      icon: "pi pi-info-circle",
+      accept: pushToApproval,
+    });
+  };
+  //condition before opening the above confirmDialogue
+  //conditions to check before opening the dialog
+  const openConfirmDialog = () => {
+    if (selectedTasks.length === 1) confirmClose();
+    else if (selectedTasks.length > 1)
+      onWarn("Only one Micro-task should be selected");
+    else onWarn("Select atleast one Micro-task");
+  };
   useEffect(() => {
     fetchMyTasks(userEmail, userRole); // Fetch data from the API when the component mounts
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
@@ -96,11 +132,33 @@ const ReviewTasks = () => {
   };
 
   // Create a download link
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
+    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+
+    const downloadFile = () => {
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "downloaded_file_name.extension"; // Set the desired file name here
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
     return (
-      <a href={rowData.path} download>
-        Download
-      </a>
+      <div>
+        {rowData.path !== null ? (
+          <Button onClick={downloadFile} severity="success">
+            Download File
+          </Button>
+        ) : (
+          <Button disabled severity="warning">
+            File Not Available
+          </Button>
+        )}
+      </div>
     );
   };
 
@@ -136,9 +194,60 @@ const ReviewTasks = () => {
     }
   };
 
+  //conditions to check before opening the dialog
+  const openSubmitDialog = () => {
+    if (selectedTasks.length === 1) setShowSubmit(true);
+    else if (selectedTasks.length > 1)
+      onWarn("Only one Micro-task should be selected");
+    else onWarn("Select atleast one Micro-task");
+  };
+  //handle file upload
+  const onFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedFile(file);
+      };
+      reader.readAsDataURL(file);
+      setSelectedFile(file);
+    }
+  };
+
+  //submit the reason to push back
+  const submitPushBack = (event) => {
+    event.preventDefault();
+    setPushLoadingTest(true);
+    const formData = new FormData();
+    formData.append("taskId", selectedTasks[0].id);
+    formData.append("imageUpload", selectedFile);
+    formData.append("comment", comment);
+    axios
+      .post("https://agile-pm.agilebiz.co.ke/api/returnToTesting", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        setTimeout(() => {
+          onInfo(response.data.message);
+          fetchMyTasks(userEmail, userRole);
+          setPushLoadingTest(false);
+        }, 1000);
+        setShowSubmit(false);
+        setSelectedFile(null);
+        setComment("");
+      })
+      .catch((error) => {
+        onError("Error encountered");
+        setPushLoadingTest(false);
+      });
+  };
+
   return (
     <div>
       <Toast ref={toast} />
+      <ConfirmDialog />
       <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
         <h1>My progress chart</h1>
       </div>
@@ -195,20 +304,33 @@ const ReviewTasks = () => {
             onHide={() => setViewMore(false)}
             style={{ width: "80vw" }}
             footer={
-              <button
-                className="px-4 py-2 bg-red-500 text-white rounded-md"
-                onClick={pushToApproval}
-                disabled={pushLoading} // Disable the button while loading
-              >
-                {pushLoading ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                ) : (
-                  "Close the task (s)"
+              <div className="justify-between flex">
+                {hasWritePermissionTasks && (
+                  <button
+                    className="px-4 py-2 bg-yellow-700 text-white rounded-md"
+                    onClick={openSubmitDialog}
+                    disabled={showSubmit} // Disable the button while loading
+                  >
+                    Push Back to Testing
+                  </button>
                 )}
-              </button>
+                {hasClosePermissionTasks && (
+                  <button
+                    className="px-4 py-2 bg-red-500 text-white rounded-md"
+                    onClick={openConfirmDialog}
+                    disabled={pushLoading} // Disable the button while loading
+                  >
+                    {pushLoading ? (
+                      <i
+                        className="pi pi-spin pi-spinner"
+                        style={{ fontSize: "1.4rem" }}
+                      ></i>
+                    ) : (
+                      "Close the task (s)"
+                    )}
+                  </button>
+                )}
+              </div>
             }
           >
             <DataTable
@@ -247,6 +369,56 @@ const ReviewTasks = () => {
                 )}
               ></Column>
             </DataTable>
+          </Dialog>
+          <Dialog
+            header="Reason to Push back"
+            visible={showSubmit}
+            onHide={() => setShowSubmit(false)}
+            style={{ width: "50vw" }}
+          >
+            <div className="flex flex-col items-center">
+              <h2 className="mb-4">Add Comment</h2>
+              <textarea
+                type="text"
+                name="comment"
+                placeholder="Comment section"
+                onChange={(e) => {
+                  setComment(e.target.value);
+                }}
+                className="w-full border rounded py-2 px-3 mb-4"
+                style={{ height: "150px" }}
+              />
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="proof-file"
+                >
+                  Upload File
+                </label>
+                <input
+                  type="file"
+                  onChange={onFileUpload}
+                  name="imageUpload"
+                  accept="*"
+                />
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={submitPushBack}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-2"
+                  disabled={pushLoadingTest}
+                >
+                  {pushLoadingTest ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
+            </div>
           </Dialog>
         </div>
         <div>

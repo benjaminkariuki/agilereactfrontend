@@ -87,20 +87,16 @@ const MicroTask = ({
   const tasksActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
-  const hasReadPermissionTasks = tasksActivity
-    ? tasksActivity.pivot.permissions.includes("read")
-    : false;
+  
   const hasWritePermissionTasks = tasksActivity
     ? tasksActivity.pivot.permissions.includes("write")
     : false;
 
-  //getting permission for sprints
+  //getting permission for sprints Sprint priorities === for pms to push to active sprint
   const sprintprioritiesActivity = userActivities.find(
     (activity) => activity.name === "Sprint priorities"
   );
-  const hasReadPermissionSprints = sprintprioritiesActivity
-    ? sprintprioritiesActivity.pivot.permissions.includes("read")
-    : false;
+ 
   const hasWritePermissionSprint = sprintprioritiesActivity
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;

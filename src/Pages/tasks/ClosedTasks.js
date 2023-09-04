@@ -7,6 +7,7 @@ import _ from "lodash";
 import { Dialog } from "primereact/dialog";
 import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
+import { Button } from "primereact/button";
 const ClosedTasks = () => {
   const { userRole, userEmail } = useSelector((state) => state.user);
   const [selectedTasks, setSelectedTasks] = useState([]);
@@ -17,6 +18,9 @@ const ClosedTasks = () => {
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const [pushLoading, setPushLoading] = useState(false);
   const toast = useRef(null);
+  //getting permission for tasks
+
+  
 
   //toast display functions
   const onSuccess = (success) => {
@@ -95,45 +99,41 @@ const ClosedTasks = () => {
   };
 
   // Create a download link
+  // Create a download link
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
+    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+
+    const downloadFile = () => {
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "downloaded_file_name.extension"; // Set the desired file name here
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
     return (
-      <a href={rowData.path} download>
-        Download
-      </a>
+      <div>
+        {rowData.path !== null ? (
+          <Button onClick={downloadFile} severity="success">
+            Download File
+          </Button>
+        ) : (
+          <Button disabled severity="warning">
+            File Not Available
+          </Button>
+        )}
+      </div>
     );
   };
-
   // Function to show the details dialog
   const showDetailsDialog = (rowData) => {
     setShowDetails(true);
     setMoreDetailsData(rowData);
   };
-
-  //function to push to the next stage(i.e Development)
-  // const pushToReview = () => {
-  //   const selectedIds = selectedTasks?.map((row) => row.id);
-  //   if (selectedIds.length > 0) {
-  //     setPushLoading(true);
-  //     axios
-  //       .post("https://agile-pm.agilebiz.co.ke/api/pushToReview", {
-  //         taskIds: selectedIds,
-  //       })
-  //       .then((response) => {
-  //         setTimeout(() => {
-  //           onSuccess(response.data.message);
-  //           fetchMyTasks(userEmail, userRole);
-  //           setPushLoading(false);
-  //         }, 1000);
-  //         setViewMore(false);
-  //       })
-  //       .catch((error) => {
-  //         console.log(error.response.data);
-  //         setPushLoading(false);
-  //       });
-  //   } else {
-  //     onWarn("Select atleast one task");
-  //   }
-  // };
 
   return (
     <div>

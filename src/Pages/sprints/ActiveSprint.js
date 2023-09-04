@@ -109,6 +109,12 @@ const ActiveSprint = () => {
         data: [openTasks, completedTasks, highPriorityTasks],
         backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
         hoverBackgroundColor: ["#64B5F6", "#81C784", "#FF9800"],
+        borderColor: [
+          "rgba(75, 192, 192, 1)",
+          "rgba(255, 99, 132, 1)",
+          "rgba(255, 205, 86, 1)",
+        ],
+        borderWidth: 1,
       },
     ],
   };
@@ -180,8 +186,8 @@ const ActiveSprint = () => {
 
   return (
     <div>
-      <Toast ref={toast} />
       <ConfirmDialog visible={visible} />
+      <Toast ref={toast} />
       {data ? (
         <div>
           <div className="p-4">

@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Dropdown } from "primereact/dropdown";
+import { Dialog } from "primereact/dialog";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -110,14 +112,14 @@ const Users = () => {
   };
 
   useEffect(() => {
-    if (selectedUser && selectedUser.department in departmentRolesMapping) {
-      const departmentRoles = departmentRolesMapping[selectedUser.department];
+    if (updatedUser.department in departmentRolesMapping) {
+      const departmentRoles = departmentRolesMapping[updatedUser.department];
       const filteredRoles = roles.filter((role) =>
         departmentRoles.includes(role.name)
       );
       setfilteredroles(filteredRoles);
     }
-  }, [selectedUser]);
+  }, [updatedUser]);
 
   useEffect(() => {
     fetchUsers();
@@ -165,6 +167,7 @@ const Users = () => {
 
   const handleUpdateUser = () => {
     console.log(updatedUser);
+    console.log(selectedUser);
     setUpdateLoading(true);
     const formData = new FormData();
     formData.append("contacts", updatedUser.contacts);
@@ -204,6 +207,15 @@ const Users = () => {
       role: "",
     });
   };
+
+  const departmentOprions = departments.map((department) => ({
+    label: department,
+    value: department,
+  }));
+  const roleOptions = filteredRoles.map((role) => ({
+    label: role.name,
+    value: role.id,
+  }));
 
   const renderUserList = () => {
     return (
@@ -279,122 +291,111 @@ const Users = () => {
       {renderUserList()}
 
       {/* Edit User Modal */}
-      {editModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-white p-4 shadow-lg rounded-lg z-10">
-            <h2 className="text-xl font-bold mb-4">Edit User</h2>
-            <form>
-              <div className="mb-4">
-                <label htmlFor="email" className="block font-semibold mb-1">
-                  Email:
-                </label>
-                <input
-                  type="text"
-                  id="email"
-                  className="border rounded px-2 py-1 w-full"
-                  value={selectedUser.email}
-                  readOnly
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="contact" className="block font-semibold mb-1">
-                  Contact:
-                </label>
-                <input
-                  type="text"
-                  id="contact"
-                  className="border rounded px-2 py-1 w-full"
-                  defaultValue={selectedUser.contacts}
-                  onChange={(e) =>
-                    setUpdateUser({
-                      ...updatedUser,
-                      contacts: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="department"
-                  className="block font-semibold mb-1"
-                >
-                  Department:
-                </label>
-                <select
-                  className="border rounded w-full py-1 px-2"
-                  id="department"
-                  value={selectedUser.department || ""}
-                  onChange={(e) =>
-                    setUpdateUser({
-                      ...updatedUser,
-                      department: e.target.value,
-                    })
-                  }
-                >
-                  <option value="" disabled>
-                    Select a department
-                  </option>
-                  {departments.map((department, index) => (
-                    <option key={index} value={department}>
-                      {department}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="role" className="block font-semibold mb-1">
-                  Role:
-                </label>
-                <select
-                  className="border rounded w-full py-1 px-2"
-                  id="role"
-                  defaultValue={selectedUser.role ? selectedUser.role.id : ""}
-                  onChange={(e) =>
-                    setUpdateUser({
-                      ...updatedUser,
-                      role: e.target.value,
-                    })
-                  }
-                >
-                  <option value="" disabled>
-                    Select a role
-                  </option>
-                  {filteredRoles.map((role, index) => (
-                    <option key={index} value={role.id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex justify-between mt-4">
-                <button
-                  type="button"
-                  onClick={handleModalClose}
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateUser(selectedUser)}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  {updateLoading ? (
-                    <i
-                      className="pi pi-spin pi-spinner"
-                      style={{ fontSize: "1.38rem" }}
-                    ></i>
-                  ) : (
-                    "Update"
-                  )}
-                </button>
-              </div>
-            </form>
+      <Dialog
+        visible={editModalOpen}
+        style={{ width: "60vw" }}
+        onHide={handleModalClose}
+        header={
+          <h2 className="text-xl font-bold mb-4">
+            Edit User: {selectedUser.firstName} {selectedUser.lastName}
+          </h2>
+        }
+        className="bg-white p-4 shadow-lg rounded-lg "
+        footer={
+          <div className="flex justify-end mt-4">
+            <button
+              type="button"
+              onClick={() => handleUpdateUser(selectedUser)}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              {updateLoading ? (
+                <i
+                  className="pi pi-spin pi-spinner"
+                  style={{ fontSize: "1.38rem" }}
+                ></i>
+              ) : (
+                "Update"
+              )}
+            </button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form>
+          <div className="mb-4">
+            <label htmlFor="email" className="block font-semibold mb-1">
+              Email:
+            </label>
+            <input
+              type="text"
+              id="email"
+              className="border rounded px-2 py-1 w-full"
+              value={selectedUser.email}
+              readOnly
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="contact" className="block font-semibold mb-1">
+              Contact:
+            </label>
+            <input
+              type="text"
+              id="contact"
+              className="border rounded px-2 py-1 w-full"
+              defaultValue={selectedUser.contacts}
+              onChange={(e) =>
+                setUpdateUser({
+                  ...updatedUser,
+                  contacts: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="department" className="block font-semibold mb-1">
+              Department:
+            </label>
+            <Dropdown
+              id="department"
+              value={updatedUser.department}
+              options={departmentOprions}
+              onChange={(e) =>
+                setUpdateUser({
+                  ...updatedUser,
+                  department: e.target.value,
+                })
+              }
+              scrollHeight="200px"
+              placeholder={
+                selectedUser.department
+                  ? selectedUser.department
+                  : "Select a department"
+              }
+              className="w-full"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="role" className="block font-semibold mb-1">
+              Role:
+            </label>
+            <Dropdown
+              id="role"
+              value={updatedUser.role || ""}
+              options={roleOptions}
+              onChange={(e) =>
+                setUpdateUser({
+                  ...updatedUser,
+                  role: e.target.value,
+                })
+              }
+              scrollHeight="200px" // Set the scroll height as needed
+              className="w-full"
+              placeholder={
+                selectedUser.role ? selectedUser.role.name : "Select a role"
+              }
+            />
+          </div>
+        </form>
+      </Dialog>
     </div>
   );
 };

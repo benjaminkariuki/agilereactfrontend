@@ -39,6 +39,7 @@ const ActiveSprint = () => {
         life: 3000,
       });
     }
+
   };
 
   const onError = (error) => {
@@ -70,11 +71,12 @@ const ActiveSprint = () => {
       .get("https://agile-pm.agilebiz.co.ke/api/activeSprint")
       .then((response) => {
         setData(response.data);
-        onSuccess("message found successfully");
+       
+        console.log(response.data);
       })
       .catch((error) => {
-        onError(error.response.data.error);
-        onWarn("Create a Sprint");
+      
+        console.log(error.response.data.error);
       });
   };
 

@@ -13,7 +13,7 @@ const CreateUser = () => {
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const [departments] = useState([
-    "Porfolio Managers Department",
+    "Portfolio Managers Department",
     "Web Department",
     "Business Central Department",
     "Infrastructure Department",
@@ -21,7 +21,7 @@ const CreateUser = () => {
     "Implementation Department",
   ]);
   const departmentRolesMapping = {
-    "Porfolio Managers Department": [
+    "Portfolio Managers Department": [
       "Project manager",
       "Senior project manager",
       "Administrator",

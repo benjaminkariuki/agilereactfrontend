@@ -15,27 +15,37 @@ const ManageTasks = () => {
       label: "My Tasks",
       icon: <FaUser className="h-5 w-4 mr-2" />,
       command: () => setActiveComponent("MyTasks"),
+      className: activeComponent === "MyTasks" ? "border-2 border-blue-500 rounded" : "",
+
     },
 
     {
       label: "Development Tasks",
       icon: <FaCode className="h-5 w-4 mr-2"/>,
       command: () => setActiveComponent("DevelopmentTasks"),
+      className: activeComponent === "DevelopmentTasks" ? "border-2 border-blue-500 rounded" : "",
+
     },
     {
       label: "Testing Tasks",
       icon: <FaBug className="h-5 w-4 mr-2"/>,
       command: () => setActiveComponent("TestingTasks"),
+      className: activeComponent === "TestingTasks" ? "border-2 border-blue-500 rounded" : "",
+
     },
     {
       label: "Review Tasks",
       icon: <FaSearch className="h-5 w-4 mr-2"/>,
       command: () => setActiveComponent("ReviewTasks"),
+      className: activeComponent === "ReviewTasks" ? "border-2 border-blue-500 rounded" : "",
+
     },
     {
       label: "Closed Tasks",
       icon: <FaCheck className="h-5 w-4 mr-2"/>,
       command: () => setActiveComponent("ClosedTasks"),
+      className: activeComponent === "ClosedTasks" ? "border-2 border-blue-500 rounded" : "",
+
     },
   ];
 

@@ -9,9 +9,10 @@ import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import DelegateTaskDialog from "./DelegateDialog";
 
 const ReviewTasks = () => {
-  const { userRole, userEmail, userActivities } = useSelector(
+  const { userRole, userEmail, userActivities, userDepartment } = useSelector(
     (state) => state.user
   );
   const [selectedTasks, setSelectedTasks] = useState([]);
@@ -27,7 +28,12 @@ const ReviewTasks = () => {
   const [pushLoadingTest, setPushLoadingTest] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [otherData, setOtherData] = useState([]);
-
+  const [projectSubtasks, setProjectSubtasks] = useState([]);
+  const [projectInfo, setProjectInfo] = useState(null);
+  const [refreshTasks, setRefreshTasks] = useState(false);
+ const [activeView, setActiveView] = useState("My Tasks");
+  const [showDelegate, setShowDelegate] = useState(false);
+ 
   //getting permission for tasks
   const tasksActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
@@ -36,14 +42,20 @@ const ReviewTasks = () => {
     ? tasksActivity.pivot.permissions.includes("write")
     : false;
   //getting permission for only pms to close tasks
-  const hasClosePermissionTasks =
-    userRole === "Senior project manager" || userRole === "Project manager"
-      ? true
-      : false;
+ 
   //getting permission for only pms to view other tasks in different projects
+  const Role = userRole; // Replace this with how you get the user's role
+  const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
+
   const hasPermissionTasksProjects =
-    userRole === "Senior project manager" || userRole === "Project manager";
-  //toast display functions
+    normalizedRole.includes("project manager") ||
+    normalizedRole.includes("team lead");
+
+    const hasPermissionTaskDelegation = normalizedRole.includes("team lead");
+
+    const hasClosePermissionTasks = normalizedRole.includes("project manager");
+    
+
   const onSuccess = (success) => {
     if (success) {
       toast.current?.show({
@@ -76,6 +88,7 @@ const ReviewTasks = () => {
       });
     }
   };
+
   const onInfo = (info) => {
     if (info) {
       toast.current?.show({
@@ -105,15 +118,16 @@ const ReviewTasks = () => {
     else onWarn("Select atleast one Micro-task");
   };
   useEffect(() => {
-    fetchMyTasks(userEmail, userRole); // Fetch data from the API when the component mounts
+    fetchMyTasks(userEmail, userRole,userDepartment); // Fetch data from the API when the component mounts
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
-  const fetchMyTasks = (userEmail, userRole) => {
+  const fetchMyTasks = (userEmail, userRole,userDepartment) => {
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/myTasksReview", {
         params: {
           email: userEmail,
           roleName: userRole,
+          department: userDepartment,
         },
       })
       .then((response) => {
@@ -126,16 +140,23 @@ const ReviewTasks = () => {
       });
   };
   // Truncate comments to 5 words
-  const truncateComments = (rowData) => {
-    if (rowData.comment !== null) {
-      const words = rowData.comment.split(" ");
-      if (words.length > 5) {
-        const truncatedText = words.slice(0, 5).join(" ");
-        return `${truncatedText}...`;
-      }
-      return rowData.comment;
+
+ const truncateComments = (rowData) => {
+  if (rowData.comment !== null) {
+    const words = rowData.comment.split(" ");
+    let finalComment;
+
+    if (words.length > 5) {
+      const truncatedText = words.slice(0, 5).join(" ");
+      finalComment = `${truncatedText}...`;
+    } else {
+      finalComment = rowData.comment;
     }
-  };
+
+    return _.startCase(finalComment.toLowerCase());
+  }
+  return null; 
+};
 
   // Create a download link
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
@@ -156,11 +177,15 @@ const ReviewTasks = () => {
     return (
       <div>
         {rowData.path !== null ? (
-          <Button onClick={downloadFile} severity="success">
+          <Button
+            onClick={downloadFile}
+            severity="success"
+            className="w-24 h-10"
+          >
             Download File
           </Button>
         ) : (
-          <Button disabled severity="warning">
+          <Button disabled severity="warning" className="w-24 h-9">
             File Not Available
           </Button>
         )}
@@ -172,6 +197,36 @@ const ReviewTasks = () => {
   const showDetailsDialog = (rowData) => {
     setShowDetails(true);
     setMoreDetailsData(rowData);
+  };
+
+  const showSubtaskMore = (rowData) => {
+    setViewMore(true);
+    console.log(rowData);
+    setProjectSubtasks(rowData);
+  };
+
+  const disableShowSubtaskMore = () => {
+    setViewMore(false);
+    setProjectSubtasks([]);
+  };
+
+  const showDelegateDialog = (data) => {
+    setShowDelegate(true);
+    setProjectInfo(data);
+    console.log(data);
+  };
+
+  const disableShowDelegateDialog = () => {
+    setShowDelegate(false);
+    setProjectInfo(null);
+  };
+
+  const onSuccessfulDelegation = () => {
+    setRefreshTasks(!refreshTasks);
+  };
+
+  const sentenceCaseFormatter = (rowData, column) => {
+    return _.startCase(rowData[column.field]);
   };
 
   //function to push to the next stage(i.e Development)
@@ -186,7 +241,7 @@ const ReviewTasks = () => {
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
-            fetchMyTasks(userEmail, userRole);
+            fetchMyTasks(userEmail, userRole,userDepartment);
             setPushLoading(false);
           }, 1000);
           setViewMore(false);
@@ -237,7 +292,7 @@ const ReviewTasks = () => {
       .then((response) => {
         setTimeout(() => {
           onInfo(response.data.message);
-          fetchMyTasks(userEmail, userRole);
+          fetchMyTasks(userEmail, userRole,userDepartment);
           setPushLoadingTest(false);
         }, 1000);
         setShowSubmit(false);
@@ -253,74 +308,123 @@ const ReviewTasks = () => {
   return (
     <div>
       <Toast ref={toast} />
-      <ConfirmDialog />
-      <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
-        <h1>My progress chart</h1>
+      <h1>Review task(s)</h1>
+
+      <div className="flex p-4 space-x-0.5">
+        <button
+          onClick={() => setActiveView("My Tasks")}
+          className={`p-2 rounded-md ${
+            activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
+          } transition-colors`}
+        >
+          My Tasks
+        </button>
+        {hasPermissionTasksProjects && (
+          <button
+            onClick={() => setActiveView("Other Tasks")}
+            className={`p-2 rounded-md ${
+              activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+            } transition-colors`}
+          >
+            Other Tasks
+          </button>
+        )}
       </div>
 
-      <div>
-        {tasksData && microTasksData.length > 0 ? (
-          <div>
-            <div className="flex items-center justify-center pt-2">
-              <h1 className="text-xl text-black font-bold mb-4 text-center max-w-md p-3 bg-white rounded-lg shadow-lg justify-center">
-                My Tasks
-              </h1>
-            </div>
-            <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
-              {Object.entries(_.groupBy(microTasksData, "project.title")).map(
-                ([projectTitle, projectSubtasks], index) => (
-                  <div
-                    key={index}
-                    className="mb-4 border bg-white rounded-lg shadow-lg p-4"
-                  >
-                    <div>
-                      <h2 className="font-bold mb-4 text-center">
-                        {projectTitle}
-                      </h2>
+      <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
+        <p className="text-gray-600">
+          <span className="font-semibold">Sprint name:</span>
+          {_.startCase(tasksData.name)}
+        </p>
+        <p className="text-gray-600">
+          <span className="font-semibold">Status:</span>{" "}
+          {_.startCase(tasksData.status)}
+        </p>
+        <p className="text-gray-600">
+          <span className="font-semibold">Start Date:</span>
+          {tasksData.start_date}
+        </p>
+        <p className="text-gray-600">
+          <span className="font-semibold">End Date:</span>
+          {tasksData.end_date}
+        </p>
+      </div>
 
-                      <ol>
-                        {projectSubtasks.slice(0, 3).map((subtask, index) => (
-                          <li key={index}>{subtask.task}</li>
-                        ))}
-                      </ol>
+      {/* My Tasks section */}
+      {activeView === "My Tasks" && (
+        <div>
+          {tasksData && microTasksData.length > 0 ? (
+            <div>
+              <div className="flex items-center justify-center pt-2"></div>
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(_.groupBy(microTasksData, "project.id")).map(
+                  ([projectId, projectSubtasks], index) => (
+                    <div
+                      key={index}
+                      className="mb-4 border bg-white rounded-lg shadow-lg p-4"
+                    >
+                      <div>
+                        {/* Sentence casing for project title */}
+                        <h2 className="font-bold mb-4 text-center">
+                          {_.startCase(
+                            projectSubtasks[0]?.project?.title || ""
+                          )}
+                        </h2>
+                        <ol>
+                          {projectSubtasks
+                            .slice(0, 3)
+                            .map((subtask, subIndex) => (
+                              <li
+                                key={subIndex}
+                                className="border-b border-gray-300 last:border-b-0" /* Add thin line between items */
+                              >
+                                {/* Explicit count added */}
+                                {subIndex + 1}. {_.startCase(subtask.task)}
+                              </li>
+                            ))}
+                        </ol>
+                      </div>
+                      <div className="flex justify-end" key={index}>
+                        <button
+                          className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                          onClick={() => showSubtaskMore(projectSubtasks)}
+                          disabled={viewMore}
+                        >
+                          View More
+                        </button>
+                      </div>
                     </div>
+                  )
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center pt-10">
+              <div className="max-w-md p-6 bg-white rounded-lg shadow-lg justify-center">
+                <h1 className="text-center font-bold">
+                  You have no Tasks in Stage:to-do in the active Sprint
+                </h1>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
-                    <div className="flex justify-end " key={index}>
-                      <button
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                        onClick={() => setViewMore(true)}
-                        disabled={viewMore}
-                      >
-                        View More
-                      </button>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center pt-10">
-            <div className=" max-w-md p-6 bg-white rounded-lg shadow-lg justify-center">
-              <h1 className="text-center font-bold">
-                You have no Tasks in Stage:review in the active Sprint
-              </h1>
-            </div>
-          </div>
-        )}
-        {hasPermissionTasksProjects && (
-          <div>
-            {" "}
-            {otherData && otherData.length > 0 ? (
-              <div>
-                <div className="flex items-center justify-center pt-2">
-                  <h1 className="text-xl text-black font-bold mb-4 text-center max-w-md p-3 bg-white rounded-lg shadow-lg justify-center">
-                    Other Tasks
-                  </h1>
-                </div>
-                <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
-                  {Object.entries(_.groupBy(otherData, "project.title")).map(
-                    ([projectTitle, projectSubtasks], index) => (
+      {/* Other Tasks section */}
+      {activeView === "Other Tasks" && hasPermissionTasksProjects && (
+        <div>
+          {otherData && otherData.length > 0 ? (
+            <div>
+              <div className="flex items-center justify-center pt-2"></div>
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
+                {Object.entries(_.groupBy(otherData, "project.id")).map(
+                  ([projectId, projectSubtasks], index) => {
+                    // Convert project title to sentence casing
+                    let projectTitle = _.startCase(
+                      projectSubtasks[0]?.project?.title || ""
+                    );
+
+                    return (
                       <div
                         key={index}
                         className="mb-4 border bg-white rounded-lg shadow-lg p-4"
@@ -329,247 +433,299 @@ const ReviewTasks = () => {
                           <h2 className="font-bold mb-4 text-center">
                             {projectTitle}
                           </h2>
-
-                          <ol>
-                            {projectSubtasks
-                              .slice(0, 3)
-                              .map((subtask, index) => (
-                                <li key={index}>{subtask.task}</li>
-                              ))}
+                          <ol className="divide-y divide-gray-200">
+                            {projectSubtasks.slice(0, 3).map((subtask, idx) => (
+                              <li key={idx} className="py-1">
+                                {/* Convert subtask to sentence casing */}
+                                {idx + 1}. {_.startCase(subtask.task)}
+                              </li>
+                            ))}
                           </ol>
                         </div>
-                        <div className="flex justify-end " key={index}>
+                        <div className="flex justify-end">
                           <button
                             className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                            onClick={() => setViewMore(true)}
+                            onClick={() => showSubtaskMore(projectSubtasks)}
                             disabled={viewMore}
                           >
                             View More
                           </button>
                         </div>
                       </div>
-                    )
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center pt-10">
-                <div className=" max-w-md p-6 bg-white rounded-lg shadow-lg justify-center">
-                  <h1 className="text-center font-bold">
-                    You have not been assigned in any project in the active
-                    Sprint
-                  </h1>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        <div>
-          <Dialog
-            header="Subtask Details"
-            visible={viewMore}
-            onHide={() => setViewMore(false)}
-            style={{ width: "80vw" }}
-            footer={
-              <div className="justify-between flex">
-                {hasWritePermissionTasks && (
-                  <button
-                    className="px-4 py-2 bg-yellow-700 text-white rounded-md"
-                    onClick={openSubmitDialog}
-                    disabled={showSubmit} // Disable the button while loading
-                  >
-                    Push Back to Testing
-                  </button>
-                )}
-                {hasClosePermissionTasks && (
-                  <button
-                    className="px-4 py-2 bg-red-500 text-white rounded-md"
-                    onClick={openConfirmDialog}
-                    disabled={pushLoading} // Disable the button while loading
-                  >
-                    {pushLoading ? (
-                      <i
-                        className="pi pi-spin pi-spinner"
-                        style={{ fontSize: "1.4rem" }}
-                      ></i>
-                    ) : (
-                      "Close the task (s)"
-                    )}
-                  </button>
+                    );
+                  }
                 )}
               </div>
-            }
-          >
-            <DataTable
-              value={microTasksData}
-              className="border rounded-md p-4 bg-white"
-              removableSort
-              selectionMode="checkbox"
-              selection={selectedTasks}
-              onSelectionChange={(e) => setSelectedTasks(e.value)}
-              dataKey="id"
-            >
-              <Column
-                selectionMode="multiple"
-                headerStyle={{ width: "3rem" }}
-              ></Column>
-              <Column field="task" header="Task"></Column>
-              <Column field="description" header="Description"></Column>
-              <Column field="department" header="Department"></Column>
-              <Column field="status" header="Status"></Column>
-              <Column header="stages" field="stage" />
-              <Column field="start_date" header="Start Date" />
-              <Column field="end_date" header="End Date" />
-              <Column header="Comments" body={truncateComments}></Column>
-              <Column header="Download Data" body={downloadLink}></Column>
-              <Column
-                header="More Details"
-                body={(rowData) => (
-                  <div className="flex" key={rowData.id}>
-                    <FaInfoCircle
-                      className="bg-blue-500 text-white rounded cursor-pointer"
-                      size={30}
-                      style={{ marginRight: 4 }}
-                      onClick={() => showDetailsDialog(rowData)}
-                    />
-                  </div>
-                )}
-              ></Column>
-            </DataTable>
-          </Dialog>
-          <Dialog
-            header="Reason to Push back"
-            visible={showSubmit}
-            onHide={() => setShowSubmit(false)}
-            style={{ width: "50vw" }}
-          >
-            <div className="flex flex-col items-center">
-              <h2 className="mb-4">Add Comment</h2>
-              <textarea
-                type="text"
-                name="comment"
-                placeholder="Comment section"
-                onChange={(e) => {
-                  setComment(e.target.value);
-                }}
-                className="w-full border rounded py-2 px-3 mb-4"
-                style={{ height: "150px" }}
-              />
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 font-bold mb-2"
-                  htmlFor="proof-file"
-                >
-                  Upload File
-                </label>
-                <input
-                  type="file"
-                  onChange={onFileUpload}
-                  name="imageUpload"
-                  accept="*"
-                />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center pt-10">
+              <div className="max-w-md p-6 bg-white rounded-lg shadow-lg justify-center">
+                <h1 className="text-center font-bold">
+                  You have not been assigned in any project in the active Sprint
+                </h1>
               </div>
-              <div className="mt-4">
+            </div>
+          )}
+        </div>
+      )}
+
+      <div>
+        <Dialog
+          header="Subtasks"
+          visible={viewMore}
+          onHide={() => disableShowSubtaskMore()}
+          style={{ width: "98vw" }}
+          footer={
+            <div className="justify-between flex">
+              {hasClosePermissionTasks && (
                 <button
-                  onClick={submitPushBack}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-2"
-                  disabled={pushLoadingTest}
+                  className="px-4 py-2 bg-yellow-700 text-white rounded-md"
+                  onClick={openSubmitDialog}
+                  disabled={showSubmit} // Disable the button while loading
                 >
-                  {pushLoadingTest ? (
+                  Push Back to Testing
+                </button>
+              )}
+              {hasClosePermissionTasks && (
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded-md"
+                  onClick={openConfirmDialog}
+                  disabled={pushLoading} // Disable the button while loading
+                >
+                  {pushLoading ? (
                     <i
                       className="pi pi-spin pi-spinner"
                       style={{ fontSize: "1.4rem" }}
                     ></i>
                   ) : (
-                    "Submit"
+                    "Close the task (s)"
                   )}
                 </button>
-              </div>
+              )}
             </div>
-          </Dialog>
-        </div>
-        <div>
-          <Dialog
-            header={moreDetailsData.task}
-            visible={showDetails}
-            onHide={() => setShowDetails(false)}
-            style={{ width: "50vw" }}
+          }
+        >
+          <DataTable
+            value={projectSubtasks}
+            className="border rounded-md p-4 bg-white"
+            removableSort
+            selectionMode="checkbox"
+            selection={selectedTasks}
+            onSelectionChange={(e) => setSelectedTasks(e.value)}
+            dataKey="id"
           >
-            <div className="bg-white p-4 rounded-lg">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                Subtask Details
-              </h3>
-              <div className="mb-4">
-                <p className="text-gray-600">
-                  <span className="font-semibold">Task:</span>{" "}
-                  {moreDetailsData.task}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">Description:</span>{" "}
-                  {moreDetailsData.description}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">Department:</span>{" "}
-                  {moreDetailsData.department}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">Assigned To:</span>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {moreDetailsData.assignedto?.map((item, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                    >
-                      <p key={index}>
-                        {item.custom_user.firstName} {item.custom_user.lastName}{" "}
-                        - {item.custom_user.email}
-                      </p>
-                    </div>
-                  ))}
+            <Column
+              selectionMode="multiple"
+              headerStyle={{ width: "3rem" }}
+            ></Column>
+            <Column
+              field="task"
+              header="Task"
+              body={sentenceCaseFormatter}
+            ></Column>
+            <Column
+              field="description"
+              header="Description"
+              body={sentenceCaseFormatter}
+            ></Column>
+            <Column
+              field="department"
+              header="Department"
+              body={sentenceCaseFormatter}
+            ></Column>
+            <Column
+              field="status"
+              header="Status"
+              body={sentenceCaseFormatter}
+            ></Column>
+            <Column
+              header="stages"
+              field="stage"
+              body={sentenceCaseFormatter}
+            />
+            <Column field="start_date" header="Start Date" />
+            <Column field="end_date" header="End Date" />
+            <Column header="Comments" body={truncateComments}></Column>
+            <Column header="Download Data" body={downloadLink}></Column>
+            <Column
+              header="More Details"
+              body={(rowData) => (
+                <div className="flex" key={rowData.id}>
+                  <FaInfoCircle
+                    className="bg-blue-500 text-white rounded cursor-pointer"
+                    size={30}
+                    style={{ marginRight: 4 }}
+                    onClick={() => showDetailsDialog(rowData)}
+                  />
                 </div>
-                <p className="text-gray-600">
-                  <span className="font-semibold">Assigned BA:</span>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {moreDetailsData.baassignedto?.map((item, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                    >
-                      <p key={index}>
-                        {item.custom_user.firstName} {item.custom_user.lastName}{" "}
-                        - {item.custom_user.email}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+              )}
+            ></Column>
+          </DataTable>
+        </Dialog>
 
-                <p className="text-gray-600">
-                  <span className="font-semibold">Status:</span>
-                  {moreDetailsData.status}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">Stage:</span>
-                  {moreDetailsData.stage}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">Start Date:</span>
-                  {moreDetailsData.start_date}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">End Date:</span>
-                  {moreDetailsData.end_date}
-                </p>
-              </div>
-              <textarea
-                className="w-full h-32 p-2 border rounded-lg resize-none text-gray-600"
-                readOnly
-                value={moreDetailsData.comment || ""}
-              ></textarea>
+        <Dialog
+          header="Reason to Push back"
+          visible={showSubmit}
+          onHide={() => setShowSubmit(false)}
+          style={{ width: "50vw" }}
+        >
+          <div className="flex flex-col items-center">
+            <h2 className="mb-4">Add Comment</h2>
+            <textarea
+              type="text"
+              name="comment"
+              placeholder="Comment section"
+              onChange={(e) => {
+                setComment(e.target.value);
+              }}
+              className="w-full border rounded py-2 px-3 mb-4"
+              style={{ height: "150px" }}
+            />
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 font-bold mb-2"
+                htmlFor="proof-file"
+              >
+                Upload File
+              </label>
+              <input
+                type="file"
+                onChange={onFileUpload}
+                name="imageUpload"
+                accept="*"
+              />
             </div>
-          </Dialog>
-        </div>
+            <div className="mt-4">
+              <button
+                onClick={submitPushBack}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-2"
+                disabled={pushLoadingTest}
+              >
+                {pushLoadingTest ? (
+                  <i
+                    className="pi pi-spin pi-spinner"
+                    style={{ fontSize: "1.4rem" }}
+                  ></i>
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </div>
+          </div>
+        </Dialog>
+      </div>
+      <div>
+        <Dialog
+          header={moreDetailsData.task}
+          visible={showDetails}
+          onHide={() => setShowDetails(false)}
+          style={{ width: "50vw" }}
+        >
+          <div className="bg-white p-4 rounded-lg">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Subtask Details
+            </h3>
+            <div className="mb-4">
+              <p className="text-gray-600">
+                <span className="font-semibold">Task:</span>{" "}
+                {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Description:</span>{" "}
+                {_.startCase(
+                  (moreDetailsData?.description ?? "").toLowerCase()
+                )}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Department:</span>{" "}
+                {_.startCase((moreDetailsData?.department ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Assigned To:</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {moreDetailsData.assignedto?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                  >
+                    <p key={index}>
+                      {_.startCase(
+                        (item?.custom_user?.firstName ?? "").toLowerCase()
+                      )}{" "}
+                      {_.startCase(
+                        (item?.custom_user?.lastName ?? "").toLowerCase()
+                      )}{" "}
+                      -{item?.custom_user?.email}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-gray-600">
+                <span className="font-semibold">Assigned BA:</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {moreDetailsData.baassignedto?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                  >
+                    <p key={index}>
+                      {_.startCase(
+                        (item?.custom_user?.firstName ?? "").toLowerCase()
+                      )}{" "}
+                      {_.startCase(
+                        (item?.custom_user?.lastName ?? "").toLowerCase()
+                      )}{" "}
+                      -{item?.custom_user?.email}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-gray-600">
+                <span className="font-semibold">Status:</span>
+                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Stage:</span>
+                {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Start Date:</span>
+                {moreDetailsData?.start_date}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">End Date:</span>
+                {moreDetailsData?.end_date}
+              </p>
+            </div>
+            <textarea
+              className="w-full h-32 p-2 border rounded-lg resize-none text-gray-600"
+              readOnly
+              value={_.startCase(
+                (moreDetailsData?.comment ?? "").toLowerCase()
+              )}
+            ></textarea>
+
+            {hasPermissionTaskDelegation && (
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
+                onClick={() => showDelegateDialog(moreDetailsData)}
+              >
+                Delegate
+              </button>
+            )}
+          </div>
+
+          <DelegateTaskDialog
+            showDelegate={showDelegate}
+            disableShowDelegateDialog={disableShowDelegateDialog}
+            projectInfomation={projectInfo}
+            roleName={userRole}
+            onSuccess={onSuccessfulDelegation}
+          />
+        </Dialog>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { confirmDialog } from "primereact/confirmdialog";
 
 const ViewRoles = () => {
   const [roles, setRoles] = useState([]);
@@ -48,8 +48,14 @@ const ViewRoles = () => {
       header: "Delete Confirmation",
       icon: "pi pi-info-circle",
       acceptClassName: "p-button-danger",
-      accept: () => handleDeleteRole(id),
-    });
+      accept: () => {
+        handleDeleteRole(id);
+    },
+    reject: () => {
+      // You can perform any logic if needed when the user clicks "No" or simply do nothing
+  }}
+
+    );
   };
 
   useEffect(() => {
@@ -126,7 +132,7 @@ const ViewRoles = () => {
   return (
     <div className="flex justify-center items-center pt-6">
       <Toast ref={toast} />
-      <ConfirmDialog />
+     
       <div className="w-full max-w-md">
         <div className="bg-white p-8 rounded shadow">
           <h2 className="text-2xl font-bold mb-4 text-center">View Roles</h2>

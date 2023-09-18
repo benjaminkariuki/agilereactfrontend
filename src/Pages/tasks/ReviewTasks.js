@@ -51,7 +51,7 @@ const ReviewTasks = () => {
     normalizedRole.includes("project manager") ||
     normalizedRole.includes("team lead");
 
-    const hasPermissionTaskDelegation = normalizedRole.includes("team lead");
+    const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("project manager");
 
     const hasClosePermissionTasks = normalizedRole.includes("project manager");
     

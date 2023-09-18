@@ -12,6 +12,7 @@ const CreateUser = () => {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
+
   const [departments] = useState([
     "Portfolio Managers Department",
     "Web Department",
@@ -20,48 +21,6 @@ const CreateUser = () => {
     "Business Analyst Department",
     "Implementation Department",
   ]);
-  const departmentRolesMapping = {
-    "Portfolio Managers Department": [
-      "Project manager",
-      "Senior project manager",
-      "Administrator",
-    ],
-
-    "Web Department": ["Team lead web", "developer"],
-
-    "Business Central Department": [
-      "Team lead business central",
-      "Business central team",
-    ],
-
-    "Infrastructure Department": [
-      "Team lead infrastructure",
-      "infrastructure team",
-    ],
-
-    "Business Analyst Department": [
-      "business analyst",
-      "Team lead business analyst",
-    ],
-
-    "Implementation Department": [
-      "Team lead Implementation",
-      "Implementation team",
-    ],
-  };
-
-  const [filteredRoles, setfilteredroles] = useState([]);
-
-  useEffect(() => {
-    if (selelctedDepartment && selelctedDepartment in departmentRolesMapping) {
-      const departmentRoles = departmentRolesMapping[selelctedDepartment];
-
-      const filteredRoles = roles.filter((role) =>
-        departmentRoles.includes(role.name)
-      );
-      setfilteredroles(filteredRoles);
-    }
-  }, [roles, selelctedDepartment]);
 
   const onSuccessCreate = (success) => {
     if (success) {
@@ -278,11 +237,12 @@ const CreateUser = () => {
               id="roles"
               value={role_id}
               onChange={(e) => setRole(e.target.value)}
+              required
             >
               <option value="" disabled required>
                 Select a role
               </option>
-              {filteredRoles.map((role, index) => (
+              {roles.map((role, index) => (
                 <option key={index} value={role.id}>
                   {role.name}
                 </option>

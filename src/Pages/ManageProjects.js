@@ -62,6 +62,7 @@ const ManageProjects = () => {
         </svg>
       ),
       command: () => setActiveComponent("list"),
+      className: activeComponent === "list" ? "border-2 border-blue-500 rounded" : "",
     },
     {
       label: "Create Project",
@@ -83,12 +84,16 @@ const ManageProjects = () => {
       ),
       command: () => setActiveComponent("CreateProject"),
       disabled: !hasReadPermission || !hasWritePermission,
+      className: activeComponent === "CreateProject" ? "border-2 border-blue-500 rounded" : "",
+
     },
     {
       label: "Archived Projects",
       icon: <ArchiveIcon className="w-6 h-6" />,
       command: () => setActiveComponent("ArchivedProjects"),
       disabled: !hasReadPermission || !hasWritePermission,
+      className: activeComponent === "ArchivedProjects" ? "border-2 border-blue-500 rounded" : "",
+
     },
     {
       label: "View mode",
@@ -145,7 +150,7 @@ const ManageProjects = () => {
       />
     );
   } else if (activeComponent === "ArchivedProjects") {
-    activeContent = <ArchivedProjects />;
+    activeContent = <ArchivedProjects viewMode={viewMode} />;
   }
 
   // const end = <InputText placeholder="Search" type="text" className="w-full" />;end={}

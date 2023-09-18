@@ -141,7 +141,8 @@ const DelegateTaskDialog = ({
         ) || [];
     } else if (
       lowerCaseRoleName.includes("team lead") &&
-      lowerCaseRoleName.includes("business analysts")
+      lowerCaseRoleName.includes("business analyst") || lowerCaseRoleName.includes("team lead") &&
+      lowerCaseRoleName.includes("business analysts") 
     ) {
       users =
         projectData.businessanalyst?.filter(

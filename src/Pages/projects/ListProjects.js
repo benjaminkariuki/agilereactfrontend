@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { Toast } from "primereact/toast";
+import _ from "lodash";
 
 import * as AiIcons from "react-icons/ai";
+import { Paginator } from "primereact/paginator";
 
 const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   const [projects, setProjects] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  //const [viewMode, setViewMode] = useState("grid");
-  //fetching user activities and the corresponding permissions
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const toast = useRef(null);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const userActivities = useSelector((state) => state.user.userActivities);
 
   const projectsActivity = userActivities.find(
@@ -26,21 +33,95 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     fetchProjects();
   }, []);
 
-  const fetchProjects = async () => {
-    try {
-      const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjects"
-      );
+  useEffect(() => {
+    fetchProjects();
+  }, [page]);
 
-      const fetchedprojects = response.data.data;
-      // Add an "isArchiving" property to each project in the fetched data
-      const projectsWithStatus = fetchedprojects.map((project) => ({
-        ...project,
-        isArchiving: false,
-      }));
-      setProjects(projectsWithStatus);
-    } catch (error) {
-      console.error("Error getting projects:", error);
+  const onSuccessUpdate = (success) => {
+    if (success) {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successfully",
+        detail: `Name: ${success}`,
+        life: 3000,
+      });
+    }
+  };
+
+  const onError = (error) => {
+    if (error) {
+      toast.current?.show({
+        severity: "danger",
+        summary: "Error Encountered",
+        detail: handleErrorMessage(error),
+        life: 3000,
+      });
+    }
+  };
+
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+  };
+
+  const fetchProjects = () => {
+    setIsLoading(true);
+    axios
+      .get(`https://agile-pm.agilebiz.co.ke/api/allProjects?page=${page + 1}`)
+      .then((response) => {
+        console.log(response.data.data.data);
+        setProjects(response.data.data.data);
+        setTotalRecords(response.data.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        onError(error);
+        console.error("Error getting projects:", error);
+        setIsLoading(false);
+      });
+  };
+
+  const handleSearch = () => {
+    if (searchTerm && searchTerm.trim() !== "") {
+      setIsLoading(true);
+      // Modify the endpoint to accommodate the searchTerm in the query string
+      axios
+        .get(
+          `https://agile-pm.agilebiz.co.ke/api/allProjects?page=${
+            page + 1
+          }&searchTerm=${searchTerm}`
+        )
+        .then((response) => {
+          console.log(response.data.data.data);
+          setProjects(response.data.data.data);
+          setTotalRecords(response.data.data.total);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          onError(error);
+          console.error("Error getting projects:", error);
+          setIsLoading(false);
+        });
+    } else {
+      // If there is no search term, just fetch porjects normally
+      fetchProjects();
     }
   };
 
@@ -48,20 +129,13 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     try {
       setIsSubmitting(true);
       // Update the "isArchiving" state of the selected project to true
-      setProjects((prevProjects) =>
-        prevProjects.map((project) =>
-          project.id === id ? { ...project, isArchiving: true } : project
-        )
-      );
       const response = await axios.post(
         `https://agile-pm.agilebiz.co.ke/api/archive/${id}`
       );
       // If archive was successful
       if (response.status === 200) {
         // Archive successful
-        console.log("archived");
-        // Refetch the projects
-        await fetchProjects();
+        fetchProjects();
       } else {
         // Handle other status codes if needed
         console.log("Failed to archive project:", response.data.message);
@@ -85,12 +159,6 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       }
     } finally {
       // Reset the "isArchiving" state to false after the archiving process is done
-
-      setProjects((prevProjects) =>
-        prevProjects.map((project) =>
-          project.id === id ? { ...project, isArchiving: false } : project
-        )
-      );
 
       setIsSubmitting(false);
     }
@@ -153,22 +221,64 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   );
 
   return (
-    <div>
-      {errorMessage && <p>{errorMessage}</p>}{" "}
-      <div
-        className={
-          viewMode === "grid"
-            ? "grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4"
-            : "flex flex-col gap-4"
-        }
-      >
-        {projects.map((project) => (
-          <div key={project.id}>
-            <ProjectCard project={project} />
-          </div>
-        ))}
+    <>
+      <Toast ref={toast} />
+
+      <div className="mb-4 flex justify-end mt-0.5">
+        <input
+          type="text"
+          placeholder="Search projects"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            handleSearch();
+          }}
+          className="border rounded px-2 py-1 w-1/3 mr-2"
+        />
       </div>
-    </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center h-24">
+          <i className="pi pi-spin pi-spinner text-blue-500 text-4xl"></i>
+        </div>
+      ) : projects.length === 0 ? (
+        <div>No projects found</div>
+      ) : (
+        <div>
+          {errorMessage && <p>{errorMessage}</p>}
+
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4"
+                : "flex flex-col gap-4"
+            }
+          >
+            {projects.map((project) => (
+              <div key={project.id}>
+                <ProjectCard project={project} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6">
+        {projects.length > 0 ? (
+          <Paginator
+            first={page * 5}
+            rows={5}
+            totalRecords={totalRecords}
+            onPageChange={(e) => {
+              setPage(e.page);
+            }}
+            template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
+          />
+        ) : (
+          ""
+        )}
+      </div>
+    </>
   );
 };
 

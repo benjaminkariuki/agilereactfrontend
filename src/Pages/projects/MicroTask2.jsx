@@ -35,6 +35,7 @@ const MicroTask = ({
   const [loading, setIsLoading] = useState(false);
   const [pustLoading, setPushLoading] = useState(false);
   const [taskcreate, setTaskCreate] = useState(false);
+
   const [departments] = useState([
     "Porfolio Managers Department",
     "Web Department",
@@ -355,9 +356,7 @@ const MicroTask = ({
       });
   };
 
-  const handleDownloadMicroTaskData = () => {
-    axios.get("");
-  };
+  
 
   //function for [ushing to sprint
   const handlePushtoSprint = () => {
@@ -441,30 +440,37 @@ const MicroTask = ({
     setCreateTaskDialogVisible(false);
   };
   //option based on business analyst in the project
-  const bas = businessAnalysts
-    ?.filter((user) => user.status === "active")
-    .map((user, index) => ({
+  const bas = teamLeads
+  ?.filter((user) => user.status === "active" && user.user?.department?.toLowerCase().includes("business analyst department"))
+  .map((user, index) => ({
       key: index,
       label: user.user?.firstName + " " + user.user?.lastName,
       value: user.user?.email,
-    }));
+  }));
+
   //option based on team leads in the project
   const assigningUser = (department) => {
-    const filteredUser = projectUsers
-      ?.filter((user) => user.user?.department === department);
+    // Determine the array to use based on the department
+    let sourceArray;
+    if (department.toLowerCase() === "porfolio managers department") {
+        sourceArray = projectManagers;
+    } else {
+        sourceArray = teamLeads;
+    }
+
+    // Filter the chosen array based on department and active status
+    const filteredUser = sourceArray
+      ?.filter(user => user.user?.department.toLowerCase() === department.toLowerCase() && user?.status === "active");
+    
+    // Map the filtered array to produce the desired output
     return filteredUser
-      .filter((user) => user?.status === "active")
       .map((user, index) => ({
         key: index,
-        label:
-          user.user?.firstName +
-          " " +
-          user.user?.lastName +
-          "-" +
-          user.user?.role.name,
+        label: user.user?.firstName + " " + user.user?.lastName + "-" + user.user?.role.name,
         value: user?.user.email,
       }));
-  };
+};
+
   //updtaing the task details
   const handleEditTaskSave = () => {
     setEditLoading(true);
@@ -524,15 +530,8 @@ const MicroTask = ({
               >
                 Download Template
               </button>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4">
-                Upload Data
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                onClick={handleDownloadMicroTaskData}
-              >
-                Micro Task Data
-              </button>
+             
+             
             </div>
             <div>
               <div className="mb-4">

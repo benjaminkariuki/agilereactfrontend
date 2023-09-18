@@ -1,14 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { confirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
+import _ from "lodash";
+import { Paginator } from "primereact/paginator";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [departments] = useState([
     "Porfolio Managers Department",
     "Web Department",
@@ -17,35 +24,7 @@ const Users = () => {
     "Business Analyst Department",
     "Implementation Department",
   ]);
-  const departmentRolesMapping = {
-    "Porfolio Managers Department": [
-      "Project manager",
-      "Senior project manager",
-      "Administrator",
-    ],
 
-    "Web Department": ["Team lead web", "developer"],
-
-    "Business Central Department": [
-      "Team lead business central",
-      "Business central team",
-    ],
-
-    "Infrastructure Department": [
-      "Team lead infrastructure",
-      "infrastructure team",
-    ],
-
-    "Business Analyst Department": [
-      "business analyst",
-      "Team lead business analyst",
-    ],
-
-    "Implementation Department": [
-      "Team lead Implementation",
-      "business analyst",
-    ],
-  };
   const [roles, setRoles] = useState([]);
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [filteredRoles, setfilteredroles] = useState([]);
@@ -73,7 +52,7 @@ const Users = () => {
       toast.current?.show({
         severity: "warn",
         summary: "Error updating user",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -95,7 +74,7 @@ const Users = () => {
       toast.current?.show({
         severity: "danger",
         summary: "Error Encountered",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -107,33 +86,36 @@ const Users = () => {
       header: "Delete Confirmation",
       icon: "pi pi-info-circle",
       acceptClassName: "p-button-danger",
-      accept: () => handleDeleteUser(id),
+      accept: () => {
+        handleDeleteUser(id);
+      },
+      reject: () => {
+        // You can perform any logic if needed when the user clicks "No" or simply do nothing
+      },
     });
   };
-
-  useEffect(() => {
-    if (updatedUser.department in departmentRolesMapping) {
-      const departmentRoles = departmentRolesMapping[updatedUser.department];
-      const filteredRoles = roles.filter((role) =>
-        departmentRoles.includes(role.name)
-      );
-      setfilteredroles(filteredRoles);
-    }
-  }, [updatedUser]);
 
   useEffect(() => {
     fetchUsers();
     fetchRoles();
   }, []);
 
+  useEffect(() => {
+    fetchUsers();
+  }, [page]);
+
   const fetchUsers = () => {
+    setIsLoading(true);
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allUsers")
+      .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}`)
       .then((response) => {
-        setUsers(response.data.users);
+        setUsers(response.data.users.data);
+        setTotalRecords(response.data.users.total);
+        setIsLoading(false);
       })
       .catch((error) => {
-        onError(error.response.data.message);
+        onError(error);
+        setIsLoading(false);
       });
   };
 
@@ -144,7 +126,7 @@ const Users = () => {
         setRoles(response.data.roles);
       })
       .catch((error) => {
-        onError(error.response.data.message);
+        onError(error);
       });
   };
 
@@ -193,7 +175,9 @@ const Users = () => {
         fetchUsers();
       })
       .catch((error) => {
-        onErrorUpdate(error.response.data.message);
+        const errorMessage = handleErrorMessage(error.response.data);
+
+        onErrorUpdate(errorMessage);
         setUpdateLoading(false);
       });
   };
@@ -208,17 +192,67 @@ const Users = () => {
     });
   };
 
+  const handleSearch = () => {
+    if (searchTerm && searchTerm.trim() !== '') {
+      setIsLoading(true);
+      // Modify the endpoint to accommodate the searchTerm in the query string 
+      axios
+        .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`)
+        .then((response) => {
+          setUsers(response.data.users.data);
+          setTotalRecords(response.data.users.total);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          onError(error);
+          setIsLoading(false);
+        });
+    } else {
+      // If there is no search term, just fetch users normally
+      fetchUsers();
+    }
+  };
+
+
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+  };
+
   const departmentOprions = departments.map((department) => ({
     label: department,
     value: department,
   }));
-  const roleOptions = filteredRoles.map((role) => ({
+  const roleOptions = roles.map((role) => ({
     label: role.name,
     value: role.id,
   }));
 
   const renderUserList = () => {
+
+    if (users.length === 0) {
+      return <div>No users found</div>;
+    }
     return (
+     
+      
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {users.map((user) => (
           <div key={user.id} className="bg-white rounded-lg shadow p-4">
@@ -226,7 +260,7 @@ const Users = () => {
               <div className="w-2/3">
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Full names:</span>{" "}
-                  {user.firstName} {user.lastName}
+                  {_.startCase(`${user.firstName} ${user.lastName}`)}
                 </p>
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Email:</span> {user.email}
@@ -237,11 +271,11 @@ const Users = () => {
                 </p>
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Department:</span>{" "}
-                  {user.department ? user.department : ""}
+                  {user.department ? _.startCase(user.department) : ""}
                 </p>
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Role:</span>{" "}
-                  {user.role ? user.role.name : ""}
+                  {user.role ? _.startCase(user.role.name) : ""}
                 </p>
               </div>
               <div className="w-1/3 flex flex-col items-end justify-between ml-4">
@@ -284,11 +318,48 @@ const Users = () => {
       style={{ overflowY: "auto", maxHeight: "calc(100vh - 90px)" }}
     >
       <Toast ref={toast} />
-      <ConfirmDialog />
+
       <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
         Users
       </h1>
-      {renderUserList()}
+
+      <div className="mb-4 flex justify-end">
+        <input
+          type="text"
+          placeholder="Search user"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            handleSearch();
+          }}
+          
+          className="border rounded px-2 py-1 w-1/3 mr-2"
+        />
+        
+      </div>
+
+      {!isLoading ? (
+        renderUserList()
+      ) : (
+        <div className="flex justify-center items-center h-24">
+          <i className="pi pi-spin pi-spinner text-blue-500 text-4xl"></i>
+        </div>
+      )}
+
+      <div className="mb-6">
+
+       {users.length > 0 ? (<Paginator
+          first={page * 10}
+          rows={10}
+          totalRecords={totalRecords}
+          onPageChange={(e) => {
+            setPage(e.page);
+          }}
+          template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
+        />): ''
+}
+
+      </div>
 
       {/* Edit User Modal */}
       <Dialog

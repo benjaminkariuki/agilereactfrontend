@@ -28,6 +28,9 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     teamLeads: [],
     editedTeamLeads: [], //updating team leads
 
+    organization: [],
+    editedOrganization: [],
+
     clientName: "",
     editedClientName: "", // updating client names
 
@@ -51,6 +54,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   });
   const [usersData, setUsersData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
   const categoryOptions = [
     { label: "Implementation", value: "implementation" },
     { label: "Support", value: "support" },
@@ -127,7 +131,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   const fetchUsers = () => {
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allUsers")
+      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData")
       .then((response) => {
         setUsersData(response.data.users);
       })
@@ -158,6 +162,10 @@ const EditProject = ({ projectId, routeToListProjects }) => {
           .filter((user) => user.status !== "inactive")
           .map((tl) => tl.userId);
 
+        const organizationIds = fetchedprojectsid.organization
+          .filter((user) => user.status !== "inactive")
+          .map((org) => org.userId);
+
         setProjectData({
           title: fetchedprojectsid.title,
           overview: fetchedprojectsid.overview,
@@ -167,6 +175,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
           businessAnalyst: businessAnalystIds,
           developers: developersIds,
           teamLeads: teamLeadsIds,
+          organization: organizationIds,
           clientName: fetchedprojectsid.clientname,
           clientContacts: fetchedprojectsid.clientcontact,
           clientEmail: fetchedprojectsid.clientemail,
@@ -177,14 +186,8 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         });
       })
       .catch((error) => {
-        if (error.response && error.response.status === 429) {
-          // Retry the API call after a delay (e.g., 2 seconds)
-          setTimeout(() => {
-            fetchProjectDetails(projectId);
-          }, 2000);
-        } else {
-          console.log("Error fetching project details:", error);
-        }
+        console.log("Error fetching project details:", error);
+        onError(error);
       });
   };
 
@@ -285,6 +288,10 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       formData.append(`teamleads[${index}]`, tl);
     });
 
+    projectData.editedOrganization?.forEach((org, index) => {
+      formData.append(`organization[${index}]`, org);
+    });
+
     if (projectData.editedcategory && projectData.editedcategory.trim !== "") {
       formData.append("category", projectData.editedcategory);
     }
@@ -308,7 +315,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
           setIsLoading(false);
           routeToListProjects();
         }, 1000);
-        
       })
       .catch((error) => {
         onError(error.response.data.error);
@@ -392,6 +398,13 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       );
   };
 
+  const filterWithDeveloper = () => {
+    return filterUsersByRoleAndDepartment(
+      "developer",
+      "Business Central Department"
+    ).concat(filterUsersByRoleAndDepartment("developer", "Web Department"));
+  };
+
   // Filter users for project managers and senior project managers
   const getProjectManagers = (department) => {
     return filterUsersByRoleAndDepartment("Project manager", department);
@@ -402,6 +415,10 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     return filterUsersByRoleAndDepartment("business analyst", department);
   };
 
+  // Filter users for infrastructure
+  const getSystemEngineers = (department) => {
+    return filterUsersByRoleAndDepartment("systems enginner", department);
+  };
   // Filter users for developers
   const getDevelopers = (department) => {
     return filterUsersByRoleAndDepartment("developer", department);
@@ -409,7 +426,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   return (
     <div className="bg-white rounded-lg  shadow p-4">
-      <Toast ref={toast}  />
+      <Toast ref={toast} />
       <form onSubmit={handleSubmit}>
         <h2 className="text-xl font-semibold mb-4 text-center">
           Edit Project {projectData.title}
@@ -613,6 +630,45 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                 )
               )}
             </div>
+            {/* Team Leads */}
+            <div className="mb-4">
+              <label htmlFor="teamLeads" className="block text-sm font-medium">
+                Team Leads
+              </label>
+              {filterWithTeamLead().map((user) => (
+                <div key={user.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`teamLead-${user.id}`}
+                    name="teamLeads"
+                    value={user.id}
+                    onChange={(e) =>
+                      handleRoleCheckboxChange(
+                        "editedTeamLeads",
+                        user.id,
+                        e.target.value
+                      )
+                    }
+                    className={`form-checkbox ${
+                      projectData.teamLeads.includes(user.id)
+                        ? "checked:bg-red-500"
+                        : "checked:bg-blue-500"
+                    } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
+                  />
+                  <label
+                    htmlFor={`teamLead-${user.id}`}
+                    className={`ml-2 text-sm ${
+                      projectData.teamLeads.includes(user.id)
+                        ? "text-blue-600"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {user.firstName} {user.lastName} - {user.department}
+                  </label>
+                </div>
+              ))}
+            </div>
+
             {/* Business Analyst */}
             <div className="mb-4">
               <label
@@ -656,35 +712,36 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                 )
               )}
             </div>
-            {/* Team Leads */}
+
+            {/* Developers */}
             <div className="mb-4">
-              <label htmlFor="teamLeads" className="block text-sm font-medium">
-                Team Leads
+              <label htmlFor="developers" className="block text-sm font-medium">
+                Developers
               </label>
-              {filterWithTeamLead().map((user) => (
+              {filterWithDeveloper().map((user) => (
                 <div key={user.id} className="flex items-center">
                   <input
                     type="checkbox"
-                    id={`teamLead-${user.id}`}
-                    name="teamLeads"
+                    id={`developers-${user.id}`}
+                    name="developers"
                     value={user.id}
                     onChange={(e) =>
                       handleRoleCheckboxChange(
-                        "editedTeamLeads",
+                        "editedDevelopers",
                         user.id,
-                        e.target.value
+                        e.target.checked
                       )
                     }
                     className={`form-checkbox ${
-                      projectData.teamLeads.includes(user.id)
+                      projectData.developers.includes(user.id)
                         ? "checked:bg-red-500"
                         : "checked:bg-blue-500"
                     } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
                   />
                   <label
-                    htmlFor={`teamLead-${user.id}`}
+                    htmlFor={`developers-${user.id}`}
                     className={`ml-2 text-sm ${
-                      projectData.teamLeads.includes(user.id)
+                      projectData.developers.includes(user.id)
                         ? "text-blue-600"
                         : "text-gray-700"
                     }`}
@@ -694,35 +751,39 @@ const EditProject = ({ projectId, routeToListProjects }) => {
                 </div>
               ))}
             </div>
-            {/* Developers */}
+
+            {/* infrastructure */}
             <div className="mb-4">
-              <label htmlFor="developers" className="block text-sm font-medium">
-                Developers
+              <label
+                htmlFor="systemsenginneer"
+                className="block text-sm font-medium"
+              >
+                Infrastructure
               </label>
-              {getDevelopers("Web Department").map((user) => (
+              {getSystemEngineers("Infrastructure Department").map((user) => (
                 <div key={user.id} className="flex items-center">
                   <input
                     type="checkbox"
-                    id={`developer-${user.id}`}
-                    name="developers"
+                    id={`organization-${user.id}`}
+                    name="organization"
                     value={user.id}
                     onChange={(e) =>
                       handleRoleCheckboxChange(
-                        "editedDevelopers",
+                        "editedOrganization",
                         user.id,
-                        e.target.value
+                        e.target.checked
                       )
                     }
                     className={`form-checkbox ${
-                      projectData.developers.includes(user.id)
+                      projectData.organization.includes(user.id)
                         ? "checked:bg-red-500"
                         : "checked:bg-blue-500"
-                    } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md  checked:border-transparent focus:outline-none`}
+                    } appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
                   />
                   <label
-                    htmlFor={`developer-${user.id}`}
+                    htmlFor={`organization-${user.id}`}
                     className={`ml-2 text-sm ${
-                      projectData.developers.includes(user.id)
+                      projectData.organization.includes(user.id)
                         ? "text-blue-600"
                         : "text-gray-700"
                     }`}

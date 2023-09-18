@@ -5,6 +5,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import Subtasks from "./Subtasks";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
+import _ from "lodash";
 
 const ActiveSprint = () => {
   const [data, setData] = useState(null);
@@ -165,7 +166,7 @@ const ActiveSprint = () => {
       },
     },
   };
-  //fucntion to refetch data when task(s) is removed
+  //function to refetch data when task(s) is removed
   const reloadData = () => {
     fetchActiveSprint();
   };

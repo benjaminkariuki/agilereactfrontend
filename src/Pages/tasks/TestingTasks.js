@@ -53,7 +53,7 @@ const TestingTasks = () => {
     normalizedRole.includes("project manager") ||
     normalizedRole.includes("team lead");
 
-  const hasPermissionTaskDelegation = normalizedRole.includes("team lead");
+  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("project manager");
   const hasPermissionPushReviewAndBackTesting =
     normalizedRole.includes("team lead") ||
     normalizedRole.includes("business analyst");
@@ -669,25 +669,16 @@ const TestingTasks = () => {
           <div className="flex flex-col items-center">
             <h2 className="mb-4 font-bold">Add Comment</h2>
 
-            <div className="hide-tinymce-watermark">
-            <Editor
-              initialValue=""
-              init={{
-                height: 150,
-                menubar: false,
-                plugins: [
-                  "advlist autolink lists link charmap print preview anchor",
-                  "searchreplace visualblocks code fullscreen",
-                  "insertdatetime media table paste code help wordcount",
-                ],
-                toolbar:
-                  "undo redo | formatselect | bold italic backcolor | \
-              alignleft aligncenter alignright alignjustify | \
-              bullist numlist outdent indent | removeformat",
-              }}
-              onEditorChange={(content) => setComment(content)}
-            />
-            </div>
+            <textarea
+                type="text"
+                name="comment"
+                placeholder="Comment section"
+                onChange={(e) => {
+                  setComment(e.target.value);
+                }}
+                className="w-full border rounded py-2 px-3 mb-4"
+                style={{ height: "150px" }}
+              />
 
             <div className="mb-4">
               <label

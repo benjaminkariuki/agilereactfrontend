@@ -11,9 +11,10 @@ import { Calendar } from "primereact/calendar";
 import FileDownload from "react-file-download";
 import { AiFillEdit } from "react-icons/ai";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { confirmDialog } from "primereact/confirmdialog";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useSelector } from "react-redux";
+import { Paginator } from "primereact/paginator";
 
 const MicroTask = ({
   projectId,
@@ -33,8 +34,12 @@ const MicroTask = ({
   const [filters, setFilters] = useState(null);
   const [statuses] = useState(["pending", "completed", "highpriority"]);
   const [loading, setIsLoading] = useState(false);
+  const [isloading, set_IsLoading] = useState(false);
   const [pustLoading, setPushLoading] = useState(false);
   const [taskcreate, setTaskCreate] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [departments] = useState([
     "Porfolio Managers Department",
@@ -65,6 +70,7 @@ const MicroTask = ({
     assignedTl: "",
     assigneBa: "",
   });
+
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [projectUsers, setProjectUsers] = useState([]);
@@ -88,7 +94,7 @@ const MicroTask = ({
   const tasksActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
-  
+
   const hasWritePermissionTasks = tasksActivity
     ? tasksActivity.pivot.permissions.includes("write")
     : false;
@@ -97,7 +103,7 @@ const MicroTask = ({
   const sprintprioritiesActivity = userActivities.find(
     (activity) => activity.name === "Sprint priorities"
   );
- 
+
   const hasWritePermissionSprint = sprintprioritiesActivity
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;
@@ -127,6 +133,10 @@ const MicroTask = ({
     teamLeads,
     developers,
   ]);
+
+  useEffect(() => {
+    fetchSubtasks(projectId,phaseId,activityId);
+  }, [page]);
 
   const getSeverity = (status) => {
     switch (status) {
@@ -166,6 +176,17 @@ const MicroTask = ({
     }
   };
 
+  const onErrorF = (error) => {
+    if (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error occurred",
+        detail: handleErrorMessage(error),
+        life: 3000,
+      });
+    }
+  };
+
   const onWarn = (error) => {
     if (error) {
       toast.current?.show({
@@ -176,6 +197,20 @@ const MicroTask = ({
       });
     }
   };
+
+
+  const onWarnF = (error) => {
+    if (error) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Please upload micro task(s)",
+        detail: handleErrorMessage(error),
+        life: 3000,
+      });
+    }
+  };
+
+
   const onInfo = (info) => {
     if (info) {
       toast.current?.show({
@@ -301,6 +336,28 @@ const MicroTask = ({
     setIsEditTaskModalOpen(true); // Open the edit modal
   };
 
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+  };
+
   const handleCloseEditModal = () => {
     setEditingTask({
       id: null,
@@ -315,6 +372,7 @@ const MicroTask = ({
     setEditLoading(false);
     setIsEditTaskModalOpen(false);
   };
+
   const handleMicroTaskDelete = (id) => {
     axios
       .delete(`https://agile-pm.agilebiz.co.ke/api/deleteSubtask/${id}`, {
@@ -337,28 +395,61 @@ const MicroTask = ({
       });
   };
 
+  const handleSearch = () => {
+    if (searchTerm || searchTerm.trim() !== "") {
+      set_IsLoading(true);
+      // Modify the endpoint to accommodate the searchTerm in the query string
+      axios
+        .get(
+          `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
+            page + 1
+          }&searchTerm=${searchTerm}`
+        )
+        .then((response) => {
+          set_IsLoading(false);
+          console.log(response.data.data.data);
+          setSubtasks(response.data.data.data);
+          setTotalRecords(response.data.data.total);
+         
+        })
+        .catch((error) => {
+          set_IsLoading(false);
+          // onErrorF(error.response.message);
+          console.error("Error getting projects:", error);
+          
+        });
+    } else {
+      // If there is no search term, just fetch porjects normally
+      fetchSubtasks(projectId,phaseId,activityId);
+    }
+  };
   // effect to fetch subtasks
   const fetchSubtasks = (projectId, phaseId, activityId) => {
+    set_IsLoading(true);
     axios
       .get(
-        `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}`
+        `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
+          page + 1
+        }`
       )
       .then((response) => {
-        setSubtasks(response.data.data);
-        onSuccess("Successfully fetched Micro tasks");
+        set_IsLoading(false);
+        setSubtasks(response.data.data.data);
+        console.log(response.data.data.data);
+        setTotalRecords(response.data.data.total);
+        // onSuccess("Successfully fetched Micro tasks");
       })
       .catch((error) => {
+        set_IsLoading(false);
         if (error.response && error.response.status === 404) {
-          onWarn(error.response.data.message);
+          // onWarn(error.response.message);
         } else {
-          onError("Error getting subtasks");
+          // onErrorF(error.response.message);
         }
       });
   };
 
-  
-
-  //function for [ushing to sprint
+  //function for [pushing to sprint
   const handlePushtoSprint = () => {
     setPushLoading(true);
     const selectedIds = selectedRows.map((row) => row.id);
@@ -441,35 +532,48 @@ const MicroTask = ({
   };
   //option based on business analyst in the project
   const bas = teamLeads
-  ?.filter((user) => user.status === "active" && user.user?.department?.toLowerCase().includes("business analyst department"))
-  .map((user, index) => ({
+    ?.filter(
+      (user) =>
+        user.status === "active" &&
+        user.user?.department
+          ?.toLowerCase()
+          .includes("business analyst department")
+    )
+    .map((user, index) => ({
       key: index,
       label: user.user?.firstName + " " + user.user?.lastName,
       value: user.user?.email,
-  }));
+    }));
 
   //option based on team leads in the project
   const assigningUser = (department) => {
     // Determine the array to use based on the department
     let sourceArray;
     if (department.toLowerCase() === "porfolio managers department") {
-        sourceArray = projectManagers;
+      sourceArray = projectManagers;
     } else {
-        sourceArray = teamLeads;
+      sourceArray = teamLeads;
     }
 
     // Filter the chosen array based on department and active status
-    const filteredUser = sourceArray
-      ?.filter(user => user.user?.department.toLowerCase() === department.toLowerCase() && user?.status === "active");
-    
+    const filteredUser = sourceArray?.filter(
+      (user) =>
+        user.user?.department.toLowerCase() === department.toLowerCase() &&
+        user?.status === "active"
+    );
+
     // Map the filtered array to produce the desired output
-    return filteredUser
-      .map((user, index) => ({
-        key: index,
-        label: user.user?.firstName + " " + user.user?.lastName + "-" + user.user?.role.name,
-        value: user?.user.email,
-      }));
-};
+    return filteredUser.map((user, index) => ({
+      key: index,
+      label:
+        user.user?.firstName +
+        " " +
+        user.user?.lastName +
+        "-" +
+        user.user?.role.name,
+      value: user?.user.email,
+    }));
+  };
 
   //updtaing the task details
   const handleEditTaskSave = () => {
@@ -514,7 +618,7 @@ const MicroTask = ({
   return (
     <div>
       <Toast ref={toast} />
-      <ConfirmDialog />
+
       <div className="flex justify-content-center">
         <Dialog
           header={"Edit Micro Task"}
@@ -530,8 +634,6 @@ const MicroTask = ({
               >
                 Download Template
               </button>
-             
-             
             </div>
             <div>
               <div className="mb-4">
@@ -584,16 +686,32 @@ const MicroTask = ({
         <Dialog
           visible={isViewModalOpen}
           onHide={() => setIsViewModalOpen(false)}
-          style={{ width: "80vw" }}
+          style={{ width: "98vw" }}
           header={
-            hasWritePermissionTasks && (
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                onClick={() => setCreateTaskDialogVisible(true)}
-              >
-                Add Task
-              </button>
-            )
+            <>
+              {hasWritePermissionTasks && (
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
+                  onClick={() => setCreateTaskDialogVisible(true)}
+                >
+                  Add Task
+                </button>
+              )}
+        
+              {/* Search Input - outside the conditional rendering */}
+              <div className="mb-4 flex justify-end mt-0.5">
+                <input
+                  type="text"
+                  placeholder="Search tasks"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    handleSearch();
+                  }}
+                  className="border rounded px-2 py-1 w-1/3 mr-2"
+                />
+              </div>
+            </>
           }
           footer={
             <div className="flex justify-between">
@@ -622,6 +740,15 @@ const MicroTask = ({
             </div>
           }
         >
+
+{isloading ? (
+  <div className="flex justify-center items-center h-24">
+    <i className="pi pi-spin pi-spinner text-blue-500 text-4xl"></i>
+  </div>
+) : subtasks.length === 0 ? (
+  <div>No subtasks found.</div>
+) : (
+
           <DataTable
             value={subtasks}
             emptyMessage="No subtasks found."
@@ -646,7 +773,7 @@ const MicroTask = ({
               filter
               filterPlaceholder="Search by task name"
             ></Column>
-            <Column field="description" header="Task Description"></Column>
+            {/* <Column field="description" header="Task Description"></Column> */}
             <Column field="start_date" header="Start Date" sortable></Column>
             <Column field="end_date" header="End Date" sortable></Column>
             <Column
@@ -718,161 +845,175 @@ const MicroTask = ({
               ></Column>
             )}
           </DataTable>
-          {/*Add/Create task Modal */}
-          <Dialog
-            header="Add Task"
-            visible={createTaskDialogVisible}
-            onHide={closeTaskCreate}
-            className="w-2/3"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-              {/*Left section on full screen*/}
-              <div className="col-span-1 md:col-span-1">
-                <div className="mb-4">
-                  <label htmlFor="task" className="block font-medium mb-1">
-                    Task:
-                  </label>
-                  <input
-                    type="text"
-                    id="task"
-                    value={newTask.task}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, task: e.target.value })
-                    }
-                    className="w-full border rounded py-2 px-3"
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="description"
-                    className="block font-medium mb-1"
-                  >
-                    Task Description:
-                  </label>
-                  <textarea
-                    type="text"
-                    id="description"
-                    defaultValue={newTask.description}
-                    onChange={(e) => {
-                      setNewTask({ ...newTask, description: e.target.value });
-                    }}
-                    className="w-full border rounded py-2 px-3"
-                    style={{ height: "320px" }}
-                  />
-                </div>
+)}
+          {/* Pagination Controls */}
+
+          <div className="mb-6">
+            {subtasks.length > 0 ? (
+              <Paginator
+                first={page * 10}
+                rows={10}
+                totalRecords={totalRecords}
+                onPageChange={(e) => {
+                  setPage(e.page);
+                }}
+                template={{
+                  layout: "PrevPageLink CurrentPageReport NextPageLink",
+                }}
+              />
+            ) : (
+              ""
+            )}
+          </div>
+        </Dialog>
+
+        {/*Add/Create task Modal */}
+        <Dialog
+          header="Add Task"
+          visible={createTaskDialogVisible}
+          onHide={closeTaskCreate}
+          className="w-2/3"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+            {/*Left section on full screen*/}
+            <div className="col-span-1 md:col-span-1">
+              <div className="mb-4">
+                <label htmlFor="task" className="block font-medium mb-1">
+                  Task:
+                </label>
+                <input
+                  type="text"
+                  id="task"
+                  value={newTask.task}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, task: e.target.value })
+                  }
+                  className="w-full border rounded py-2 px-3"
+                  required
+                />
               </div>
-              {/*Rigth section on full screen*/}
-              <div className="col-span-1 md:col-span-1">
-                <div className="mb-4">
-                  <label
-                    htmlFor="department"
-                    className="block font-medium mb-1"
-                  >
-                    Department:
-                  </label>
-                  <Dropdown
-                    id="department"
-                    value={newTask.department}
-                    options={departments.map((dep) => ({
-                      label: dep,
-                      value: dep,
-                    }))}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, department: e.value })
-                    }
-                    placeholder="Select a department"
-                    className="w-full border rounded py-2 px-3"
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="start_date"
-                    className="block font-medium mb-1"
-                  >
-                    Start Date:
-                  </label>
-                  <Calendar
-                    id="start_date"
-                    value={newTask.start_date}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, start_date: e.value })
-                    }
-                    className="w-full  rounded"
-                    dateFormat="yy/mm/dd"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="end_date" className="block font-medium mb-1">
-                    End Date:
-                  </label>
-                  <Calendar
-                    id="end_date"
-                    value={newTask.end_date}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, end_date: e.value })
-                    }
-                    className="w-full  rounded"
-                    dateFormat="yy/mm/dd"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="businessAnalyst">
-                    Assign to Business Analyst:
-                  </label>
-                  <Dropdown
-                    id="business-ananlyst"
-                    value={newTask.assigneBa}
-                    options={bas}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, assigneBa: e.value })
-                    }
-                    placeholder="Select a business analyst"
-                    className="w-full border rounded py-2 px-3"
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="teamLead">
-                    Assign Team Lead/Project Manager:
-                  </label>
-                  <Dropdown
-                    id="team-lead"
-                    value={newTask.assigneTl}
-                    options={assigningUser(newTask.department ? newTask.department : "")}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, assigneTl: e.value })
-                    }
-                    placeholder="Select a Team Lead"
-                    className="w-full border rounded py-2 px-3"
-                    required
-                  />
-                </div>
+              <div className="mb-4">
+                <label htmlFor="description" className="block font-medium mb-1">
+                  Task Description:
+                </label>
+                <textarea
+                  type="text"
+                  id="description"
+                  defaultValue={newTask.description}
+                  onChange={(e) => {
+                    setNewTask({ ...newTask, description: e.target.value });
+                  }}
+                  className="w-full border rounded py-2 px-3"
+                  style={{ height: "320px" }}
+                />
               </div>
             </div>
-            <div className="flex justify-between">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
-                onClick={handleCreateTask}
-              >
-                {taskcreate ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.5rem" }}
-                  ></i>
-                ) : (
-                  "Save"
-                )}
-              </button>
-              <button
-                className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
-                onClick={closeTaskCreate}
-              >
-                Cancel
-              </button>
+            {/*Rigth section on full screen*/}
+            <div className="col-span-1 md:col-span-1">
+              <div className="mb-4">
+                <label htmlFor="department" className="block font-medium mb-1">
+                  Department:
+                </label>
+                <Dropdown
+                  id="department"
+                  value={newTask.department}
+                  options={departments.map((dep) => ({
+                    label: dep,
+                    value: dep,
+                  }))}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, department: e.value })
+                  }
+                  placeholder="Select a department"
+                  className="w-full border rounded py-2 px-3"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="start_date" className="block font-medium mb-1">
+                  Start Date:
+                </label>
+                <Calendar
+                  id="start_date"
+                  value={newTask.start_date}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, start_date: e.value })
+                  }
+                  className="w-full  rounded"
+                  dateFormat="yy/mm/dd"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="end_date" className="block font-medium mb-1">
+                  End Date:
+                </label>
+                <Calendar
+                  id="end_date"
+                  value={newTask.end_date}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, end_date: e.value })
+                  }
+                  className="w-full  rounded"
+                  dateFormat="yy/mm/dd"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="businessAnalyst">
+                  Assign to Business Analyst:
+                </label>
+                <Dropdown
+                  id="business-ananlyst"
+                  value={newTask.assigneBa}
+                  options={bas}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, assigneBa: e.value })
+                  }
+                  placeholder="Select a business analyst"
+                  className="w-full border rounded py-2 px-3"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="teamLead">
+                  Assign Team Lead/Project Manager:
+                </label>
+                <Dropdown
+                  id="team-lead"
+                  value={newTask.assigneTl}
+                  options={assigningUser(
+                    newTask.department ? newTask.department : ""
+                  )}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, assigneTl: e.value })
+                  }
+                  placeholder="Select a Team Lead"
+                  className="w-full border rounded py-2 px-3"
+                  required
+                />
+              </div>
             </div>
-          </Dialog>
+          </div>
+          <div className="flex justify-between">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md"
+              onClick={handleCreateTask}
+            >
+              {taskcreate ? (
+                <i
+                  className="pi pi-spin pi-spinner"
+                  style={{ fontSize: "1.5rem" }}
+                ></i>
+              ) : (
+                "Save"
+              )}
+            </button>
+            <button
+              className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
+              onClick={closeTaskCreate}
+            >
+              Cancel
+            </button>
+          </div>
         </Dialog>
 
         {/*Edit Micro-task Modal */}

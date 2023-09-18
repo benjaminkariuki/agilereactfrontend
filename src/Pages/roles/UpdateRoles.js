@@ -151,11 +151,13 @@ const UpdateRoles = () => {
     setIsLoading(true);
 
     const selectedActivities = Array.from(event.target.activities)
-      .filter((checkbox) => checkbox.checked)
-      .map((checkbox) => ({
-        id: checkbox.value,
-        permissions: getSelectedPermissions(checkbox.value),
-      }));
+    .filter((checkbox) => checkbox.checked)
+    .map((checkbox) => ({
+      id: checkbox.value,
+     // permissions: getSelectedPermissions(checkbox.value),
+      name: checkbox.nextElementSibling.textContent,  // Get the activity name
+      permissions: getSelectedPermissions(checkbox.value, checkbox.nextElementSibling.textContent),
+    }));
 
     // Validation for selected activities
     if (selectedActivities.length === 0) {
@@ -169,7 +171,21 @@ const UpdateRoles = () => {
       (activity) => activity.permissions.length === 0
     );
 
-    if (activitiesWithNoPermissions.length > 0) {
+    const dashboardActivitiesWithNoRoles = selectedActivities.filter(
+      (activity) => activity.name.toLowerCase() === 'dashboard' && activity.permissions.length === 0
+    );
+  
+    if (dashboardActivitiesWithNoRoles.length > 0) {
+      setErrorActivity(
+        "Assign exactly one role to each 'dashboard' activity"
+      );
+      onUpdatingActivities(errorActivity);
+      setIsLoading(false);
+      return;
+    }
+
+
+    if (activitiesWithNoPermissions.length > 0 ) {
       onUpdatingActivities(
         "Assign at least one permission to each selected activity"
       );
@@ -220,26 +236,50 @@ const UpdateRoles = () => {
   };
 
   // Function to get selected permissions for an activity
-  const getSelectedPermissions = (activityId) => {
+  
+  const getSelectedPermissions = (activityId, activityName) => {
     const permissions = [];
-
-    const readCheckbox = document.querySelector(
-      `#read-permission-${activityId}`
-    );
-    const writeCheckbox = document.querySelector(
-      `#write-permission-${activityId}`
-    );
-
-    if (readCheckbox && readCheckbox.checked) {
-      permissions.push("read");
+  
+    if (activityName.toLowerCase() === 'dashboard') {
+      const roles = [
+        'Administrator',
+        'Management',
+        'ProjectManager',
+        'TeamLeads',
+        'Consultant',
+        'Default',
+      ];
+  
+      for (const role of roles) {
+        const radio = document.querySelector(
+          `#${role}-permission-${activityId}`
+        );
+        if (radio && radio.checked) {
+          permissions.push(role);
+          break;  // Since only one radio button can be selected, break the loop once we found the selected role
+        }
+      }
+    } else {
+      const readCheckbox = document.querySelector(
+        `#read-permission-${activityId}`
+      );
+      const writeCheckbox = document.querySelector(
+        `#write-permission-${activityId}`
+      );
+  
+      if (readCheckbox && readCheckbox.checked) {
+        permissions.push('read');
+      }
+  
+      if (writeCheckbox && writeCheckbox.checked) {
+        permissions.push('write');
+      }
     }
-
-    if (writeCheckbox && writeCheckbox.checked) {
-      permissions.push("write");
-    }
-
+  
     return permissions;
   };
+
+
   return (
     <div className="flex justify-center items-center pt-6">
       <Toast ref={toast} />
@@ -357,50 +397,86 @@ const UpdateRoles = () => {
                               {activity.name}
                             </span>
                           </label>
-                          <div className="ml-7">
-                            <label
-                              className="inline-flex items-center cursor-pointer"
-                              htmlFor={`read-permission-${activity.id}`}
-                            >
-                              <input
-                                className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                                type="checkbox"
-                                name={`read-permission-${activity.id}`}
-                                id={`read-permission-${activity.id}`}
-                                defaultChecked={
-                                  modalData.activities.find(
-                                    (act) =>
-                                      act.id === activity.id &&
-                                      act.pivot.permissions.includes("read")
-                                  ) !== undefined
-                                }
-                              />
-                              <span className="text-gray-700 text-xs">
-                                View
-                              </span>
-                            </label>
-                            <label
-                              className="inline-flex items-center cursor-pointer ml-4"
-                              htmlFor={`write-permission-${activity.id}`}
-                            >
-                              <input
-                                className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                                type="checkbox"
-                                name={`write-permission-${activity.id}`}
-                                id={`write-permission-${activity.id}`}
-                                defaultChecked={
-                                  modalData.activities.find(
-                                    (act) =>
-                                      act.id === activity.id &&
-                                      act.pivot.permissions.includes("write")
-                                  ) !== undefined
-                                }
-                              />
-                              <span className="text-gray-700 text-xs">
-                                Modify
-                              </span>
-                            </label>
-                          </div>
+                          {activity.name.toLowerCase() === "dashboard" ? (
+                            <div className="ml-7 grid grid-cols-2 gap-2">
+                              {[
+                                "Administrator",
+                                "Management",
+                                "ProjectManager",
+                                "TeamLeads",
+                                "Consultant",
+                                "Default",
+                              ].map((role) => (
+                                <label
+                                  className="inline-flex items-center cursor-pointer"
+                                  htmlFor={`${role}-permission-${activity.id}`}
+                                  key={`${role}-permission-${activity.id}`}
+                                >
+                                  <input
+                                    className="form-radio text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                                    type="radio" 
+                                    name={`role-permission-${activity.id}`}
+                                    id={`${role}-permission-${activity.id}`}
+                                    defaultChecked={
+                                      modalData.activities.find(
+                                        (act) =>
+                                          act.id === activity.id &&
+                                          act.pivot.permissions.includes(role)
+                                      ) !== undefined
+                                    }
+                                  />
+                                  <span className="text-gray-700 text-xs">
+                                    {role}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="ml-7">
+                              <label
+                                className="inline-flex items-center cursor-pointer"
+                                htmlFor={`read-permission-${activity.id}`}
+                              >
+                                <input
+                                  className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                                  type="checkbox"
+                                  name={`read-permission-${activity.id}`}
+                                  id={`read-permission-${activity.id}`}
+                                  defaultChecked={
+                                    modalData.activities.find(
+                                      (act) =>
+                                        act.id === activity.id &&
+                                        act.pivot.permissions.includes("read")
+                                    ) !== undefined
+                                  }
+                                />
+                                <span className="text-gray-700 text-xs">
+                                  View
+                                </span>
+                              </label>
+                              <label
+                                className="inline-flex items-center cursor-pointer ml-4"
+                                htmlFor={`write-permission-${activity.id}`}
+                              >
+                                <input
+                                  className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                                  type="checkbox"
+                                  name={`write-permission-${activity.id}`}
+                                  id={`write-permission-${activity.id}`}
+                                  defaultChecked={
+                                    modalData.activities.find(
+                                      (act) =>
+                                        act.id === activity.id &&
+                                        act.pivot.permissions.includes("write")
+                                    ) !== undefined
+                                  }
+                                />
+                                <span className="text-gray-700 text-xs">
+                                  Modify
+                                </span>
+                              </label>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -419,7 +495,7 @@ const UpdateRoles = () => {
                     onClick={closeEditActivities}
                     type="button"
                   >
-                    Cancle
+                    Cancel
                   </button>
                 </div>
               </form>

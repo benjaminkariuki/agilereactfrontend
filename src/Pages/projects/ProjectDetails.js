@@ -176,7 +176,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                       body={(rowData) => (
                         <div className="flex" key={rowData.id}>
                           {/* Placeholder Excel icon */}
-                          <PiMicrosoftExcelLogoFill
+                          <FaPlus
                             className="bg-blue-500 text-white rounded"
                             onClick={() =>
                               handleMicroTasksModal(
@@ -190,7 +190,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                             style={{ marginRight: 4 }}
                           />
                           {hasWritePermissionTasks && (
-                            <FaPlus
+                            <PiMicrosoftExcelLogoFill
                               className="bg-blue-500 text-white rounded"
                               size={30}
                               onClick={() =>
@@ -391,8 +391,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
               />
             </DataTable>
           </div>
-
-          {/* Developers */}
+          {/**Developers */}
           <div className="min-w-1000 overflow-x-auto">
             <h3 className="text-xl font-bold mb-2">Developers</h3>
 
@@ -434,6 +433,52 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
               />
             </DataTable>
           </div>
+
+          {/* organizaton */}
+          <div className="min-w-1000 overflow-x-auto">
+            <h3 className="text-xl font-bold mb-2">Infrastructure</h3>
+
+            <DataTable value={projectData.organization}>
+              <Column field="user.firstName" header="First Name" />
+              <Column field="user.lastName" header="Last Name" />
+              <Column field="user.email" header="Email" />
+              <Column field="user.contacts" header="Contacts" />
+              <Column
+                header="Profile Pic"
+                body={(org) => (
+                  <img
+                    src={
+                      org.user && org.user.profile_pic
+                        ? baseUrl + org.user.profile_pic
+                        : process.env.PUBLIC_URL + "/profile2.jpeg"
+                    }
+                    alt="User"
+                    className="w-12 h-12 rounded-md ml-2"
+                  />
+                )}
+              />
+              <Column
+                header="Status"
+                body={(org) => (
+                  <div className="flex items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        org.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    ></div>
+                    <p className="text-gray-600 ml-1">
+                    {org.status === "active" ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                )}
+              />
+            </DataTable>
+          </div>
+
+
+
         </div>
         <div className="flex justify-between">
           {hasWritePermissionProject && (

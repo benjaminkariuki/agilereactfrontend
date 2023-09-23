@@ -319,7 +319,7 @@ const Users = () => {
     >
       <Toast ref={toast} />
 
-      <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
+      <h1 className="text-xl font-bold mb-4 text-center text-blue-500">
         Users
       </h1>
 

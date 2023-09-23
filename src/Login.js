@@ -49,9 +49,9 @@ const LoginForm = () => {
       setIsPending(false);
       sessionStorage.setItem("user", JSON.stringify(loguser));
       onLoginSuccess(response.data.message);
-      setTimeout(() => {
+    
         navigate("/dashboard/home");
-      }, 1000);
+    
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {

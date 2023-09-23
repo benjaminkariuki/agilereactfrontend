@@ -68,7 +68,7 @@ const ManageTasks = () => {
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
+      <h1 className="text-xl font-bold mb-4 text-center text-blue-500">
         Task Manager
       </h1>
       <Menubar model={menuItems} className="" />

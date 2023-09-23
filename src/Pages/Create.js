@@ -121,7 +121,7 @@ const CreateUser = () => {
   return (
     <div>
       <Toast ref={toast} />
-      <h2 className="text-3xl font-bold mb-4 text-center text-blue-800">
+      <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
         Create an AgilePM user account
       </h2>
       <div

@@ -28,7 +28,7 @@ const ManageRoles = () => {
         flexDirection: "column",
       }}
     >
-      <h1 className="text-3xl font-bold mb-4 text-center text-blue-800">
+      <h1 className="text-xl font-bold mb-4 text-center text-blue-500">
         Manage Roles
       </h1>
       <div className="flex justify-center space-x-4 mb-4">

@@ -214,7 +214,7 @@ const EditProfile = () => {
     <div>
       <Toast ref={toast} />
       <ConfirmDialog />
-      <h2 className="text-3xl font-bold mb-4 text-center text-blue-800">
+      <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
         User account settings
       </h2>
       <div

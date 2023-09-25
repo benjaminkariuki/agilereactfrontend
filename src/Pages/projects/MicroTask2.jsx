@@ -553,7 +553,7 @@ const MicroTask = ({
       sourceArray = projectManagers;
     } else {
       sourceArray = teamLeads;
-    }
+    }     
 
     // Filter the chosen array based on department and active status
     const filteredUser = sourceArray?.filter(

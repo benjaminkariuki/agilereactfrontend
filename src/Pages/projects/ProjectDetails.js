@@ -7,6 +7,7 @@ import { Toast } from "primereact/toast";
 import { FaPlus } from "react-icons/fa";
 import MicroTask from "./MicroTask2.jsx";
 import { useSelector } from "react-redux";
+import _ from "lodash";
 
 const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const [projectData, setProjectData] = useState([]);
@@ -84,15 +85,12 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
       .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
+
         setProjectData(fetchedprojectsid);
+        console.log(fetchedprojectsid);
         onSuccess("Project Found");
       })
       .catch((error) => {
-        if (error.response && error.response.status === 429) {
-          setTimeout(() => {
-            fetchProjectDetails(projectId);
-          }, 2000);
-        }
         onError("Error getting project details:");
         setProjectData([]);
       });
@@ -125,6 +123,11 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const handleEdit = () => {
     routetoEdit(projectId);
   };
+
+  const sentenceCaseFormatter = (rowData, column) => {
+    return _.startCase(rowData[column.field]);
+  };
+
   return (
     <div>
       <Toast ref={toast} />
@@ -252,197 +255,37 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
               activityId={selectedActivty}
               phaseId={selectedPhase}
               selectedIcon={selectedIcon}
-              projectManagers={projectData.projectmanager}
-              businessAnalysts={projectData.businessanalyst}
-              teamLeads={projectData.teamleads}
-              developers={projectData.developers}
+              organization={projectData.organization}
+            
             />
           )}
         </div>
         <div className="grid gap-4 mb-4">
           <h2 className="text-2xl font-bold mb-4 text-center">Project Crew</h2>
-          {/* Project Managers */}
+
           <div className="min-w-1000 overflow-x-auto">
-            <h3 className="text-xl font-bold mb-2">Project Managers</h3>
-            <DataTable value={projectData.projectmanager}>
-              <Column
-                header="Name"
-                body={(manager) =>
-                  `${manager.user.firstName} ${manager.user.lastName}`
-                }
-              />
-              <Column header="Email" field="user.email" />
-              <Column header="Contacts" field="user.contacts" />
-              <Column
-                header="Profile Pic"
-                body={(manager) => (
-                  <img
-                    src={
-                      manager.user && manager.user.profile_pic
-                        ? baseUrl + manager.user.profile_pic
-                        : process.env.PUBLIC_URL + "/profile2.jpeg"
-                    }
-                    alt="User"
-                    className="w-12 h-12 rounded-md ml-2"
-                  />
-                )}
-              />
-
-              <Column
-                header="Status"
-                body={(manager) => (
-                  <div className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        manager.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></div>
-                    <p className="text-gray-600 ml-1">
-                      {manager.status === "active" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                )}
-              />
-            </DataTable>
-          </div>
-
-          {/* Team Leads */}
-          <div className="min-w-1000 overflow-x-auto">
-            <h3 className="text-xl font-bold mb-2">Team Leads</h3>
-            <DataTable value={projectData.teamleads}>
-              <Column field="user.firstName" header="First Name" />
-              <Column field="user.lastName" header="Last Name" />
-              <Column field="user.email" header="Email" />
-              <Column field="user.contacts" header="Contacts" />
-              <Column
-                header="Profile Pic"
-                body={(teamLead) => (
-                  <img
-                    src={
-                      teamLead.user && teamLead.user.profile_pic
-                        ? baseUrl + teamLead.user.profile_pic
-                        : process.env.PUBLIC_URL + "/profile2.jpeg"
-                    }
-                    alt="User"
-                    className="w-12 h-12 rounded-md ml-2"
-                  />
-                )}
-              />
-              <Column
-                header="Status"
-                body={(teamLead) => (
-                  <div className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        teamLead.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></div>
-                    <p className="text-gray-600 ml-1">
-                      {teamLead.status === "active" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                )}
-              />
-            </DataTable>
-          </div>
-
-          {/* Business Analysts */}
-          <div className="min-w-1000 overflow-x-auto">
-            <h3 className="text-xl font-bold mb-2">Business Analysts</h3>
-            <DataTable value={projectData.businessanalyst}>
-              <Column field="user.firstName" header="First Name" />
-              <Column field="user.lastName" header="Last Name" />
-              <Column field="user.email" header="Email" />
-              <Column field="user.contacts" header="Contacts" />
-              <Column
-                header="Profile Pic"
-                body={(analyst) => (
-                  <img
-                    src={
-                      analyst.user && analyst.user.profile_pic
-                        ? baseUrl + analyst.user.profile_pic
-                        : process.env.PUBLIC_URL + "/profile2.jpeg"
-                    }
-                    alt="User"
-                    className="w-12 h-12 rounded-md ml-2"
-                  />
-                )}
-              />
-              <Column
-                header="Status"
-                body={(analyst) => (
-                  <div className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        analyst.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></div>
-                    <p className="text-gray-600 ml-1">
-                      {analyst.status === "active" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                )}
-              />
-            </DataTable>
-          </div>
-          {/**Developers */}
-          <div className="min-w-1000 overflow-x-auto">
-            <h3 className="text-xl font-bold mb-2">Developers</h3>
-
-            <DataTable value={projectData.developers}>
-              <Column field="user.firstName" header="First Name" />
-              <Column field="user.lastName" header="Last Name" />
-              <Column field="user.email" header="Email" />
-              <Column field="user.contacts" header="Contacts" />
-              <Column
-                header="Profile Pic"
-                body={(developer) => (
-                  <img
-                    src={
-                      developer.user && developer.user.profile_pic
-                        ? baseUrl + developer.user.profile_pic
-                        : process.env.PUBLIC_URL + "/profile2.jpeg"
-                    }
-                    alt="User"
-                    className="w-12 h-12 rounded-md ml-2"
-                  />
-                )}
-              />
-              <Column
-                header="Status"
-                body={(developer) => (
-                  <div className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        developer.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></div>
-                    <p className="text-gray-600 ml-1">
-                      {developer.status === "active" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                )}
-              />
-            </DataTable>
-          </div>
-
-          {/* organizaton */}
-          <div className="min-w-1000 overflow-x-auto">
-            <h3 className="text-xl font-bold mb-2">Infrastructure</h3>
-
             <DataTable value={projectData.organization}>
-              <Column field="user.firstName" header="First Name" />
-              <Column field="user.lastName" header="Last Name" />
+              <Column
+                field="user.firstName"
+                header="First Name"
+                
+              />
+              <Column
+                field="user.lastName"
+                header="Last Name"
+              
+              />
               <Column field="user.email" header="Email" />
               <Column field="user.contacts" header="Contacts" />
+              <Column
+                field="user.role.name"
+                header="Role"
+              />
+
+              <Column
+                field="user.department"
+                header="Department"
+              />
               <Column
                 header="Profile Pic"
                 body={(org) => (
@@ -463,22 +306,17 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                   <div className="flex items-center">
                     <div
                       className={`w-3 h-3 rounded-full ${
-                        org.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
+                        org.status === "active" ? "bg-green-500" : "bg-red-500"
                       }`}
                     ></div>
                     <p className="text-gray-600 ml-1">
-                    {org.status === "active" ? "Active" : "Inactive"}
+                      {org.status === "active" ? "Active" : "Inactive"}
                     </p>
                   </div>
                 )}
               />
             </DataTable>
           </div>
-
-
-
         </div>
         <div className="flex justify-between">
           {hasWritePermissionProject && (

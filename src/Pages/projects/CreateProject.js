@@ -3,6 +3,8 @@ import axios from "axios";
 import FileDownload from "react-file-download";
 import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
+import { InputText } from "primereact/inputtext";
+import _ from "lodash";
 
 const CreateProject = ({ routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -11,11 +13,6 @@ const CreateProject = ({ routeToListProjects }) => {
     excel_file: null,
     category: null,
     system: null,
-    projectManager: [],
-    businessAnalyst: [],
-    developers: [],
-    teamLeads: [],
-    organization: [],
     clientName: "",
     clientContacts: "",
     clientEmail: "",
@@ -25,11 +22,14 @@ const CreateProject = ({ routeToListProjects }) => {
   const [isloading, setisloading] = useState(false);
   const [usersData, setUsersData] = useState([]);
   const [create, setCreate] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  
   const categoryOptions = [
     { label: "Implementation", value: "implementation" },
     { label: "Support", value: "support" },
   ];
 
+  const [searchTerm, setSearchTerm] = useState("");
   const systemOptions = [
     { label: "Business Applications", value: "business applications" },
     { label: "CRM Solutions", value: "CRM solutions" },
@@ -37,6 +37,7 @@ const CreateProject = ({ routeToListProjects }) => {
     { label: "EDMs", value: "EDMs" },
     { label: "Cloud Solutions", value: "cloud solutions" },
     { label: "ICT Infrastructure", value: "ict infrastructure" },
+  
   ];
   const toast = useRef(null);
 
@@ -139,6 +140,8 @@ const CreateProject = ({ routeToListProjects }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    const selectedUserIds = selectedUsers.map(user => user.id);
+
     console.log(projectData);
     const formData = new FormData();
     formData.append("title", projectData.title);
@@ -152,21 +155,12 @@ const CreateProject = ({ routeToListProjects }) => {
     formData.append("category", projectData.category);
     formData.append("system_type", projectData.system);
     // For array data, we append each element of the array
-    projectData.projectManager.forEach((pm, index) => {
-      formData.append(`projectmanager[${index}]`, pm);
+ 
+
+    selectedUserIds.forEach((id, index) => {
+      formData.append(`selectedUsers[${index}]`, id);
     });
-    projectData.businessAnalyst.forEach((ba, index) => {
-      formData.append(`businessanalyst[${index}]`, ba);
-    });
-    projectData.developers.forEach((dev, index) => {
-      formData.append(`developers[${index}]`, dev);
-    });
-    projectData.teamLeads.forEach((tl, index) => {
-      formData.append(`teamleads[${index}]`, tl);
-    });
-    projectData.organization.forEach((org, index) => {
-      formData.append(`organization[${index}]`, org);
-    });
+
     setisloading(true);
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/create_projects", formData, {
@@ -183,11 +177,6 @@ const CreateProject = ({ routeToListProjects }) => {
           excel_file: null,
           system: "",
           category: "",
-          projectManager: [],
-          businessAnalyst: [],
-          developers: [],
-          teamLeads: [],
-          organization: [],
           clientName: "",
           clientContacts: "",
           clientEmail: "",
@@ -195,6 +184,7 @@ const CreateProject = ({ routeToListProjects }) => {
           endDate: "",
         });
         setisloading(false);
+        setSelectedUsers([]);
       })
       .catch((error) => {
         setisloading(false);
@@ -249,81 +239,35 @@ const CreateProject = ({ routeToListProjects }) => {
       title: "",
       overview: "",
       excel_file: null,
-      projectManager: [],
-      businessAnalyst: [],
-      developers: [],
-      teamLeads: [],
-      organization: [],
       clientName: "",
       clientContacts: "",
       clientEmail: "",
       startDate: "",
       endDate: "",
     });
+    setSelectedUsers([]);
     setisloading(false);
     setCreate(!create);
     routeToListProjects();
   };
 
-  // Filter users based on department and role
-  const filterUsersByRoleAndDepartment = (roleName, department) => {
-    return usersData.filter(
-      (user) => user.department === department && user.role.name === roleName
-    );
+  const normalizeString = (str) => {
+    return str
+      .toLowerCase()
+      .replace(/[\s-]+/g, " ")
+      .trim();
   };
-  // Filter users for team leads
-  const filterWithTeamLead = () => {
-    return filterUsersByRoleAndDepartment(
-      "Team lead business central",
-      "Business Central Department"
-    )
-      .concat(
-        filterUsersByRoleAndDepartment(
-          "Team lead infrastructure",
-          "Infrastructure Department"
-        )
-      )
-      .concat(
-        filterUsersByRoleAndDepartment(
-          "Team lead business analyst",
-          "Business Analyst Department"
-        )
-      )
-      .concat(
-        filterUsersByRoleAndDepartment(
-          "Team lead Implementation",
-          "Implementation Department"
-        )
-      )
-      .concat(
-        filterUsersByRoleAndDepartment("Team lead web", "Web Department")
+
+  
+
+  const handleCheckboxChange = (user, isChecked) => {
+    if (isChecked) {
+      setSelectedUsers((prevUsers) => [...prevUsers, user]);
+    } else {
+      setSelectedUsers((prevUsers) =>
+        prevUsers.filter((u) => u.id !== user.id)
       );
-  };
-
-  const filterWithDeveloper = () => {
-    return filterUsersByRoleAndDepartment(
-      "developer",
-      "Business Central Department"
-    ).concat(filterUsersByRoleAndDepartment("developer", "Web Department"));
-  };
-
-  // Filter users for project managers and senior project managers
-  const getProjectManagers = (department) => {
-    return filterUsersByRoleAndDepartment("Project manager", department);
-  };
-
-  // Filter users for business analysts
-  const getBusinessAnalysts = (department) => {
-    return filterUsersByRoleAndDepartment("business analyst", department);
-  };
-
-  // Filter users for infrastructure
-  const getSystemEngineers = (department) => {
-    return filterUsersByRoleAndDepartment("systems enginner", department);
-  };
-  // Filter users for developers
-  const getDevelopers = (department) => {
-    return filterUsersByRoleAndDepartment("developer", department);
+    }
   };
 
   return (
@@ -472,196 +416,57 @@ const CreateProject = ({ routeToListProjects }) => {
           <div className="col-span-1 md:col-span-1">
             <h2 className="text-xl font-semibold mb-4">Projects Crew</h2>
             {/* Project Manager */}
-            <div className="mb-4">
-              <label
-                htmlFor="projectManager"
-                className="block text-sm font-medium"
-              >
-                Project Manager
-              </label>
-              {getProjectManagers("Porfolio Managers Department").map(
-                (user) => (
-                  <div key={user.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`projectManager-${user.id}`}
-                      name="projectManager"
-                      value={user.id}
-                      checked={projectData.projectManager.includes(user.id)}
-                      onChange={(e) =>
-                        handleRoleCheckboxChange(
-                          "projectManager",
-                          user.id,
-                          e.target.checked
-                        )
-                      }
-                      className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                    />
-                    <label
-                      htmlFor={`projectManager-${user.id}`}
-                      className={`ml-2 text-sm ${
-                        projectData.projectManager.includes(user.id)
-                          ? "text-blue-600"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {user.firstName} {user.lastName}
-                    </label>
-                  </div>
-                )
-              )}
-            </div>
+
             {/* Team Leads */}
-            <div className="mb-4">
-              <label htmlFor="teamLeads" className="block text-sm font-medium">
-                Team Leads
-              </label>
-              {filterWithTeamLead().map((user) => (
-                <div key={user.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`teamLead-${user.id}`}
-                    name="teamLeads"
-                    value={user.id}
-                    checked={projectData.teamLeads.includes(user.id)}
-                    onChange={(e) =>
-                      handleRoleCheckboxChange(
-                        "teamLeads",
-                        user.id,
-                        e.target.checked
-                      )
-                    }
-                    className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                  />
-                  <label
-                    htmlFor={`teamLead-${user.id}`}
-                    className={`ml-2 text-sm ${
-                      projectData.teamLeads.includes(user.id)
-                        ? "text-blue-600"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {user.firstName} {user.lastName} - {user.department}
-                  </label>
-                </div>
-              ))}
-            </div>
-            {/* Business analysts */}
-            <div className="mb-4">
-              <label
-                htmlFor="businessAnalyst"
-                className="block text-sm font-medium"
-              >
-                Business Analyst
-              </label>
-              {getBusinessAnalysts("Business Analyst Department").map(
-                (user) => (
-                  <div key={user.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`businessAnalyst-${user.id}`}
-                      name="businessAnalyst"
-                      value={user.id}
-                      checked={projectData.businessAnalyst.includes(user.id)}
-                      onChange={(e) =>
-                        handleRoleCheckboxChange(
-                          "businessAnalyst",
-                          user.id,
-                          e.target.checked
-                        )
-                      }
-                      className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                    />
-                    <label
-                      htmlFor={`businessAnalyst-${user.id}`}
-                      className={`ml-2 text-sm ${
-                        projectData.businessAnalyst.includes(user.id)
-                          ? "text-blue-600"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {user.firstName} {user.lastName}
-                    </label>
-                  </div>
-                )
-              )}
-            </div>
+            <div>
+              <InputText
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by name..."
+                className="h-8"
+              />
 
-            {/* Developers */}
-            <div className="mb-4">
-              <label htmlFor="developers" className="block text-sm font-medium">
-                Developers
-              </label>
-              {filterWithDeveloper().map((user) => (
-                <div key={user.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`developers-${user.id}`}
-                    name="developers"
-                    value={user.id}
-                    checked={projectData.developers.includes(user.id)}
-                    onChange={(e) =>
-                      handleRoleCheckboxChange(
-                        "developers",
-                        user.id,
-                        e.target.checked
-                      )
-                    }
-                    className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                  />
-                  <label
-                    htmlFor={`developers-${user.id}`}
-                    className={`ml-2 text-sm ${
-                      projectData.developers.includes(user.id)
-                        ? "text-blue-600"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {user.firstName} {user.lastName} - {user.department}
-                  </label>
-                </div>
-              ))}
-            </div>
-
-            {/* infrastructure */}
-            <div className="mb-4">
-              <label
-                htmlFor="organization"
-                className="block text-sm font-medium"
+              <div
+                style={{
+                  overflowY: "auto",
+                  maxHeight: "50vh",
+                  marginTop: "10px",
+                }}
               >
-                Infrastructure
-              </label>
-              {getSystemEngineers("Infrastructure Department").map((user) => (
-                <div key={user.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`organization-${user.id}`}
-                    name="organization"
-                    value={user.id}
-                    checked={projectData.organization.includes(user.id)}
-                    onChange={(e) =>
-                      handleRoleCheckboxChange(
-                        "organization",
-                        user.id,
-                        e.target.checked
-                      )
-                    }
-                    className="form-checkbox text-blue-500 appearance-none h-5 w-5 mr-2 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                  />
-                  <label
-                    htmlFor={`organization-${user.id}`}
-                    className={`ml-2 text-sm ${
-                      projectData.organization.includes(user.id)
-                        ? "text-blue-600"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {user.firstName} {user.lastName}
-                  </label>
-                </div>
-              ))}
+                {usersData
+                 .filter((user) => {
+                  const nameMatch = `${user.firstName} ${user.lastName}`
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase());
+              
+                  const departmentMatch = user.department
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase());
+              
+                  const roleMatch = user.role.name
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase());
+              
+                  return nameMatch || departmentMatch || roleMatch;
+                })
+                  .map((user) => (
+                    <div key={user.id}>
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.some((u) => u.id === user.id)}
+                        onChange={(e) =>
+                          handleCheckboxChange(user, e.target.checked)
+                        }
+                      />
+                      {_.startCase(user.firstName)} {_.startCase(user.lastName)}{" "}
+                      - {_.startCase(user.role.name)} -{" "}
+                      {_.startCase(user.department)}
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
+
           {/* Right section */}
           <div className="col-span-1 md:col-span-1">
             <h2 className="text-xl font-semibold mb-4">Client Details</h2>

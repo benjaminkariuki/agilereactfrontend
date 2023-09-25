@@ -14,12 +14,13 @@ const CreateUser = () => {
   const toast = useRef(null);
 
   const [departments] = useState([
-    "Portfolio Managers Department",
-    "Web Department",
-    "Business Central Department",
-    "Infrastructure Department",
-    "Business Analyst Department",
+    "Administration",
+    "Research and Development",
     "Implementation Department",
+    "Finance Department",
+    "Human Resource",
+    "Sales and Marketing",
+    "Sales",
   ]);
 
   const onSuccessCreate = (success) => {

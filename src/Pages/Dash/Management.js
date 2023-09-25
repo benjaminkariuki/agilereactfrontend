@@ -62,6 +62,7 @@ const Management = () => {
       fetchProjectsImplementationCount(),
       fetchSupportProjectsCount(),
       fetchArchivedProjectsCount(),
+      fetchActiveSprint(),
     ]).finally(() => {
       setIsLoading(false);
     });
@@ -69,7 +70,7 @@ const Management = () => {
     // Delay the fetchProjectsTasksCountPerSubtask by 4 seconds
     const timeoutId = setTimeout(() => {
       fetchProjectsTasksCountPerSubtask();
-      fetchActiveSprint();
+      
     }, 4000);
 
     // Clean up the timeout if the component is unmounted before the timeout finishes

@@ -13,6 +13,7 @@ const userSlice = createSlice({
     userEmail: "",
     userContacts: "",
     userRole: "",
+    userDepartment:"",
     userProfilePhoto: "",
     userActivities: [],
     users: [],

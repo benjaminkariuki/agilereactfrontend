@@ -276,7 +276,6 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
               
               />
               <Column field="user.email" header="Email" />
-              <Column field="user.contacts" header="Contacts" />
               <Column
                 field="user.role.name"
                 header="Role"

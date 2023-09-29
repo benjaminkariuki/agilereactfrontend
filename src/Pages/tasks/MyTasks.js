@@ -36,12 +36,12 @@ const MyTasks = () => {
   const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
 
   const hasPermissionTasksProjects =
-    normalizedRole.includes("project manager") ||
+    normalizedRole.includes("portfolio manager") ||normalizedRole.includes("head")||
     normalizedRole.includes("team lead");
 
-  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("project manager");
-  const hasPermissionPushDevelopment = normalizedRole.includes("team lead web")||
-  normalizedRole.includes("developer");
+  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
+  const hasPermissionPushDevelopment = normalizedRole.includes("team lead")|| normalizedRole.includes("head")  ||
+  normalizedRole.includes("technical consultant");
 
 
 
@@ -332,7 +332,7 @@ const MyTasks = () => {
         </div>
       )}
 
-      {/* Other Tasks section */}
+      Other Tasks section
       {activeView === "Other Tasks" && hasPermissionTasksProjects && (
         <div>
           {otherData && otherData.length > 0 ? (

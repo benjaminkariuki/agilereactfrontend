@@ -15,6 +15,14 @@ import AllProjectsDialog from "./Dialogs/AllProjectsDialog.js";
 import DetailsSupportDialog from "./Dialogs/DetailsSupportDialog.js";
 
 const Management = () => {
+  const email = useSelector((state) => state.user.userEmail);
+  const role = useSelector((state) => state.user.userRole);
+  const department = useSelector((state) => state.user.userDepartment);
+  const [isLoadingProjectsCount, setIsLoadingProjectsCount] = useState(false);
+  const [isLoadingAllProjectsCount, setIsLoadingAllProjectsCount] = useState(false);
+
+
+
   const [projectImplementationCount, setImplementationProjectsCount] =
     useState(0);
   const [projectsSupportCount, setProjectsSupportCount] = useState(0);
@@ -31,6 +39,16 @@ const Management = () => {
 
   const [showDetailsImplementation, setShowDetailsImplementation] =
     useState(false);
+
+  const [
+    chartProjectSubtaskActiveIndividualDatafromApi,
+    setChartDataProjectIndividualFromAPi,
+  ] = useState([]);
+
+  const [
+    chartDataProjectsConsultantSubtasks,
+    setChartDataProjectsIndividualSubtasks,
+  ] = useState({});
 
   const [showDetailsSupport, setShowDetailsSupport] = useState(false);
 
@@ -63,21 +81,22 @@ const Management = () => {
       fetchSupportProjectsCount(),
       fetchArchivedProjectsCount(),
       fetchActiveSprint(),
+      
     ]).finally(() => {
       setIsLoading(false);
     });
 
-    // Delay the fetchProjectsTasksCountPerSubtask by 4 seconds
-    const timeoutId = setTimeout(() => {
-      fetchProjectsTasksCountPerSubtask();
-      
-    }, 4000);
+    
 
-    // Clean up the timeout if the component is unmounted before the timeout finishes
-    return () => {
-      clearTimeout(timeoutId);
-    };
   }, []); // The empty dependency array ensures the effect runs once after the component mounts.
+
+  useEffect(() => {
+    fetchProjectsTasksCountPerConsultant(email, role, department);
+  }, []);
+
+  useEffect(() => {
+    fetchProjectsTasksCountPerSubtask();
+  }, []);
 
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
@@ -146,6 +165,7 @@ const Management = () => {
 
   const fetchProjectsTasksCountPerSubtask = async () => {
     try {
+      setIsLoadingAllProjectsCount(true);
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive"
       );
@@ -154,9 +174,11 @@ const Management = () => {
       setChartDataFromAPi(fetchedProjectTaskCountPerUser);
 
       if (response.status === 200) {
+        setIsLoadingAllProjectsCount(false);
         setErrorMessage("");
       }
     } catch (error) {
+      setIsLoadingAllProjectsCount(false);
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -188,6 +210,41 @@ const Management = () => {
     }
   };
 
+  const fetchProjectsTasksCountPerConsultant = async (
+    email,
+    role,
+    department
+  ) => {
+    try {
+      setIsLoadingProjectsCount(true);
+      const response = await axios.get(
+        "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
+        {
+          params: {
+            email: email,
+            role: role,
+            department: department,
+          },
+        }
+      );
+
+      const fetchedProjectTaskCountPerConsultant = response.data;
+      setChartDataProjectIndividualFromAPi(
+        fetchedProjectTaskCountPerConsultant
+      );
+
+      if (response.status === 200) {
+        setIsLoadingProjectsCount(false);
+        setErrorMessage("");
+      }
+    } catch (error) {
+      setIsLoadingProjectsCount(false);
+
+      setErrorMessage("Failed to get subtasks");
+      onFetchingRoles(error);
+    }
+  };
+
   useEffect(() => {
     const projects = chartProjectSubtaskActiveDatafromApi.map(
       (p) => p.projectName
@@ -209,10 +266,6 @@ const Management = () => {
     const subtasks_closedSubtaskCount =
       chartProjectSubtaskActiveDatafromApi.map((c) => c.closedSubtaskCount);
 
-    // const rolesapi_name = chartDatafromRolesApi.map((r) => r.name);
-    // const rolesuser_count = chartDatafromRolesApi.map((c) => c.userCount);
-
-    //  const subtasks_name_in_sentence_case = subtasks.map(name => _.startCase(name));
     const projects_count_name_in_sentence_case = projects.map((name) =>
       _.startCase(name)
     );
@@ -249,7 +302,7 @@ const Management = () => {
         {
           label: "Incomplete Tasks",
           data: [activeSprintIncompleteCountdata],
-          backgroundColor: "#FF0000",
+          backgroundColor: "#FF4D4D",
         },
 
         {
@@ -260,6 +313,61 @@ const Management = () => {
       ],
     });
   }, [chartProjectSubtaskActiveDatafromApi]);
+
+  useEffect(() => {
+    const projects = chartProjectSubtaskActiveIndividualDatafromApi.map(
+      (p) => p.projectName
+    );
+
+    const subtasks = chartProjectSubtaskActiveIndividualDatafromApi.map(
+      (c) => c.subtaskCount
+    );
+
+    const subtasks_openSubtaskCount =
+      chartProjectSubtaskActiveIndividualDatafromApi.map(
+        (c) => c.openSubtaskCount
+      );
+
+    const subtasks_highPrioritySubtaskCount =
+      chartProjectSubtaskActiveIndividualDatafromApi.map(
+        (c) => c.highPrioritySubtaskCount
+      );
+
+    const subtasks_closedSubtaskCount =
+      chartProjectSubtaskActiveIndividualDatafromApi.map(
+        (c) => c.closedSubtaskCount
+      );
+    const projects_count_name_in_sentence_case = projects.map((name) => {
+      let newName = name.replace(/count/i, "").trim(); // Removes 'count' (case-insensitive) and trims any extra spaces
+      return _.startCase(newName);
+    });
+
+    setChartDataProjectsIndividualSubtasks({
+      labels: projects_count_name_in_sentence_case,
+      datasets: [
+        {
+          label: "Number of Subtasks",
+          backgroundColor: "#42A5F5",
+          data: subtasks,
+        },
+        {
+          label: "Number of Open Subtasks",
+          backgroundColor: "#FFA500",
+          data: subtasks_openSubtaskCount,
+        },
+        {
+          label: "Number of Incomplete Subtasks/high priority",
+          backgroundColor: "#FF0000",
+          data: subtasks_highPrioritySubtaskCount,
+        },
+        {
+          label: "Number of Closed Subtasks",
+          backgroundColor: "#16A34A",
+          data: subtasks_closedSubtaskCount,
+        },
+      ],
+    });
+  }, [chartProjectSubtaskActiveIndividualDatafromApi]);
 
   const chartOptions = {
     scales: {
@@ -318,21 +426,21 @@ const Management = () => {
   };
 
   const headerTemplate = (
-    <div className="flex justify-between items-center text-black-500">
+    <div className="flex justify-between items-center text-white">
       <FaBriefcase />
       <span>Number of Projects: Implementation</span>
     </div>
   );
 
   const headerTemplateSupport = (
-    <div className="flex justify-between items-center text-black-500">
+    <div className="flex justify-between items-center text-white">
       <FaBriefcase />
       <span>Number of Projects: Support</span>
     </div>
   );
 
   const headerTemplateArchivedProjects = (
-    <div className="flex justify-between items-center text-black-500">
+    <div className="flex justify-between items-center text-white">
       <FaBriefcase />
       <span>Number of Projects: Archived</span>
     </div>
@@ -415,19 +523,19 @@ const Management = () => {
       <div className="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0 flex-grow ">
         <div className="flex-1 p-4">
           <Card
-            title={titleTemplate}
+            // title={titleTemplate}
             className="rounded shadow-md h-full relative p-2"
-            style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+            style={{ background: "linear-gradient(90deg,#84d9d2,#07cdae)" }}
             header={headerTemplate}
           >
-            <div className="flex justify-center items-center h-full text-black-500">
-              <p className="text-2xl font-semibold">
+            <div className="flex justify-center items-center h-full text-white">
+              <p className="text-6xl font-semibold">
                 {projectImplementationCount}
               </p>
             </div>
 
             <p
-              className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+              className="text-xl md:absolute bottom-2 right-2 text-white hover:text-blue-600 cursor-pointer"
               onClick={() => showDetailsDialogImplementation()}
             >
               View More
@@ -437,18 +545,18 @@ const Management = () => {
 
         <div className="flex-1 p-4">
           <Card
-            title={titleTemplateSupport}
+            // title={titleTemplateSupport}
             className="rounded shadow-md h-full relative p-2"
-            style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+            style={{ background: "linear-gradient(90deg,#90caf9,#047edf 99%)" }}
             header={headerTemplateSupport}
           >
-            <div className="flex justify-center items-center h-full text-black-500">
-              <p className="text-2xl font-semibold">{projectsSupportCount}</p>
+            <div className="flex justify-center items-center h-full  text-white">
+              <p className="text-6xl font-semibold">{projectsSupportCount}</p>
             </div>
 
             {/* "View More" link */}
             <p
-              className="text-xl  md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+              className="text-xl  md:absolute bottom-2 right-2 text-white hover:text-blue-600 cursor-pointer"
               onClick={() => showDetailsDialogSupport()}
             >
               View More
@@ -458,18 +566,21 @@ const Management = () => {
 
         <div className="flex-1 p-4">
           <Card
-            title={titleTemplateArchived}
+            // title={titleTemplateArchived}
             className="rounded shadow-md h-full relative p-2"
-            style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+            style={{
+              background:
+                "linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25)",
+            }}
             header={headerTemplateArchivedProjects}
           >
-            <div className="flex justify-center items-center h-full text-black-500">
-              <p className="text-2xl font-semibold">{projectsArchivedCount}</p>
+            <div className="flex justify-center items-center h-full text-white">
+              <p className="text-6xl font-semibold">{projectsArchivedCount}</p>
             </div>
 
             {/* "View More" link */}
             <p
-              className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+              className="text-xl md:absolute bottom-2 right-2 text-white hover:text-blue-600 cursor-pointer"
               onClick={() => showDetailsArchiveSupport()}
             >
               View More
@@ -478,10 +589,16 @@ const Management = () => {
         </div>
       </div>
 
-      <div className="flex-1 p-4">
+      {isLoadingAllProjectsCount ? (
+        <div className="flex justify-center items-center h-24">
+          <i className="pi pi-spin pi-spinner text-blue-500 md:text-4xl text-3xl"></i>
+        </div>
+      ) : (
+
+        <div className="flex-1 p-4">
         <div
           className="rounded shadow-md p-4 relative"
-          style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+          style={{ backgroundColor: "white" }}
         >
           <p className="text-xl font-semibold mb-2 text-black-500">
             Project Subtasks in Active Sprint
@@ -503,14 +620,24 @@ const Management = () => {
         </div>
       </div>
 
+      )}
+
+
+
       {/* <div className="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0 flex-grow mb-8"> */}
 
       {/* Place for graphs and other content */}
 
-      <div className="flex-1 p-4">
+      {isLoadingAllProjectsCount ? (
+        <div className="flex justify-center items-center h-24">
+          <i className="pi pi-spin pi-spinner text-blue-500 md:text-4xl text-3xl"></i>
+        </div>
+      ) : (
+
+        <div className="flex-1 p-4">
         <div
           className="rounded shadow-md relative p-4"
-          style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+          style={{ backgroundColor: "white" }}
         >
           <p className="text-xl font-semibold mb-2 text-black-500">
             Active Sprint Burned Down Chart
@@ -532,10 +659,13 @@ const Management = () => {
         </div>
       </div>
 
+      )}
+
+
       <div className="flex-1 p-4 ">
         <div
           className="rounded shadow-md p-4 flex-grow relative"
-          style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+          style={{ backgroundColor: "white" }}
         >
           <p className="text-xl font-semibold mb-2 text-black-500">
             Project and Phases Details
@@ -559,6 +689,33 @@ const Management = () => {
             View More
           </p>
         </div>
+      </div>
+
+      <div className="flex-1 p-4">
+        {isLoadingProjectsCount ? (
+          // Display spinner when isLoading is true
+          <div className="flex justify-center items-center h-24">
+            <i className="pi pi-spin pi-spinner text-blue-500 md:text-4xl text-3xl"></i>
+          </div>
+        ) : (
+          // Display the content when isLoading is false
+          <div
+            className="rounded shadow-md relative p-4"
+            style={{ backgroundColor: "white" }}
+          >
+            <p className="text-xl font-semibold mb-2 text-black-500">
+              My tasks in Active Sprint
+            </p>
+            <div className="h-full">
+              <Chart
+                className="h-80"
+                type="bar"
+                data={chartDataProjectsConsultantSubtasks}
+                options={chartOptions}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <DetailsMoreDialog

@@ -180,7 +180,7 @@ const Admin = () => {
         beginAtZero: true,
         ticks: {
           // Ensure only whole numbers are used
-          stepSize: 1,
+          stepSize: 2,
           callback: function (value) {
             if (Math.floor(value) === value) {
               return value;
@@ -192,31 +192,31 @@ const Admin = () => {
   };
 
   const headerTemplate = (
-    <div className="flex justify-between items-center text-black-500">
+    <div className="flex justify-between items-center text-white">
       <i className="pi pi-users text-4xl"></i>
       <span>Number of Users</span>
     </div>
   );
 
   const headerTemplateRoles = (
-    <div className="flex justify-between items-center text-black-500">
+    <div className="flex justify-between items-center text-white">
       <i className="pi pi-folder text-4xl"></i>
       <span>Number of Roles</span>
     </div>
   );
 
   const headerTemplateDepartments = (
-    <div className="flex justify-between items-center text-black-500">
+    <div className="flex justify-between items-center text-white">
       <i className="pi pi-folder text-4xl"></i>
       <span>Number of Departments</span>
     </div>
   );
 
-  const titleTemplate = <h3 className="text-black-500">Users</h3>;
-  const titleTemplateRoles = <h3 className="text-black-500">Roles</h3>;
+  const titleTemplate = <h3 className="text-white">Users</h3>;
+  const titleTemplateRoles = <h3 className="text-white">Roles</h3>;
 
   const titleTemplateDepartments = (
-    <h3 className="text-black-500">Departments</h3>
+    <h3 className="text-white">Departments</h3>
   );
 
   return !isLoading ? (
@@ -225,48 +225,47 @@ const Admin = () => {
       <div className="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0 flex-grow ">
         <div className="flex-1 p-4">
           <Card
-            title={titleTemplate}
+            // title={titleTemplate}
             className="rounded shadow-md h-full"
-            style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+            style={{ background: "linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232)" }}
             header={headerTemplate}
           >
-            <div className="flex justify-center items-center h-full text-black-500">
-              <p className="text-2xl font-semibold">{userCount}</p>
+            <div className="flex justify-center items-center h-full text-white">
+              <p className="text-6xl font-semibold">{userCount}</p>
             </div>
           </Card>
         </div>
 
         <div className="flex-1 p-4">
           <Card
-            title={titleTemplateRoles}
+            // title={titleTemplateRoles}
             className="rounded shadow-md h-full"
-            style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+            style={{ background: "linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71)" }}
             header={headerTemplateRoles}
           >
-            <div className="flex justify-center items-center h-full text-black-500">
-              <p className="text-2xl font-semibold">{rolesCount}</p>
+            <div className="flex justify-center items-center h-full text-white">
+              <p className="text-6xl font-semibold">{rolesCount}</p>
             </div>
           </Card>
         </div>
 
         <div className="flex-1 p-4">
           <Card
-            title={titleTemplateDepartments}
+            // title={titleTemplateDepartments}
             className="rounded shadow-md h-full"
-            style={{ backgroundColor: "hsl(214, 41%, 97%)" }}
+            style={{ background: "linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25)" }}
             header={headerTemplateDepartments}
           >
-            <div className="flex justify-center items-center h-full text-black-500">
-              <p className="text-2xl font-semibold">{departmentCount}</p>
+            <div className="flex justify-center items-center h-full text-white">
+              <p className="text-6xl font-semibold">{departmentCount}</p>
             </div>
           </Card>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0 flex-grow mb-8">
         {/* Place for graphs and other content */}
         <div className="flex-1 p-4">
-        <div className="rounded shadow-md p-4" style={{ backgroundColor: "hsl(214, 41%, 97%)" }}>
+        <div className="rounded shadow-md p-4"  style={{ backgroundColor: "white" }}>
 
             <p className="text-xl font-semibold mb-2 text-black-500">Users by Department</p>
             <div className="h-full">
@@ -276,14 +275,14 @@ const Admin = () => {
         </div>
 
         <div className="flex-1 p-4">
-        <div className="rounded shadow-md p-4" style={{ backgroundColor: "hsl(214, 41%, 97%)" }}>
+        <div className="rounded shadow-md p-4"  style={{ backgroundColor: "white" }}>
             <p className="text-xl font-semibold mb-2 text-black-500">Users by Roles</p>
             <div className="h-full">
               <Chart type="bar" data={chartDataRoles} options={chartOptions} />
             </div>
           </div>
         </div>
-      </div>
+      
     </div>
   ) : (
     <div className="flex justify-center items-center h-24">

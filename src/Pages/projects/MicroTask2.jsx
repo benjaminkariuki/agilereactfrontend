@@ -15,16 +15,14 @@ import { confirmDialog } from "primereact/confirmdialog";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useSelector } from "react-redux";
 import { Paginator } from "primereact/paginator";
+import levenshtein from 'fast-levenshtein';
 
 const MicroTask = ({
   projectId,
   activityId,
   phaseId,
   selectedIcon,
-  projectManagers,
-  businessAnalysts,
-  teamLeads,
-  developers,
+  organization,
 }) => {
   const toast = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,13 +40,19 @@ const MicroTask = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const [departments] = useState([
-    "Porfolio Managers Department",
-    "Web Department",
-    "Business Central Department",
-    "Infrastructure Department",
-    "Business Analyst Department",
-    "Implementation Department",
+    "Management",
+    "Administration",
+    "Web And Mobile",
+    "Project Managers",
+    "Business Central",
+    "Infrastructure",
+    "Implementation",
+    "Finance",
+    "Human Resource",
+    "Sales and Marketing",
+    "Sales",
   ]);
+
   const [createTaskDialogVisible, setCreateTaskDialogVisible] = useState(false);
   const [newTask, setNewTask] = useState({
     task: "",
@@ -108,6 +112,9 @@ const MicroTask = ({
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;
 
+    const isSimilar = (str1, str2, threshold = 3) => {
+      return levenshtein.get(str1, str2) <= threshold;
+    };
   // Move this effect to handle selectedIcon changes
   useEffect(() => {
     if (selectedIcon === "add") {
@@ -116,22 +123,14 @@ const MicroTask = ({
       setIsViewModalOpen(true);
       fetchSubtasks(projectId, phaseId, activityId);
     }
-    setProjectUsers(
-      businessAnalysts
-        .concat(teamLeads)
-        .concat(developers)
-        .concat(projectManagers)
-    );
-    initFilters();
+   
+    // initFilters();
   }, [
     projectId,
     phaseId,
     activityId,
     selectedIcon,
-    projectManagers,
-    businessAnalysts,
-    teamLeads,
-    developers,
+    organization,
   ]);
 
   useEffect(() => {
@@ -222,22 +221,22 @@ const MicroTask = ({
     }
   };
 
-  const initFilters = () => {
-    setFilters({
-      status: {
-        operator: FilterOperator.OR,
-        constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-      },
-      task: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-      },
-      assigned_to: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-      },
-    });
-  };
+  // const initFilters = () => {
+  //   setFilters({
+  //     status: {
+  //       operator: FilterOperator.OR,
+  //       constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+  //     },
+  //     task: {
+  //       operator: FilterOperator.AND,
+  //       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+  //     },
+  //     assigned_to: {
+  //       operator: FilterOperator.AND,
+  //       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+  //     },
+  //   });
+  // };
 
   const confirmDelete = (id) => {
     confirmDialog({
@@ -531,38 +530,82 @@ const MicroTask = ({
     setCreateTaskDialogVisible(false);
   };
   //option based on business analyst in the project
-  const bas = teamLeads
-    ?.filter(
-      (user) =>
-        user.status === "active" &&
-        user.user?.department
-          ?.toLowerCase()
-          .includes("business analyst department")
-    )
-    .map((user, index) => ({
+  const bas = organization
+  ?.filter(
+    (user) =>
+      user.status === "active" &&
+      user.user?.department
+        ?.toLowerCase() === "implementation" &&
+      (
+        isSimilar(user.user?.role?.name?.replace(/[-\s]/g, '').toLowerCase(), "teamleadimplementation") ||
+        isSimilar(user.user?.role?.name?.replace(/\s/g, '').toLowerCase(), "headbusinessanalyst")
+      )
+  )
+  .map((user, index) => ({
       key: index,
-      label: user.user?.firstName + " " + user.user?.lastName,
+      label: user.user?.firstName + " " + user.user?.lastName + " " + user.user?.email,
       value: user.user?.email,
-    }));
+  }));
+
+  const imp = organization
+  ?.filter(
+    (user) =>
+      user.status === "active" &&
+      (
+        (isSimilar(user.user?.department?.replace(/\s/g, '').toLowerCase(), "projectmanagers") &&
+        isSimilar(user.user?.role?.name?.replace(/\s/g, '').toLowerCase(), "portfoliomanager"))
+        ||  
+        (isSimilar(user.user?.department?.replace(/\s/g, '').toLowerCase(), "businesscentral") &&
+        user.user?.role?.name?.toLowerCase().includes("team lead"))   
+        ||
+        (isSimilar(user.user?.department?.replace(/\s/g, '').toLowerCase(), "webandmobile") &&
+        user.user?.role?.name?.toLowerCase().includes("team lead"))
+      )
+  )
+  .map((user, index) => ({
+      key: index,
+      label: user.user?.firstName + " " + user.user?.lastName + " - " + user.user?.email,
+      value: user.user?.email,
+  }));
+
+
+
+
 
   //option based on team leads in the project
   const assigningUser = (department) => {
-    // Determine the array to use based on the department
+    const depNormalized = department.toLowerCase().replace(/\s+/g, ''); // Removing spaces and converting to lowercase
     let sourceArray;
-    if (department.toLowerCase() === "porfolio managers department") {
-      sourceArray = projectManagers;
+  
+    if (depNormalized.toLowerCase() === "projectmanagers") {
+      sourceArray = organization.filter(user => {
+        const roleName = user.user?.role?.name?.toLowerCase();
+        return user.status === 'active' && 
+          roleName.includes("portfolio manager");
+      });
+    } else if (depNormalized.toLowerCase() === "webandmobile") {
+      sourceArray = organization.filter(user => {
+        const roleName = user.user?.role?.name?.toLowerCase();
+        return user.status === 'active' && 
+          (roleName.includes("team lead"));
+      });
+    } else if (depNormalized.toLowerCase() === "businesscentral") {
+      sourceArray = organization.filter(user => {
+        const roleName = user.user?.role?.name?.toLowerCase();
+        return user.status === 'active' && 
+          (roleName.includes("team lead"));
+      });
     } else {
-      sourceArray = teamLeads;
-    }     
+      // Handle other cases or just default to an empty array or another default value
+      sourceArray = [];
+    }
 
-    // Filter the chosen array based on department and active status
     const filteredUser = sourceArray?.filter(
       (user) =>
         user.user?.department.toLowerCase() === department.toLowerCase() &&
         user?.status === "active"
     );
 
-    // Map the filtered array to produce the desired output
     return filteredUser.map((user, index) => ({
       key: index,
       label:
@@ -573,7 +616,11 @@ const MicroTask = ({
         user.user?.role.name,
       value: user?.user.email,
     }));
+  
+    
   };
+
+   
 
   //updtaing the task details
   const handleEditTaskSave = () => {
@@ -772,6 +819,8 @@ const MicroTask = ({
               sortable
               filter
               filterPlaceholder="Search by task name"
+              body={(rowData) => `${subtasks.indexOf(rowData) + 1}. ${rowData.task}`}
+
             ></Column>
             {/* <Column field="description" header="Task Description"></Column> */}
             <Column field="start_date" header="Start Date" sortable></Column>
@@ -813,7 +862,7 @@ const MicroTask = ({
               filter
               filterPlaceholder="Search by assigned to"
             ></Column>
-            <Column field="delegatedTo" header="Delegated" sortable></Column>
+            {/* <Column field="delegatedTo" header="Delegated" sortable></Column> */}
             <Column
               field="status"
               header="Status"
@@ -975,14 +1024,12 @@ const MicroTask = ({
               </div>
               <div className="mb-4">
                 <label htmlFor="teamLead">
-                  Assign Team Lead/Project Manager:
+                  Assign Team Lead or Project Manager:
                 </label>
                 <Dropdown
                   id="team-lead"
                   value={newTask.assigneTl}
-                  options={assigningUser(
-                    newTask.department ? newTask.department : ""
-                  )}
+                  options={imp}
                   onChange={(e) =>
                     setNewTask({ ...newTask, assigneTl: e.value })
                   }
@@ -1063,7 +1110,7 @@ const MicroTask = ({
               </div>
               <div className="mb-4">
                 <label htmlFor="businessAnalyst">
-                  Assign to Business Analyst:
+                  Assign to Team Lead Implementation:
                 </label>
                 <Dropdown
                   id="business-ananlyst"
@@ -1137,7 +1184,7 @@ const MicroTask = ({
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="teamLead">Assign Team Lead:</label>
+                <label htmlFor="teamLead">Assign To Team Lead or Project Manager:</label>
                 <Dropdown
                   id="team-lead"
                   value={editingTask.assignedTl}

@@ -3,6 +3,7 @@ import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import axios from "axios";
 import { Toast } from "primereact/toast";
+import levenshtein from 'fast-levenshtein';
 
 const DelegateTaskDialog = ({
   showDelegate,
@@ -16,6 +17,38 @@ const DelegateTaskDialog = ({
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isCloseEnough = (input, target, threshold = 3) => {
+    if (!input || !target) return false;
+    return levenshtein.get(input, target) <= threshold;
+}
+
+const handleErrorMessage = (error) => {
+  if (
+    error &&
+    error.response &&
+    error.response.data &&
+    error.response.data.message &&
+    error.response.data.message.newlyAssigned
+  ) {
+    // Extract the nested error message
+    return error.response.data.message.newlyAssigned.join(" ");
+  } else if (error && error.message) {
+    // Client-side error (e.g., no internet)
+    return error.message;
+  }
+  // If no errors property is found, return the main message or a default error message
+  return error &&
+    error.response &&
+    error.response.data &&
+    error.response.data.message
+    ? typeof error.response.data.message === 'string' 
+      ? error.response.data.message
+      : "An error occurred, but specifics aren't provided."
+    : "An unexpected error occurred.";
+};
+
+
 
   //toast display functions
   const onSuccessRequest = (success) => {
@@ -34,7 +67,7 @@ const DelegateTaskDialog = ({
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 1000,
       });
     }
@@ -75,7 +108,14 @@ const DelegateTaskDialog = ({
         roleName: roleName, // Replace with the role name
       };
 
-      if (roleName.toLowerCase().includes("business analyst")) {
+      const lowerCaseRoleName = roleName.toLowerCase();
+
+
+      if (
+        isCloseEnough(lowerCaseRoleName, "business analyst") ||
+        isCloseEnough(lowerCaseRoleName, "head business analyst") ||
+        isCloseEnough(lowerCaseRoleName, "team lead implementation")
+      ) {
         // Use the email from the 'baassignedto' array
         data.previousAssigned =
           projectInfomation.baassignedto[0].custom_user.email;
@@ -107,57 +147,37 @@ const DelegateTaskDialog = ({
     } catch (error) {
       // Handle any errors that occurred during the request
       console.error("Error delegating task:", error);
-      onError("Error delegating task"); // <-- Show error toast
+    
+      onError(error); 
+      // <-- Show error toast
       setIsSubmitting(false);
     }
   };
 
   const getOptions = () => {
     if (!projectData) return [];
-
-    let users = [];
+  
     const lowerCaseRoleName = roleName.toLowerCase();
-
-    if (
-      lowerCaseRoleName.includes("team lead") &&
-      lowerCaseRoleName.includes("web")
-    ) {
-      users =
-        projectData.developers?.filter(
-          (developer) => developer.user.department === "Web Department"
-        ) || [];
-    } else if (
-      lowerCaseRoleName.includes("team lead") &&
-      lowerCaseRoleName.includes("infrastructure")
-    ) {
-      users =
-        projectData.organization?.filter(
-          (user) => user.department === "Infrastructure Department"
-        ) || [];
-    } else if (lowerCaseRoleName.includes("project manager")) {
-      users =
-        projectData.projectmanager?.filter(
-          (pm) => pm.user.department === "Porfolio Managers Department"
-        ) || [];
-    } else if (
-      lowerCaseRoleName.includes("team lead") &&
-      lowerCaseRoleName.includes("business analyst") || lowerCaseRoleName.includes("team lead") &&
-      lowerCaseRoleName.includes("business analysts") 
-    ) {
-      users =
-        projectData.businessanalyst?.filter(
-          (ba) => ba.user.department === "Business Analyst Department"
-        ) || [];
-    } else if (
-      lowerCaseRoleName.includes("team lead") &&
-      lowerCaseRoleName.includes("business central")
-    ) {
-      users =
-        projectData.organization?.filter(
-          (user) => user.department === "Business Central Department"
-        ) || [];
+  
+ 
+  
+    let departmentToFilter;
+  
+    if (lowerCaseRoleName.includes("team lead")) {
+      if (isCloseEnough(lowerCaseRoleName, "team lead-web and mobile")) departmentToFilter = "Web and Mobile";
+      else if (isCloseEnough(lowerCaseRoleName, "team lead-infrastructure")) departmentToFilter = "Infrastructure";
+      else if (isCloseEnough(lowerCaseRoleName, "team lead-implementation")) departmentToFilter = "Implementation";
+      else if (isCloseEnough(lowerCaseRoleName, "team lead-business application") || isCloseEnough(lowerCaseRoleName, "team lead-business central")) departmentToFilter = "Business Central";
+    } else if (isCloseEnough(lowerCaseRoleName, "portfolio manager")) {
+      departmentToFilter = "Project Managers";
+    } else if (isCloseEnough(lowerCaseRoleName, "head business analyst")) {
+      departmentToFilter = "Implementation";
     }
-
+  
+    const users = projectData.organization?.filter(
+      (user) => isCloseEnough(user.user.department.toLowerCase(), departmentToFilter)
+    ) || [];
+  
     return users.map((user) => ({
       label: `${user.user.firstName} ${user.user.lastName}`,
       value: user.user.email,

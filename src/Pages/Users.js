@@ -17,10 +17,14 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const [departments] = useState([
+    "Management",
     "Administration",
-    "Research and Development",
-    "Implementation Department",
-    "Finance Department",
+    "Web And Mobile",
+    "Project Managers",
+    "Business Central",
+    "Infrastructure",
+    "Implementation",
+    "Finance",
     "Human Resource",
     "Sales and Marketing",
     "Sales",

@@ -31,8 +31,10 @@ const ClosedTasks = () => {
   const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
 
   const hasPermissionTasksProjects =
-    normalizedRole.includes("project manager") ||
-    normalizedRole.includes("team lead");
+  normalizedRole.includes("portfolio manager") ||
+  normalizedRole.includes("head") ||
+  normalizedRole.includes("team lead");
+  
   //toast display functions
   const onSuccess = (success) => {
     if (success) {
@@ -92,13 +94,31 @@ const ClosedTasks = () => {
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
-        setOtherData(response.data.allSubtasks);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
         onError("Error fetching data");
       });
   };
+
+  const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    axios
+      .get("https://agile-pm.agilebiz.co.ke/api/OtherTasksApproved", {
+        params: {
+          email: userEmail,
+          roleName: userRole,
+          department: userDepartment,
+        },
+      })
+      .then((response) => {
+      
+        setOtherData(response.data.allSubtasks);
+      })
+      .catch((error) => {
+        onError("Error fetching data");
+      });
+  };
+
 
   // Truncate comments to 5 words
   const truncateComments = (rowData) => {
@@ -201,7 +221,11 @@ const ClosedTasks = () => {
         </button>
         {hasPermissionTasksProjects && (
           <button
-            onClick={() => setActiveView("Other Tasks")}
+            onClick={() => {
+              setActiveView("Other Tasks");
+              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+
+            }}
             className={`p-2 rounded-md ${
               activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}

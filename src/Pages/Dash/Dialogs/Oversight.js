@@ -44,7 +44,7 @@ const Oversight = ({ onClose }) => {
     setChartDataProjectIndividualFromAPi,
   ] = useState([]);
 
- 
+
 
   const [showDetailsSupport, setShowDetailsSupport] = useState(false);
 
@@ -595,7 +595,6 @@ const Oversight = ({ onClose }) => {
         </div>
       </div>
 
-    
 
       <DetailsMoreDialog
         showDetailsMore={showDetails}

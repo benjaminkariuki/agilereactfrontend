@@ -9,6 +9,8 @@ import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+
 
 const MyTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -30,21 +32,24 @@ const MyTasks = () => {
 
   const [activeView, setActiveView] = useState("My Tasks");
 
-  
-
   const Role = userRole; // Replace this with how you get the user's role
-  const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
+  const normalizedRole = Role.toLowerCase(); 
+  const normalizedDepartment = userDepartment.toLowerCase();
 
   const hasPermissionTasksProjects =
-    normalizedRole.includes("portfolio manager") ||normalizedRole.includes("head")||
+    normalizedRole.includes("portfolio manager") ||
+    normalizedRole.includes("head") ||
     normalizedRole.includes("team lead");
 
-  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
-  const hasPermissionPushDevelopment = normalizedRole.includes("team lead")|| normalizedRole.includes("head")  ||
-  normalizedRole.includes("technical consultant");
+  const hasPermissionTaskDelegation =
+    normalizedRole.includes("team lead") ||
+    normalizedRole.includes("head") ||
+    normalizedRole.includes("portfolio manager");
 
+  const hasPermissionPushDevelopment =
+    normalizedDepartment.includes("web");
 
-
+    const hasPermissionClose = normalizedRole.includes("portfolio manager");
 
   //toast display functions
   const onSuccess = (success) => {
@@ -92,10 +97,10 @@ const MyTasks = () => {
   };
 
   useEffect(() => {
-    fetchMyTasks(userEmail, userRole,userDepartment); // Fetch data from the API when the component mounts
+    fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userEmail, userRole, refreshTasks]); // Empty dependency array ensures this effect runs once
 
-  const fetchMyTasks = (userEmail, userRole,userDepartment) => {
+  const fetchMyTasks = (userEmail, userRole, userDepartment) => {
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/myTasks", {
         params: {
@@ -106,8 +111,26 @@ const MyTasks = () => {
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
-        setOtherData(response.data.allSubtasks);
+        // setOtherData(response.data.allSubtasks);
         setMicroTasksData(response.data.activeSprint.subtasks);
+      })
+      .catch((error) => {
+        onError("Error fetching data");
+      });
+  };
+
+  const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    axios
+      .get("https://agile-pm.agilebiz.co.ke/api/AllOtherTasks", {
+        params: {
+          email: userEmail,
+          roleName: userRole,
+          department: userDepartment,
+        },
+      })
+      .then((response) => {
+      
+        setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
         onError("Error fetching data");
@@ -166,6 +189,32 @@ const MyTasks = () => {
     );
   };
   // Function to show the details dialog
+  const pushToApproval = () => {
+    const selectedIds = selectedTasks?.map((row) => row.id);
+    if (selectedIds.length > 0) {
+      setPushLoading(true);
+      axios
+        .post("https://agile-pm.agilebiz.co.ke/api/pushToApproval", {
+          taskIds: selectedIds,
+        })
+        .then((response) => {
+          setTimeout(() => {
+            onSuccess(response.data.message);
+            fetchMyTasks(userEmail, userRole,userDepartment);
+            setPushLoading(false);
+          }, 1000);
+          setViewMore(false);
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          setPushLoading(false);
+        });
+    } else {
+      onWarn("Select atleast one task");
+    }
+  };
+
+
   const showDetailsDialog = (rowData) => {
     setShowDetails(true);
     setMoreDetailsData(rowData);
@@ -201,6 +250,21 @@ const MyTasks = () => {
     return _.startCase(rowData[column.field]);
   };
 
+  const openConfirmDialog = () => {
+    if (selectedTasks.length === 1) confirmClose();
+    else if (selectedTasks.length > 1)
+      onWarn("Only one Micro-task should be selected");
+    else onWarn("Select atleast one Micro-task");
+  };
+
+  const confirmClose = () => {
+    confirmDialog({
+      message: "Do you want to close this task(S)?",
+      header: "Close Confirmation",
+      icon: "pi pi-info-circle",
+      accept: pushToApproval,
+    });
+  };
   //function to push to the next stage(i.e Development)
   const pushToTesting = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
@@ -213,7 +277,7 @@ const MyTasks = () => {
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
-            fetchMyTasks(userEmail, userRole,userDepartment);
+            fetchMyTasks(userEmail, userRole, userDepartment);
             setPushLoading(false);
           }, 1000);
           setViewMore(false);
@@ -243,7 +307,11 @@ const MyTasks = () => {
         </button>
         {hasPermissionTasksProjects && (
           <button
-            onClick={() => setActiveView("Other Tasks")}
+            onClick={() => {
+              setActiveView("Other Tasks");
+              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+
+            }}
             className={`p-2 rounded-md ${
               activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
@@ -332,7 +400,6 @@ const MyTasks = () => {
         </div>
       )}
 
-      Other Tasks section
       {activeView === "Other Tasks" && hasPermissionTasksProjects && (
         <div>
           {otherData && otherData.length > 0 ? (
@@ -397,27 +464,48 @@ const MyTasks = () => {
           visible={viewMore}
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
-          footer={
-            hasPermissionPushDevelopment && (
-                <div>
-                    <button
-                        className="px-4 py-2 bg-green-500 text-white rounded-md"
-                        onClick={pushToTesting}
-                        disabled={pushLoading} // Disable the button while loading
-                    >
-                        {pushLoading ? (
-                            <i
-                                className="pi pi-spin pi-spinner"
-                                style={{ fontSize: "1.4rem" }}
-                            ></i>
-                        ) : (
-                            "Push to Development"
-                        )}
-                    </button>
+          footer=
+          {
+            <>
+              {hasPermissionPushDevelopment && (
+                <div className="mr-2 inline-block"> {/* Added inline-block and margin to have them side by side */}
+                  <button
+                    className="px-4 py-2 bg-green-500 text-white rounded-md"
+                    onClick={pushToTesting}
+                    disabled={pushLoading} // Disable the button while loading
+                  >
+                    {pushLoading ? (
+                      <i
+                        className="pi pi-spin pi-spinner"
+                        style={{ fontSize: "1.4rem" }}
+                      ></i>
+                    ) : (
+                      "Push to Development"
+                    )}
+                  </button>
                 </div>
-            )
-        }
-        
+              )}
+          
+              {hasPermissionClose && (   // Assuming the variable for the new button's visibility is called 'hasPermissionClose'
+                <button
+                className="px-4 py-2 bg-red-500 text-white rounded-md"
+                onClick={openConfirmDialog}
+                disabled={pushLoading} // Disable the button while loading
+              >
+                {pushLoading ? (
+                  <i
+                    className="pi pi-spin pi-spinner"
+                    style={{ fontSize: "1.4rem" }}
+                  ></i>
+                ) : (
+                  "Close the task (s)"
+                )}
+              </button>
+              )}
+            </>
+          }
+          
+          
         >
           <DataTable
             value={projectSubtasks}
@@ -435,8 +523,12 @@ const MyTasks = () => {
             <Column
               field="task"
               header="Task"
-              body={sentenceCaseFormatter}
+              body={(rowData, columnProps) => {
+                const task = sentenceCaseFormatter(rowData, columnProps);
+                return `${columnProps.rowIndex + 1}. ${task}`;
+              }}
             ></Column>
+
             <Column
               field="description"
               header="Description"
@@ -475,7 +567,6 @@ const MyTasks = () => {
               )}
             ></Column>
           </DataTable>
-          
         </Dialog>
       </div>
 
@@ -579,7 +670,7 @@ const MyTasks = () => {
                 className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
                 onClick={() => showDelegateDialog(moreDetailsData)}
               >
-                Delegate
+                Assign
               </button>
             )}
           </div>

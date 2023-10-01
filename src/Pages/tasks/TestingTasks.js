@@ -48,15 +48,17 @@ const TestingTasks = () => {
 
   const Role = userRole; // Replace this with how you get the user's role
   const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
+  const normalizedDepartment = userDepartment.toLowerCase();
 
   const hasPermissionTasksProjects =
-    normalizedRole.includes("project manager") ||
-    normalizedRole.includes("team lead");
+  normalizedRole.includes("portfolio manager") ||
+  normalizedRole.includes("head") ||
+  normalizedRole.includes("team lead");
 
-  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("project manager");
+  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
+
   const hasPermissionPushReviewAndBackTesting =
-    normalizedRole.includes("team lead") ||
-    normalizedRole.includes("business analyst");
+    normalizedDepartment.includes("implementation");
 
   const onSuccess = (success) => {
     if (success) {
@@ -116,13 +118,31 @@ const TestingTasks = () => {
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
-        setOtherData(response.data.allSubtasks);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
         onError("Error fetching data");
       });
   };
+
+  const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    axios
+      .get("https://agile-pm.agilebiz.co.ke/api/OtherTasksTesting", {
+        params: {
+          email: userEmail,
+          roleName: userRole,
+          department: userDepartment,
+        },
+      })
+      .then((response) => {
+      
+        setOtherData(response.data.allSubtasks);
+      })
+      .catch((error) => {
+        onError("Error fetching data");
+      });
+  };
+
 
   const fetchReturnedTaskLogs = () => {
     axios
@@ -324,6 +344,7 @@ const TestingTasks = () => {
       <div className="flex p-4 space-x-0.5">
         <button
           onClick={() => setActiveView("My Tasks")}
+
           className={`p-2 rounded-md ${
             activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
           } transition-colors`}
@@ -333,7 +354,12 @@ const TestingTasks = () => {
 
         {hasPermissionTasksProjects && (
           <button
-            onClick={() => setActiveView("Other Tasks")}
+
+            onClick={() => {
+              setActiveView("Other Tasks");
+              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+
+            }}
             className={`p-2 rounded-md ${
               activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
@@ -813,7 +839,7 @@ const TestingTasks = () => {
                 className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
                 onClick={() => showDelegateDialog(moreDetailsData)}
               >
-                Delegate
+                Assign
               </button>
             )}
           </div>

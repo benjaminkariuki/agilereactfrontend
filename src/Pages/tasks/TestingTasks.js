@@ -58,7 +58,7 @@ const TestingTasks = () => {
   const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
 
   const hasPermissionPushReviewAndBackTesting =
-    normalizedDepartment.includes("implementation");
+    normalizedDepartment.includes("implementation") ||  normalizedDepartment.includes("infrastructure");
 
   const onSuccess = (success) => {
     if (success) {

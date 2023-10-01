@@ -41,7 +41,7 @@ const DevelopmentTasks = () => {
     normalizedRole.includes("team lead");
 
     const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
-    const hasPermissionPushTesting = normalizedDepartment.includes("implementation");
+    const hasPermissionPushTesting = normalizedDepartment.includes("implementation") ||  normalizedDepartment.includes("infrastructure");
 
    
 

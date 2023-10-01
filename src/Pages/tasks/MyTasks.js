@@ -47,7 +47,7 @@ const MyTasks = () => {
     normalizedRole.includes("portfolio manager");
 
   const hasPermissionPushDevelopment =
-    normalizedDepartment.includes("web");
+    normalizedDepartment.includes("web") ||  normalizedDepartment.includes("infrastructure");
 
     const hasPermissionClose = normalizedRole.includes("portfolio manager");
 

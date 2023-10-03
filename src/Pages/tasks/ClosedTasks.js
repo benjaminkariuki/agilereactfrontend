@@ -34,7 +34,7 @@ const ClosedTasks = () => {
   normalizedRole.includes("portfolio manager") ||
   normalizedRole.includes("head") ||
   normalizedRole.includes("team lead");
-  
+
   //toast display functions
   const onSuccess = (success) => {
     if (success) {
@@ -84,6 +84,13 @@ const ClosedTasks = () => {
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/myTasksApproved", {
         params: {
@@ -91,6 +98,9 @@ const ClosedTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        headers: {
+          ...config.headers
+        }
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
@@ -102,6 +112,13 @@ const ClosedTasks = () => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/OtherTasksApproved", {
         params: {
@@ -109,6 +126,9 @@ const ClosedTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        headers: {
+          ...config.headers
+        }
       })
       .then((response) => {
       
@@ -396,7 +416,10 @@ const ClosedTasks = () => {
             <Column
               field="task"
               header="Task"
-              body={sentenceCaseFormatter}
+              body={(rowData, columnProps) => {
+                const task = sentenceCaseFormatter(rowData, columnProps);
+                return `${columnProps.rowIndex + 1}. ${task}`;
+              }}
             ></Column>
             <Column
               field="description"

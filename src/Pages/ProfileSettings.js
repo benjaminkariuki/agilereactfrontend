@@ -7,6 +7,8 @@ import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { useNavigate } from "react-router-dom";
+import _ from "lodash";
+
 
 const EditProfile = () => {
   const dispatch = useDispatch();
@@ -18,6 +20,7 @@ const EditProfile = () => {
     userEmail,
     userFName,
     userLName,
+    userDepartment,
     userProfilePhoto,
     userContacts,
   } = useSelector((state) => state.user);
@@ -27,6 +30,8 @@ const EditProfile = () => {
   const [lastName, setLastName] = useState("");
   const [contacts, setConatcts] = useState("");
   const [password, setNewPassword] = useState("");
+  const [Oldpassword, setOldPassword] = useState("");
+
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -54,7 +59,7 @@ const EditProfile = () => {
       toast.current.show({
         severity: "warn",
         summary: "Error creating user",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -69,6 +74,25 @@ const EditProfile = () => {
       accept: () => handleDeletePhoto(),
     });
   };
+
+  
+  const handleErrorMessage = (error) => {
+    if (error && error.response && error.response.data) {
+      // Check if there's a specific error message in the response
+      if (error.response.data.message) {
+        return error.response.data.message;
+      } else if (error.response.data.errors) {
+        // Extract error messages and join them into a single string
+        return Object.values(error.response.data.errors).flat().join(" ");
+      }
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return a default error message
+    return "An unexpected error occurred.";
+  };
+  
 
   const handleFirstNameChange = (event) => {
     setFirstName(event.target.value);
@@ -102,12 +126,21 @@ const EditProfile = () => {
     formData.append("contacts", contacts);
     formData.append("profile_pic", profile_pic);
 
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
       .post(
         `https://agile-pm.agilebiz.co.ke/api/updateUsers/${userId}`,
         formData,
         {
           headers: {
+            ...config.headers,  // Include the headers from your config
             "Content-Type": "multipart/form-data",
           },
         }
@@ -144,11 +177,20 @@ const EditProfile = () => {
   const handleTogglePasswordModal = () => {
     setNewPassword("");
     setConfirmPassword("");
+    setOldPassword("");
+    setError("");
+    setIsConfirmPasswordMismatch(null);
     setShowPasswordModal(false);
+
   };
+
   const handlePasswordChange = (e) => {
     setNewPassword(e.target.value);
     setIsConfirmPasswordMismatch(false);
+  };
+
+  const handleOldPasswordChange = (e) => {
+    setOldPassword(e.target.value);
   };
 
   const handleConfirmPasswordChange = (event) => {
@@ -156,15 +198,27 @@ const EditProfile = () => {
     setIsConfirmPasswordMismatch(password !== event.target.value);
   };
 
-  const handlePasswordSave = () => {
+  const handlePasswordSave = (e) => {
+    e.preventDefault(); // Prevent default form submission
+
     if (password === confirmPassword) {
       setError(null);
       setIsLoading(true);
       // Save the new password
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       axios
         .post(`https://agile-pm.agilebiz.co.ke/api/changepassword/${userId}`, {
           password: password,
-        })
+          previousPass:Oldpassword,
+        },config)
         .then((response) => {
           onSuccess(response.data.message);
           setTimeout(() => {
@@ -179,7 +233,7 @@ const EditProfile = () => {
         .catch((error) => {
           // Error occurred while changing password
           console.log(error);
-          onError("Error changing password");
+          onError(error);
           setIsLoading(false);
         });
     } else setError("Passwords don't match");
@@ -197,8 +251,17 @@ const EditProfile = () => {
   //DELETING THE PROFILE pHOTO
   const handleDeletePhoto = () => {
     // Delete the photo
+
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
-      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteImage/${userId}`)
+      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteImage/${userId}`,config)
       .then((response) => {
         const { user } = response.data;
         dispatch(updateUser(user));
@@ -222,13 +285,13 @@ const EditProfile = () => {
         style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
       >
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <div>
-            <div className="mb-4">
+          <div className="relative">
+          <div className="mb-4 absolute top-0 right-0">
               <label
                 className="block text-gray-700  font-bold mb-2"
                 htmlFor="profile_pic"
               >
-                Profile Photo
+                
               </label>
               <div className="relative w-24 h-24 rounded-full overflow-hidden">
                 <img
@@ -269,7 +332,8 @@ const EditProfile = () => {
                 <strong> Full Name:</strong>
               </label>
               <span className="text-gray-700">
-                {userFName} {userLName}
+              {_.startCase(userFName)} {_.startCase(userLName)}
+
               </span>
             </div>
             <div className="mb-4">
@@ -288,17 +352,18 @@ const EditProfile = () => {
               >
                 <strong>Role:</strong>
               </label>
-              <span className="text-gray-700">{userRole}</span>
+              <span className="text-gray-700">{_.startCase(userRole)}</span>
             </div>
             <div className="mb-4">
               <label
                 className="block text-gray-700  font-bold mb-2"
                 htmlFor="fullName"
               >
-                Acting Role:
+                Department:
               </label>
-              <span className="text-gray-700">{}</span>
-            </div>
+
+              <span className="text-gray-700">{_.startCase(userDepartment)}</span>
+              </div>
 
             <div className="flex justify-between mt-4">
               <button
@@ -422,6 +487,7 @@ const EditProfile = () => {
       @param confirm-passwpord
             
       */}
+
         <Dialog
           header="Change Password"
           visible={showPasswordModal}
@@ -430,10 +496,27 @@ const EditProfile = () => {
           <div>
             {error && <p className="text-red-500">{error}</p>}
             <form>
+            <div className="mb-4">
+                <label
+                  className="block text-gray-700  font-bold mb-2"
+                  htmlFor="old-password"
+                >
+                  Old Password
+                </label>
+                <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="old-password"
+                  type="password"
+                  value={Oldpassword}
+                  onChange={handleOldPasswordChange}
+                  required
+                />
+              </div>
+
               <div className="mb-4">
                 <label
                   className="block text-gray-700  font-bold mb-2"
-                  htmlFor="newPassword"
+                  htmlFor="new-password"
                 >
                   New Password
                 </label>
@@ -443,8 +526,10 @@ const EditProfile = () => {
                   type="password"
                   value={password}
                   onChange={handlePasswordChange}
+                  required
                 />
               </div>
+
               <div className="mb-4">
                 <label
                   className="block text-gray-700  font-bold mb-2"
@@ -460,6 +545,7 @@ const EditProfile = () => {
                   type="password"
                   value={confirmPassword}
                   onChange={handleConfirmPasswordChange}
+                  required
                 />
               </div>
               <div className="flex justify-between">

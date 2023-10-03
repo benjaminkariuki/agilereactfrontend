@@ -73,8 +73,16 @@ const UpdateRoles = () => {
 
   const fetchRoles = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles"
+        "https://agile-pm.agilebiz.co.ke/api/allRoles",
+        config
       );
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
@@ -86,8 +94,16 @@ const UpdateRoles = () => {
 
   const fetchAllActivities = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/activitiesAll"
+        "https://agile-pm.agilebiz.co.ke/api/activitiesAll",
+        config
       );
       const fetchedActivities = response.data.activities;
       setAllActivities(fetchedActivities);
@@ -99,8 +115,16 @@ const UpdateRoles = () => {
 
   const getRoleActivitiesWithId = async (roleId) => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const roleResponse = await axios.get(
-        `https://agile-pm.agilebiz.co.ke/api/allRolesWithId/${roleId}`
+        `https://agile-pm.agilebiz.co.ke/api/allRolesWithId/${roleId}`,
+        config
       );
 
       if (roleResponse.data.roles && roleResponse.data.roles.length > 0) {
@@ -194,12 +218,20 @@ const UpdateRoles = () => {
     }
 
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.put(
         `https://agile-pm.agilebiz.co.ke/api/updateRoles/${selectedRole}`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,
-        }
+        },
+        config
       );
       if (response.status === 200) {
         const success = response.data.message;

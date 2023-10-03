@@ -277,6 +277,13 @@ const MicroTask = ({
     setIsLoading(true);
     const formData = new FormData();
     formData.append("excel_file", selectedFile);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/create_tasks", formData, {
         params: {
@@ -284,6 +291,7 @@ const MicroTask = ({
           phaseId: phaseId,
           phaseActivityId: activityId,
         },
+        ...config, // Include the config object here
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -301,9 +309,17 @@ const MicroTask = ({
   };
 
   const handleDownloadTemplate = () => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/download-excel-tasks", {
         responseType: "blob",
+        ...config,
       })
       .then((response) => {
         FileDownload(response.data, "Project_Micro-Task_Template.xlsx");
@@ -373,6 +389,13 @@ const MicroTask = ({
   };
 
   const handleMicroTaskDelete = (id) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .delete(`https://agile-pm.agilebiz.co.ke/api/deleteSubtask/${id}`, {
         params: {
@@ -380,6 +403,7 @@ const MicroTask = ({
           phaseId: phaseId,
           phaseActivityId: activityId,
         },
+        ...config, 
       })
       .then((response) => {
         onInfo(response.data.message);
@@ -398,11 +422,19 @@ const MicroTask = ({
     if (searchTerm || searchTerm.trim() !== "") {
       set_IsLoading(true);
       // Modify the endpoint to accommodate the searchTerm in the query string
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .get(
           `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
             page + 1
-          }&searchTerm=${searchTerm}`
+          }&searchTerm=${searchTerm}`,
+          config
         )
         .then((response) => {
           set_IsLoading(false);
@@ -425,11 +457,19 @@ const MicroTask = ({
   // effect to fetch subtasks
   const fetchSubtasks = (projectId, phaseId, activityId) => {
     set_IsLoading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get(
         `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
           page + 1
-        }`
+        }`,
+        config
       )
       .then((response) => {
         set_IsLoading(false);
@@ -452,10 +492,19 @@ const MicroTask = ({
   const handlePushtoSprint = () => {
     setPushLoading(true);
     const selectedIds = selectedRows.map((row) => row.id);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/pushToSprint", {
         taskIds: selectedIds,
-      })
+      },
+      config
+      )
       .then((response) => {
         onInfo(response.data.message);
         setPushLoading(false);
@@ -481,6 +530,13 @@ const MicroTask = ({
   // New function to handle form submission
   const handleCreateTask = () => {
     setTaskCreate(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
 
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/create_tasks_ui", {
@@ -494,7 +550,9 @@ const MicroTask = ({
         end_date: formatDate(newTask.end_date),
         baassigned_to: newTask.assigneBa ? [newTask.assigneBa] : [],
         assigned_to: newTask.assigneTl ? [newTask.assigneTl] : [],
-      })
+      },
+      config
+      )
       .then((response) => {
         onSuccess(response.data.message);
         setCreateTaskDialogVisible(false);
@@ -625,6 +683,13 @@ const MicroTask = ({
   //updtaing the task details
   const handleEditTaskSave = () => {
     setEditLoading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .put(
         `https://agile-pm.agilebiz.co.ke/api/updateSubtask/${editingTask.id}`,
@@ -639,7 +704,8 @@ const MicroTask = ({
           description: editingTask.description,
           start_date: formatDate(editingTask.start_date),
           end_date: formatDate(editingTask.end_date),
-        }
+        },
+        config
       )
       .then((response) => {
         onSuccess(response.data.message);

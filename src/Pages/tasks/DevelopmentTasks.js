@@ -94,6 +94,13 @@ const DevelopmentTasks = () => {
   }, [userEmail, userRole]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole,userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/myTasksDevelopment", {
         params: {
@@ -101,6 +108,7 @@ const DevelopmentTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        ...config, 
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
@@ -112,6 +120,13 @@ const DevelopmentTasks = () => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/OtherTasksDevelopment", {
         params: {
@@ -119,6 +134,7 @@ const DevelopmentTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        ...config, 
       })
       .then((response) => {
       
@@ -130,8 +146,16 @@ const DevelopmentTasks = () => {
   };
 
   const fetchReturnedTaskLogs = () => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/fromtestingtodevelopment", {
+        ...config,  
         params: {
           email: userEmail,
           roleName: userRole,
@@ -248,10 +272,18 @@ const DevelopmentTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .post("https://agile-pm.agilebiz.co.ke/api/pushToTesting", {
           taskIds: selectedIds,
-        })
+          
+        },config)
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
@@ -560,10 +592,13 @@ const DevelopmentTasks = () => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
-            <Column
+             <Column
               field="task"
               header="Task"
-              body={sentenceCaseFormatter}
+              body={(rowData, columnProps) => {
+                const task = sentenceCaseFormatter(rowData, columnProps);
+                return `${columnProps.rowIndex + 1}. ${task}`;
+              }}
             ></Column>
             <Column
               field="description"

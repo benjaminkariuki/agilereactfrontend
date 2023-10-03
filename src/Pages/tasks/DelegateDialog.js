@@ -76,9 +76,17 @@ const handleErrorMessage = (error) => {
   useEffect(() => {
     if (showDelegate) {
       setIsLoading(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/allProjectsCrewWithId/${projectInfomation.projectId}`
+          `https://agile-pm.agilebiz.co.ke/api/allProjectsCrewWithId/${projectInfomation.projectId}`,
+          config
         )
         .then((response) => {
           // Handle the response data
@@ -126,9 +134,17 @@ const handleErrorMessage = (error) => {
       }
 
       // Send the POST request to the API endpoint
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.post(
         "https://agile-pm.agilebiz.co.ke/api/delegateTask",
-        data
+        data,
+        config
       );
 
       // Check if the request was successful

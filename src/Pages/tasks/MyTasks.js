@@ -12,7 +12,9 @@ import DelegateTaskDialog from "./DelegateDialog";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 
+
 const MyTasks = () => {
+
   const { userRole, userEmail, userDepartment } = useSelector(
     (state) => state.user
   );
@@ -101,6 +103,13 @@ const MyTasks = () => {
   }, [userEmail, userRole, refreshTasks]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/myTasks", {
         params: {
@@ -108,6 +117,7 @@ const MyTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        ...config, 
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
@@ -120,6 +130,13 @@ const MyTasks = () => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/AllOtherTasks", {
         params: {
@@ -127,6 +144,7 @@ const MyTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        ...config, 
       })
       .then((response) => {
       
@@ -193,10 +211,18 @@ const MyTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .post("https://agile-pm.agilebiz.co.ke/api/pushToApproval", {
           taskIds: selectedIds,
-        })
+          
+        },config)
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
@@ -270,10 +296,18 @@ const MyTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .post("https://agile-pm.agilebiz.co.ke/api/pushToDevelopment", {
           taskIds: selectedIds,
-        })
+          
+        },config)
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
@@ -520,6 +554,7 @@ const MyTasks = () => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
+            
             <Column
               field="task"
               header="Task"

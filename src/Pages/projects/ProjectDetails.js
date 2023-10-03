@@ -81,8 +81,15 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   };
 
   const fetchProjectDetails = (projectId) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`, config)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
 
@@ -133,14 +140,15 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
       <Toast ref={toast} />
       <div className="bg-white rounded-lg shadow p-4 ">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-4 text-center">
-            {projectData.title} Details
+          <h1 className="text-xl font-bold mb-4 text-center">
+           
+            {_.startCase(projectData.title)}
           </h1>
-          <p className="text-gray-600">Overview: {projectData.overview}</p>
-          <p className="text-gray-600">Status: {projectData.status}</p>
-          <p className="text-gray-600">Client Name: {projectData.clientname}</p>
+          <p className="text-gray-600">Overview: {_.startCase(projectData.overview)}</p>
+          <p className="text-gray-600">Status: {_.startCase(projectData.status)}</p>
+          <p className="text-gray-600">Client Name: {_.startCase(projectData.clientname)}</p>
           <p className="text-gray-600">
-            Client Contact: {projectData.clientcontact}
+            Client Contact: {_.startCase(projectData.clientcontact)}
           </p>
           <p className="text-gray-600">
             Client Email: {projectData.clientemail}
@@ -157,7 +165,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                 <div key={index} className="min-w-1000 overflow-x-auto">
                   <h3 className="text-xl font-bold mb-2">
                     <strong>Phase: </strong>
-                    {phase.name}
+                    {_.startCase(phase.name)}
                   </h3>
                   <h4 className="text-lg font-bold mt-4 mb-2">Activities</h4>
                   <DataTable

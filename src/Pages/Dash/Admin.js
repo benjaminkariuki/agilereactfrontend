@@ -7,6 +7,7 @@ import { Chart } from "primereact/chart";
 import _ from "lodash";
 
 
+
 const Admin = () => {
   const [userCount, setUserCount] = useState(0);
   const [rolesCount, setRolesCount] = useState(0);
@@ -48,8 +49,17 @@ const Admin = () => {
 
   const fetchUsersCount = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allUsersCount"
+        "https://agile-pm.agilebiz.co.ke/api/allUsersCount",
+        config
       );
 
       const fetchedusers = response.data.userCount;
@@ -66,8 +76,16 @@ const Admin = () => {
 
   const fetchRolesCount = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRolesCount"
+        "https://agile-pm.agilebiz.co.ke/api/allRolesCount",
+        config
       );
 
       const fetchedrolescount = response.data.rolesCount;
@@ -84,8 +102,16 @@ const Admin = () => {
 
   const fetchDepartmentCount = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCount"
+        "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCount",
+        config
       );
 
       const fetcheddepartmentcount = response.data.departmentCount;
@@ -102,8 +128,16 @@ const Admin = () => {
 
   const fetchDepartmentCountPerUser = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCountPerUser"
+        "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCountPerUser",
+        config
       );
       console.log(response.data.departments);
       const fetcheddepartmentcountperUser = response.data.departments;
@@ -120,8 +154,18 @@ const Admin = () => {
 
   const fetchRolesCountPerUser = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRolesCountPerUser"
+        "https://agile-pm.agilebiz.co.ke/api/allRolesCountPerUser",
+        config
       );
       console.log(response.data.roles);
       const fetchedrolescountperUser = response.data.roles;

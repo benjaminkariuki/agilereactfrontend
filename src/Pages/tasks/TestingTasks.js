@@ -108,6 +108,13 @@ const TestingTasks = () => {
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/myTasksTesting", {
         params: {
@@ -115,6 +122,7 @@ const TestingTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        ...config,  // spread the config object here
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
@@ -126,6 +134,13 @@ const TestingTasks = () => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/OtherTasksTesting", {
         params: {
@@ -133,6 +148,8 @@ const TestingTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
+        ...config,  // spread the config object here
+
       })
       .then((response) => {
       
@@ -145,12 +162,20 @@ const TestingTasks = () => {
 
 
   const fetchReturnedTaskLogs = () => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/fromreviewtotesting", {
         params: {
           email: userEmail,
           roleName: userRole,
         },
+        ...config,  // spread the config object here
       })
       .then((response) => {
         setReturnedTaskLogs(response.data);
@@ -261,10 +286,18 @@ const TestingTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      };
       axios
         .post("https://agile-pm.agilebiz.co.ke/api/pushToReview", {
           taskIds: selectedIds,
-        })
+          
+        },config)
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
@@ -310,13 +343,21 @@ const TestingTasks = () => {
     formData.append("taskId", selectedTasks[0].id);
     formData.append("imageUpload", selectedFile);
     formData.append("comment", comment);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .post(
         "https://agile-pm.agilebiz.co.ke/api/returnToDevelopment",
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            ...config.headers,
+            "Content-Type": "multipart/form-data"
           },
         }
       )
@@ -639,10 +680,13 @@ const TestingTasks = () => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
-            <Column
+             <Column
               field="task"
               header="Task"
-              body={sentenceCaseFormatter}
+              body={(rowData, columnProps) => {
+                const task = sentenceCaseFormatter(rowData, columnProps);
+                return `${columnProps.rowIndex + 1}. ${task}`;
+              }}
             ></Column>
             <Column
               field="description"

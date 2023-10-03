@@ -45,6 +45,7 @@ const userSlice = createSlice({
       state.userActivities = [];
       localStorage.removeItem("user");
       sessionStorage.removeItem("user");
+      sessionStorage.removeItem("token");
     },
     updateUser: (state, action) => {
       state.loggedIn = true;

@@ -99,8 +99,18 @@ const Leads = () => {
 
   const fetchActiveSprintMinimal = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/activeSprintMinimal"
+        "https://agile-pm.agilebiz.co.ke/api/activeSprintMinimal",
+        config
       );
 
       const fetchedActiveSprintMinimal = response.data;
@@ -125,6 +135,14 @@ const Leads = () => {
 
   const fetchActiveSprintSubtaskUser = async (email, role, department) => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountOverall",
         {
@@ -133,6 +151,7 @@ const Leads = () => {
             role: role,
             department: department,
           },
+          headers: config.headers
         }
       );
 
@@ -159,6 +178,14 @@ const Leads = () => {
     try {
       setIsLoadingStageCount(true);
 
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountStage",
         {
@@ -167,6 +194,7 @@ const Leads = () => {
             role: role,
             department: department,
           },
+          headers: config.headers
         }
       );
 
@@ -193,6 +221,15 @@ const Leads = () => {
   ) => {
     try {
       setIsLoadingProjectsCount(true);
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
         {
@@ -201,6 +238,7 @@ const Leads = () => {
             role: role,
             department: department,
           },
+          headers: config.headers
         }
       );
 

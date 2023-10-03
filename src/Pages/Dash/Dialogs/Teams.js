@@ -189,9 +189,17 @@ const Teams = ({ onClose, labels }) => {
   const fetchProjectsTasksCountPerDepartment = async (department) => {
     try {
       setIsLoadingProjectsDepartmentCount(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/teamsProjectsSubtasksPerCount",
         {
+          ...config, 
           params: {
             department: department,
           },
@@ -220,9 +228,17 @@ const Teams = ({ onClose, labels }) => {
   const fetchProjectsTasksCountPerUser = async (department) => {
     try {
       setIsLoadingProjectsUserCount(true);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/teamsProjectsPerMemberCount",
         {
+          ...config, 
           params: {
             department: department,
           },

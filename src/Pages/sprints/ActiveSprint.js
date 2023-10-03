@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Chart } from "primereact/chart";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import {  confirmDialog } from "primereact/confirmdialog";
 import Subtasks from "./Subtasks";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
@@ -20,7 +20,12 @@ const ActiveSprint = () => {
       message: "Are you sure you want to close this sprint?",
       header: "Close Confirmation",
       icon: "pi pi-exclamation-triangle",
-      accept: handleConfirmClose,
+      accept: () => {
+        handleConfirmClose();
+      },
+      reject: () => {
+        // You can perform any logic if needed when the user clicks "No" or simply do nothing
+      },
     });
   };
   const handleConfirmClose = () => {
@@ -67,13 +72,20 @@ const ActiveSprint = () => {
   useEffect(() => {
     fetchActiveSprint();
   }, []);
+
   const fetchActiveSprint = () => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/activeSprint")
+      .get("https://agile-pm.agilebiz.co.ke/api/activeSprint",config)
       .then((response) => {
         setData(response.data);
        
-        console.log(response.data);
       })
       .catch((error) => {
       
@@ -173,10 +185,17 @@ const ActiveSprint = () => {
   //function to close sprint
   const handleCloseSprint = (id) => {
     setCloseLoading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .post(`https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`, {
         summary,
-      })
+      },config)
       .then((response) => {
         onSuccess("Closed successfuly");
         setCloseLoading(true);
@@ -189,7 +208,6 @@ const ActiveSprint = () => {
 
   return (
     <div>
-      <ConfirmDialog visible={visible} />
       <Toast ref={toast} />
       {data ? (
         <div>

@@ -49,6 +49,13 @@ const CreateSprint = ({ rerouting }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setCreating(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     try {
       const response = await axios.post(
         "https://agile-pm.agilebiz.co.ke/api/create_sprint",
@@ -56,7 +63,8 @@ const CreateSprint = ({ rerouting }) => {
           name: sprintData.name,
           start_date: formatDate(sprintData.start_date),
           end_date: formatDate(sprintData.end_date),
-        }
+        },
+        config
       );
 
       if (response.status === 200) {

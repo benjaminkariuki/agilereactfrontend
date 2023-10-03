@@ -39,8 +39,15 @@ const AddRoles = () => {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
+        const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
         const response = await axios.get(
-          "https://agile-pm.agilebiz.co.ke/api/activitiesAll"
+          "https://agile-pm.agilebiz.co.ke/api/activitiesAll",config
         );
         const fetchedActivities = response.data.activities;
         setActivities(fetchedActivities);
@@ -102,12 +109,20 @@ const AddRoles = () => {
     }
 
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.post(
         "https://agile-pm.agilebiz.co.ke/api/create_role",
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,
-        }
+        },
+        config
       );
 
       const success = response.data.message;

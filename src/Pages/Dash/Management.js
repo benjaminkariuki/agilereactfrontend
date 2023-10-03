@@ -111,8 +111,17 @@ const Management = () => {
 
   const fetchProjectsImplementationCount = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectImplementation"
+        "https://agile-pm.agilebiz.co.ke/api/allProjectImplementation",
+        config
       );
 
       const fetchedimplementation = response.data.supportProjectsCount;
@@ -129,8 +138,20 @@ const Management = () => {
 
   const fetchSupportProjectsCount = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      console.log('Token from sessionStorage:', token);
+
+      const configs = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      };
+
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectSupport"
+        "https://agile-pm.agilebiz.co.ke/api/allProjectSupport",
+        configs
+
       );
 
       const fetchedsupportcount = response.data.supportProjectsCount;
@@ -146,9 +167,18 @@ const Management = () => {
   };
 
   const fetchArchivedProjectsCount = async () => {
+
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     try {
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectsArchivedCount"
+        "https://agile-pm.agilebiz.co.ke/api/allProjectsArchivedCount",
+        config
       );
 
       const fetchedProjectsArchivedcount = response.data.archivedProjectsCount;
@@ -166,8 +196,18 @@ const Management = () => {
   const fetchProjectsTasksCountPerSubtask = async () => {
     try {
       setIsLoadingAllProjectsCount(true);
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive"
+        "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive",
+        config
       );
 
       const fetchedProjectTaskCountPerUser = response.data;
@@ -186,8 +226,18 @@ const Management = () => {
 
   const fetchActiveSprint = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/fetchActiveSprint"
+        "https://agile-pm.agilebiz.co.ke/api/fetchActiveSprint",
+        config
       );
 
       const fetchedActiveSprint = response.data[0];
@@ -216,7 +266,16 @@ const Management = () => {
     department
   ) => {
     try {
+
       setIsLoadingProjectsCount(true);
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
         {
@@ -225,6 +284,7 @@ const Management = () => {
             role: role,
             department: department,
           },
+          headers: config.headers
         }
       );
 

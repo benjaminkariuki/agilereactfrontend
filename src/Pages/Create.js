@@ -12,6 +12,7 @@ const CreateUser = () => {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
+  
 
   const [departments] = useState([
     "Management",
@@ -77,8 +78,20 @@ const CreateUser = () => {
 
   const fetchRoles = async () => {
     try {
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      };
+
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles"
+        "https://agile-pm.agilebiz.co.ke/api/allRoles",{
+          method: 'GET',
+          headers: config.headers 
+        }
       );
       const data = await response.json();
       setRoles(data.roles);
@@ -89,6 +102,15 @@ const CreateUser = () => {
 
   const createUser = async () => {
     setLoading(true);
+
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/register", {
         firstName,
@@ -97,7 +119,7 @@ const CreateUser = () => {
         contacts,
         department: selelctedDepartment,
         role_id,
-      })
+      },config)
       .then((response) => {
         if (response.status === 200) {
           onSuccessCreate(response.data.message);

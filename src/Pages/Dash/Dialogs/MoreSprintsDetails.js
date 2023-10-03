@@ -28,9 +28,17 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
     if (!query) return;
     // Don't make an empty search
     setIsLoading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
 
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/search_sprint", {
+        ...config, 
         params: {
           q: query,
         },
@@ -142,9 +150,16 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
 
   const fetchSprintDetails = (sprintId, sprintName) => {
     setIsLoading2(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .get(
-        `https://agile-pm.agilebiz.co.ke/api/infoSprintsAnalysis/${sprintId}`
+        `https://agile-pm.agilebiz.co.ke/api/infoSprintsAnalysis/${sprintId}`,config
       )
       .then((response) => {
         const data = response.data;

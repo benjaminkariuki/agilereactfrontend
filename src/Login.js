@@ -47,6 +47,10 @@ const LoginForm = () => {
       const loguser = response.data.user;
       dispatch(login(loguser));
       setIsPending(false);
+      
+      sessionStorage.setItem('token', response.data.user.token);
+      console.log(response.data.user.token);
+      
       sessionStorage.setItem("user", JSON.stringify(loguser));
       onLoginSuccess(response.data.message);
     

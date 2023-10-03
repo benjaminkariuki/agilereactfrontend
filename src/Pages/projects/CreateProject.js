@@ -100,8 +100,15 @@ const CreateProject = ({ routeToListProjects }) => {
   }, []);
 
   const fetchUsers = () => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData")
+      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData",config)
       .then((response) => {
         setUsersData(response.data.users);
         console.log(response.data.users);
@@ -162,10 +169,19 @@ const CreateProject = ({ routeToListProjects }) => {
     });
 
     setisloading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/create_projects", formData, {
+        ...config,
         headers: {
-          "Content-Type": "multipart/form-data",
+            ...config.headers,
+            "Content-Type": "multipart/form-data",
         },
       })
       .then((response) => {
@@ -208,10 +224,20 @@ const CreateProject = ({ routeToListProjects }) => {
   //HANDLING DOWNLOADING THE EXCEL TEMPLATE
   const downloadExcelFile = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/download-excel",
         {
+          
+          ...config, // Spread the contents of the config object
           responseType: "blob",
+
         }
       );
       FileDownload(response.data, "Excel_template.xlsx");

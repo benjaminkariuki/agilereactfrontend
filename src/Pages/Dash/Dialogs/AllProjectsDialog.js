@@ -178,8 +178,16 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
   const fetchProjectsTasksCountAllSubtask = async () => {
     
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/getAllProjectAndSubtasksCount"
+        "https://agile-pm.agilebiz.co.ke/api/getAllProjectAndSubtasksCount",
+        config
       );
 
       const fetchedProjectTaskCountAll = response.data;

@@ -123,8 +123,15 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   }, [projectId]);
 
   const fetchUsers = () => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData")
+      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData", config)
       .then((response) => {
         setUsersData(response.data.users);
       })
@@ -134,8 +141,15 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   };
 
   const fetchProjectDetails = (projectId) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,config)
       .then((response) => {
         const fetchedprojectsid = response.data.data;
         const sDate = new Date(fetchedprojectsid.start_date);
@@ -237,13 +251,21 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       formData.append("system_type", projectData.editedsystem);
     }
 
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
       .post(
         `https://agile-pm.agilebiz.co.ke/api/edit_projects/${projectId}`,
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            ...config.headers,
+            "Content-Type": "multipart/form-data"
           },
         }
       )
@@ -264,9 +286,17 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   //HANDLING DOWNLOADING THE EXCEL TEMPLATE
   const downloadExcelFile = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
         `https://agile-pm.agilebiz.co.ke/api/download-excel-edit/${projectId}`,
         {
+          ...config,
           responseType: "blob",
         }
       );

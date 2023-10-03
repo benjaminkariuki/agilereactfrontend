@@ -16,6 +16,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import { FaCog, FaSignOutAlt } from "react-icons/fa";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { GrUserSettings } from "react-icons/gr";
+import axios from "axios";
+
 
 const Home = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -48,16 +50,27 @@ const Home = () => {
       navigate("/");
     }
   }, [dispatch, navigate]);
+  
   const handleLinkClick = () => {
     // Perform additional actions here
     // Navigate to the specified URL
     navigate("/dashboard/editprofile");
   };
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Dispatch the logout action
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     dispatch(logout());
     // Redirect to the login page or any other desired page
     navigate("/");
+    await axios.post("https://agile-pm.agilebiz.co.ke/api/logout", {}, config);
+
   };
   const toggleDropdown = () => {
     setIsOpenProfile(!isOpenProfile);

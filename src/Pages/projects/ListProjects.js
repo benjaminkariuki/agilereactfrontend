@@ -83,8 +83,15 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
 
   const fetchProjects = () => {
     setIsLoading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/allProjects?page=${page + 1}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/allProjects?page=${page + 1}`,config)
       .then((response) => {
         console.log(response.data.data.data);
         setProjects(response.data.data.data);
@@ -102,11 +109,19 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     if (searchTerm && searchTerm.trim() !== "") {
       setIsLoading(true);
       // Modify the endpoint to accommodate the searchTerm in the query string
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .get(
           `https://agile-pm.agilebiz.co.ke/api/allProjects?page=${
             page + 1
-          }&searchTerm=${searchTerm}`
+          }&searchTerm=${searchTerm}`,
+          config
         )
         .then((response) => {
           console.log(response.data.data.data);
@@ -129,8 +144,17 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     try {
       setIsSubmitting(true);
       // Update the "isArchiving" state of the selected project to true
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.post(
-        `https://agile-pm.agilebiz.co.ke/api/archive/${id}`
+        `https://agile-pm.agilebiz.co.ke/api/archive/${id}`,
+        {},
+        config
       );
       // If archive was successful
       if (response.status === 200) {

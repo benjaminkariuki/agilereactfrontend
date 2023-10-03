@@ -35,8 +35,15 @@ const CompletedSprints = () => {
 
   const fetchClosedSprints = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allClosedSprints"
+        "https://agile-pm.agilebiz.co.ke/api/allClosedSprints",config
       );
       const fetchedSprints = response.data.sprints;
       setCompleteSprints(fetchedSprints);
@@ -47,8 +54,15 @@ const CompletedSprints = () => {
   };
   //View the particular sprint details
   const handleViewMoreApi = (id) => {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/closedSprintById/${id}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/closedSprintById/${id}`,config)
       .then((response) => {
         setData(response.data);
         onSuccess("message found successfully");

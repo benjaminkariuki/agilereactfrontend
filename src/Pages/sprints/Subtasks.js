@@ -84,10 +84,18 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
     if (selectedTask.length > 0) {
       setremoveLoading(true);
       const removedTask = selectedTask.map((task) => task.id);
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       axios
         .post(`https://agile-pm.agilebiz.co.ke/api/removeTasks/${sprintId}`, {
           taskIds: removedTask,
-        })
+         
+        }, config)
         .then((response) => {
           setremoveLoading(false);
           onSuccess(response.data.message);
@@ -182,7 +190,14 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
-            <Column field="task" header="Task" body={sentenceCaseFormatter} />
+            <Column
+              field="task"
+              header="Task"
+              body={(rowData, columnProps) => {
+                const task = sentenceCaseFormatter(rowData, columnProps);
+                return `${columnProps.rowIndex + 1}. ${task}`;
+              }}
+            ></Column>
             <Column
               field="description"
               header="Description"
@@ -219,7 +234,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
       </Dialog>
 
       <div>
-        {/* <Dialog
+        <Dialog
           header={"Sprint Item Details"}
           visible={showDetails}
           onHide={() => setShowDetails(false)}
@@ -230,14 +245,20 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               Sprint Item Details
             </h3>
             <div className="mb-4">
-            <p className="text-gray-600">
-                <span className="font-semibold">Phase:</span>{" "}
-                {_.startCase((moreDetailsData?.phase.name ?? ""))}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-semibold">Phase Activity:</span>{" "}
-                {_.startCase((moreDetailsData?.phase_activity.name ?? ""))}
-              </p>
+              {moreDetailsData && moreDetailsData.phase && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase.name)}
+                </p>
+              )}
+
+              {moreDetailsData && moreDetailsData.phase_activity && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase_activity.name)}
+                </p>
+              )}
+
               <p className="text-gray-600">
                 <span className="font-semibold">Task:</span>{" "}
                 {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
@@ -262,9 +283,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
                   >
                     <p key={index}>
-                      {_.startCase(
-                        (item?.email ?? "").toLowerCase()
-                      )}{" "}
+                      {(item?.email ?? "").toLowerCase()}{" "}
                       {_.startCase(
                         (item?.custom_user?.lastName ?? "").toLowerCase()
                       )}{" "}
@@ -283,9 +302,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
                   >
                     <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
+                      {(item?.email ?? "").toLowerCase()}{" "}
                       {_.startCase(
                         (item?.custom_user?.lastName ?? "").toLowerCase()
                       )}{" "}
@@ -320,7 +337,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               )}
             ></textarea>
           </div>
-        </Dialog> */}
+        </Dialog>
       </div>
     </div>
   );

@@ -111,8 +111,16 @@ const Users = () => {
 
   const fetchUsers = () => {
     setIsLoading(true);
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}`)
+      .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}`, config)
       .then((response) => {
         setUsers(response.data.users.data);
         setTotalRecords(response.data.users.total);
@@ -125,8 +133,17 @@ const Users = () => {
   };
 
   const fetchRoles = () => {
+
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allRoles")
+      .get("https://agile-pm.agilebiz.co.ke/api/allRoles",config)
       .then((response) => {
         setRoles(response.data.roles);
       })
@@ -136,8 +153,17 @@ const Users = () => {
   };
 
   const handleDeleteUser = (userId) => {
+
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
-      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteUsers/${userId}`)
+      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteUsers/${userId}`,config)
       .then((response) => {
         onDeleteUser(response.data.message);
         fetchUsers();
@@ -160,10 +186,20 @@ const Users = () => {
     formData.append("contacts", updatedUser.contacts);
     formData.append("department", updatedUser.department);
     formData.append("role", updatedUser.role);
+
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
     axios
       .post(
         `https://agile-pm.agilebiz.co.ke/api/updateUserDetails/${selectedUser.id}`,
-        formData
+        formData,
+        config
       )
       .then((response) => {
         setTimeout(() => {
@@ -200,9 +236,17 @@ const Users = () => {
   const handleSearch = () => {
     if (searchTerm && searchTerm.trim() !== '') {
       setIsLoading(true);
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       // Modify the endpoint to accommodate the searchTerm in the query string 
       axios
-        .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`)
+        .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
           setUsers(response.data.users.data);
           setTotalRecords(response.data.users.total);

@@ -32,8 +32,16 @@ const InActiveSprint = () => {
 
   const fetchInactiveSprints = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allInactiveSprints"
+        "https://agile-pm.agilebiz.co.ke/api/allInactiveSprints",
+        config
       );
       const fetchedSprints = response.data.sprints;
       // Process the fetched data if needed
@@ -48,9 +56,18 @@ const InActiveSprint = () => {
   const handleActivateSprint = async (id) => {
     try {
       setLoadingStates((prev) => ({ ...prev, [id]: "activating" }));
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
 
       const response = await axios.post(
-        `https://agile-pm.agilebiz.co.ke/api/activateSprint/${id}`
+        `https://agile-pm.agilebiz.co.ke/api/activateSprint/${id}`,
+        {},
+        config
       );
 
       if (response.status === 200) {
@@ -66,9 +83,17 @@ const InActiveSprint = () => {
 
   const handleDeleteSprint = async (id) => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       setLoadingStates((prev) => ({ ...prev, [id]: "deleting" }));
       const response = await axios.delete(
-        `https://agile-pm.agilebiz.co.ke/api/deleteSprint/${id}`
+        `https://agile-pm.agilebiz.co.ke/api/deleteSprint/${id}`,
+        config
       );
 
       if (response.status === 200) {

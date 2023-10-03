@@ -52,9 +52,18 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
   useEffect(() => {
     if (showDetailsArchived) {
       setIsLoading(true);
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/allProject_Support_Archived?page=${page + 1}`
+          `https://agile-pm.agilebiz.co.ke/api/allProject_Support_Archived?page=${page + 1}`,config
         )
         .then((response) => {
           // Handle the response data

@@ -64,8 +64,15 @@ const ViewRoles = () => {
 
   const fetchRoles = async () => {
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles"
+        "https://agile-pm.agilebiz.co.ke/api/allRoles",config
       );
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
@@ -85,8 +92,16 @@ const ViewRoles = () => {
     }));
 
     try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
       const response = await axios.delete(
-        `https://agile-pm.agilebiz.co.ke/api/deleteRoles/${roleId}`
+        `https://agile-pm.agilebiz.co.ke/api/deleteRoles/${roleId}`,
+        config
       );
 
       if (response.status === 200) {

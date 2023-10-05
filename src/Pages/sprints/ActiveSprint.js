@@ -28,14 +28,17 @@ const ActiveSprint = () => {
       },
     });
   };
+
   const handleConfirmClose = () => {
     setViewSummaryDialogue(true);
     setVisible(false);
   };
+
   const handleConfirmOpen = () => {
     setVisible(true);
     confirmClose();
   };
+
   const onSuccess = (success) => {
     if (success) {
       toast.current?.show({
@@ -69,6 +72,9 @@ const ActiveSprint = () => {
       });
     }
   };
+
+  
+  
   useEffect(() => {
     fetchActiveSprint();
   }, []);
@@ -76,6 +82,7 @@ const ActiveSprint = () => {
   const fetchActiveSprint = () => {
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
+  
     const config = {
       headers: {
         'Authorization': `Bearer ${token}`,

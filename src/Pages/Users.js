@@ -6,6 +6,8 @@ import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -35,8 +37,11 @@ const Users = () => {
   const [filteredRoles, setfilteredroles] = useState([]);
   const toast = useRef(null);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [contact, setcontact] = useState();
+
+
   const [updatedUser, setUpdateUser] = useState({
-    contacts: "",
+   
     department: "",
     role: "",
   });
@@ -183,7 +188,7 @@ const Users = () => {
     console.log(selectedUser);
     setUpdateLoading(true);
     const formData = new FormData();
-    formData.append("contacts", updatedUser.contacts);
+    formData.append("contacts", contact);
     formData.append("department", updatedUser.department);
     formData.append("role", updatedUser.role);
 
@@ -208,8 +213,9 @@ const Users = () => {
         setEditModalOpen(false);
         setSelectedUser([]);
         setUpdateLoading(false);
+        setcontact();
         setUpdateUser({
-          contacts: "",
+         
           department: "",
           role: "",
         });
@@ -226,8 +232,9 @@ const Users = () => {
   const handleModalClose = () => {
     setEditModalOpen(false);
     setSelectedUser([]);
+    setcontact();
     setUpdateUser({
-      contacts: "",
+    
       department: "",
       role: "",
     });
@@ -453,23 +460,36 @@ const Users = () => {
               readOnly
             />
           </div>
+
+
+          
           <div className="mb-4">
-            <label htmlFor="contact" className="block font-semibold mb-1">
-              Contact:
-            </label>
-            <input
-              type="text"
-              id="contact"
-              className="border rounded px-2 py-1 w-full"
-              defaultValue={selectedUser.contacts}
-              onChange={(e) =>
-                setUpdateUser({
-                  ...updatedUser,
-                  contacts: e.target.value,
-                })
-              }
-            />
-          </div>
+              <div className="flex items-center">
+                <label
+                  className="block text-gray-700  font-bold mb-2 mr-2"
+                  htmlFor="contact"
+                >
+                  Contacts:
+                </label>
+
+                <label
+                  htmlFor="contact"
+                  className="block text-sm font-medium mb-2"
+                >
+                  {selectedUser.contacts}
+                </label>
+              </div>
+
+              <PhoneInput
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                international
+                defaultCountry="KE"
+                value={contact}
+                onChange={setcontact}
+              />
+            </div>
+
+
           <div className="mb-4">
             <label htmlFor="department" className="block font-semibold mb-1">
               Department:

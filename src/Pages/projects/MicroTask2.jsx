@@ -12,10 +12,13 @@ import FileDownload from "react-file-download";
 import { AiFillEdit } from "react-icons/ai";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { confirmDialog } from "primereact/confirmdialog";
-import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useSelector } from "react-redux";
 import { Paginator } from "primereact/paginator";
-import levenshtein from 'fast-levenshtein';
+import levenshtein from "fast-levenshtein";
+import { InputText } from 'primereact/inputtext';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+
+
 
 const MicroTask = ({
   projectId,
@@ -29,7 +32,6 @@ const MicroTask = ({
   const [subtasks, setSubtasks] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [filters, setFilters] = useState(null);
   const [statuses] = useState(["pending", "completed", "highpriority"]);
   const [loading, setIsLoading] = useState(false);
   const [isloading, set_IsLoading] = useState(false);
@@ -38,6 +40,10 @@ const MicroTask = ({
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [filters,setFilters] = useState({
+    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
+  })
 
   const [departments] = useState([
     "Management",
@@ -83,6 +89,8 @@ const MicroTask = ({
   const { userActivities } = useSelector((state) => state.user);
   const [showPreassigned, setShowPreassigned] = useState(false);
 
+
+
   //getting the permission for projects
   const projectsActivity = userActivities.find(
     (activity) => activity.name === "Projects"
@@ -112,9 +120,9 @@ const MicroTask = ({
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;
 
-    const isSimilar = (str1, str2, threshold = 3) => {
-      return levenshtein.get(str1, str2) <= threshold;
-    };
+  const isSimilar = (str1, str2, threshold = 3) => {
+    return levenshtein.get(str1, str2) <= threshold;
+  };
   // Move this effect to handle selectedIcon changes
   useEffect(() => {
     if (selectedIcon === "add") {
@@ -123,18 +131,12 @@ const MicroTask = ({
       setIsViewModalOpen(true);
       fetchSubtasks(projectId, phaseId, activityId);
     }
-   
+
     // initFilters();
-  }, [
-    projectId,
-    phaseId,
-    activityId,
-    selectedIcon,
-    organization,
-  ]);
+  }, [projectId, phaseId, activityId, selectedIcon, organization]);
 
   useEffect(() => {
-    fetchSubtasks(projectId,phaseId,activityId);
+    fetchSubtasks(projectId, phaseId, activityId);
   }, [page]);
 
   const getSeverity = (status) => {
@@ -197,7 +199,6 @@ const MicroTask = ({
     }
   };
 
-
   const onWarnF = (error) => {
     if (error) {
       toast.current?.show({
@@ -209,7 +210,6 @@ const MicroTask = ({
     }
   };
 
-
   const onInfo = (info) => {
     if (info) {
       toast.current?.show({
@@ -220,23 +220,6 @@ const MicroTask = ({
       });
     }
   };
-
-  // const initFilters = () => {
-  //   setFilters({
-  //     status: {
-  //       operator: FilterOperator.OR,
-  //       constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-  //     },
-  //     task: {
-  //       operator: FilterOperator.AND,
-  //       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-  //     },
-  //     assigned_to: {
-  //       operator: FilterOperator.AND,
-  //       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-  //     },
-  //   });
-  // };
 
   const confirmDelete = (id) => {
     confirmDialog({
@@ -257,17 +240,7 @@ const MicroTask = ({
     );
   };
 
-  const statusFilterTemplate = (options) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={statuses}
-        onChange={(e) => options.filterCallback(e.value)}
-        placeholder="Select Status"
-        className="p-column-filter"
-      />
-    );
-  };
+ 
 
   const handleSaveEditChanges = () => {
     if (!selectedFile) {
@@ -277,11 +250,11 @@ const MicroTask = ({
     setIsLoading(true);
     const formData = new FormData();
     formData.append("excel_file", selectedFile);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -309,11 +282,11 @@ const MicroTask = ({
   };
 
   const handleDownloadTemplate = () => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -389,11 +362,11 @@ const MicroTask = ({
   };
 
   const handleMicroTaskDelete = (id) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -403,7 +376,7 @@ const MicroTask = ({
           phaseId: phaseId,
           phaseActivityId: activityId,
         },
-        ...config, 
+        ...config,
       })
       .then((response) => {
         onInfo(response.data.message);
@@ -418,17 +391,18 @@ const MicroTask = ({
       });
   };
 
+ 
   const handleSearch = () => {
     if (searchTerm || searchTerm.trim() !== "") {
       set_IsLoading(true);
       // Modify the endpoint to accommodate the searchTerm in the query string
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       axios
         .get(
           `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
@@ -441,27 +415,25 @@ const MicroTask = ({
           console.log(response.data.data.data);
           setSubtasks(response.data.data.data);
           setTotalRecords(response.data.data.total);
-         
         })
         .catch((error) => {
           set_IsLoading(false);
           // onErrorF(error.response.message);
           console.error("Error getting projects:", error);
-          
         });
     } else {
       // If there is no search term, just fetch porjects normally
-      fetchSubtasks(projectId,phaseId,activityId);
+      fetchSubtasks(projectId, phaseId, activityId);
     }
   };
   // effect to fetch subtasks
   const fetchSubtasks = (projectId, phaseId, activityId) => {
     set_IsLoading(true);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -492,18 +464,20 @@ const MicroTask = ({
   const handlePushtoSprint = () => {
     setPushLoading(true);
     const selectedIds = selectedRows.map((row) => row.id);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/pushToSprint", {
-        taskIds: selectedIds,
-      },
-      config
+      .post(
+        "https://agile-pm.agilebiz.co.ke/api/pushToSprint",
+        {
+          taskIds: selectedIds,
+        },
+        config
       )
       .then((response) => {
         onInfo(response.data.message);
@@ -530,28 +504,30 @@ const MicroTask = ({
   // New function to handle form submission
   const handleCreateTask = () => {
     setTaskCreate(true);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/create_tasks_ui", {
-        projectId,
-        phaseId,
-        phaseActivityId: activityId,
-        task: newTask.task,
-        description: newTask.description,
-        department: newTask.department,
-        start_date: formatDate(newTask.start_date),
-        end_date: formatDate(newTask.end_date),
-        baassigned_to: newTask.assigneBa ? [newTask.assigneBa] : [],
-        assigned_to: newTask.assigneTl ? [newTask.assigneTl] : [],
-      },
-      config
+      .post(
+        "https://agile-pm.agilebiz.co.ke/api/create_tasks_ui",
+        {
+          projectId,
+          phaseId,
+          phaseActivityId: activityId,
+          task: newTask.task,
+          description: newTask.description,
+          department: newTask.department,
+          start_date: formatDate(newTask.start_date),
+          end_date: formatDate(newTask.end_date),
+          baassigned_to: newTask.assigneBa ? [newTask.assigneBa] : [],
+          assigned_to: newTask.assigneTl ? [newTask.assigneTl] : [],
+        },
+        config
       )
       .then((response) => {
         onSuccess(response.data.message);
@@ -589,69 +565,85 @@ const MicroTask = ({
   };
   //option based on business analyst in the project
   const bas = organization
-  ?.filter(
-    (user) =>
-      user.status === "active" &&
-      user.user?.department
-        ?.toLowerCase() === "implementation" &&
-      (
-        isSimilar(user.user?.role?.name?.replace(/[-\s]/g, '').toLowerCase(), "teamleadimplementation") ||
-        isSimilar(user.user?.role?.name?.replace(/\s/g, '').toLowerCase(), "headbusinessanalyst")
-      )
-  )
-  .map((user, index) => ({
+    ?.filter(
+      (user) =>
+        user.status === "active" &&
+        user.user?.department?.toLowerCase() === "implementation" &&
+        (isSimilar(
+          user.user?.role?.name?.replace(/[-\s]/g, "").toLowerCase(),
+          "teamleadimplementation"
+        ) ||
+          isSimilar(
+            user.user?.role?.name?.replace(/\s/g, "").toLowerCase(),
+            "headbusinessanalyst"
+          ))
+    )
+    .map((user, index) => ({
       key: index,
-      label: user.user?.firstName + " " + user.user?.lastName + " " + user.user?.email,
+      label:
+        user.user?.firstName +
+        " " +
+        user.user?.lastName +
+        " " +
+        user.user?.email,
       value: user.user?.email,
-  }));
+    }));
 
   const imp = organization
-  ?.filter(
-    (user) =>
-      user.status === "active" &&
-      (
-        (isSimilar(user.user?.department?.replace(/\s/g, '').toLowerCase(), "projectmanagers") &&
-        isSimilar(user.user?.role?.name?.replace(/\s/g, '').toLowerCase(), "portfoliomanager"))
-        ||  
-        (isSimilar(user.user?.department?.replace(/\s/g, '').toLowerCase(), "businesscentral") &&
-        user.user?.role?.name?.toLowerCase().includes("team lead"))   
-        ||
-        (isSimilar(user.user?.department?.replace(/\s/g, '').toLowerCase(), "webandmobile") &&
-        user.user?.role?.name?.toLowerCase().includes("team lead"))
-      )
-  )
-  .map((user, index) => ({
+    ?.filter(
+      (user) =>
+        user.status === "active" &&
+        ((isSimilar(
+          user.user?.department?.replace(/\s/g, "").toLowerCase(),
+          "projectmanagers"
+        ) &&
+          isSimilar(
+            user.user?.role?.name?.replace(/\s/g, "").toLowerCase(),
+            "portfoliomanager"
+          )) ||
+          (isSimilar(
+            user.user?.department?.replace(/\s/g, "").toLowerCase(),
+            "businesscentral"
+          ) &&
+            user.user?.role?.name?.toLowerCase().includes("team lead")) ||
+          (isSimilar(
+            user.user?.department?.replace(/\s/g, "").toLowerCase(),
+            "webandmobile"
+          ) &&
+            user.user?.role?.name?.toLowerCase().includes("team lead")))
+    )
+    .map((user, index) => ({
       key: index,
-      label: user.user?.firstName + " " + user.user?.lastName + " - " + user.user?.email,
+      label:
+        user.user?.firstName +
+        " " +
+        user.user?.lastName +
+        " - " +
+        user.user?.email,
       value: user.user?.email,
-  }));
-
-
-
-
+    }));
 
   //option based on team leads in the project
   const assigningUser = (department) => {
-    const depNormalized = department.toLowerCase().replace(/\s+/g, ''); // Removing spaces and converting to lowercase
+    const depNormalized = department.toLowerCase().replace(/\s+/g, ""); // Removing spaces and converting to lowercase
     let sourceArray;
-  
+
     if (depNormalized.toLowerCase() === "projectmanagers") {
-      sourceArray = organization.filter(user => {
+      sourceArray = organization.filter((user) => {
         const roleName = user.user?.role?.name?.toLowerCase();
-        return user.status === 'active' && 
-          roleName.includes("portfolio manager");
+        return (
+          user.status === "active" && roleName.includes("portfolio manager")
+        );
       });
     } else if (depNormalized.toLowerCase() === "webandmobile") {
-      sourceArray = organization.filter(user => {
+      sourceArray = organization.filter((user) => {
         const roleName = user.user?.role?.name?.toLowerCase();
-        return user.status === 'active' && 
-          (roleName.includes("team lead"));
+        return user.status === "active" && roleName.includes("team lead");
       });
     } else if (depNormalized.toLowerCase() === "businesscentral") {
-      sourceArray = organization.filter(user => {
+      sourceArray = organization.filter((user) => {
         const roleName = user.user?.role?.name?.toLowerCase();
-        return user.status === 'active' && 
-          (roleName.includes("team lead"));
+        return user.status === "active" && roleName.includes("team lead");
       });
     } else {
       // Handle other cases or just default to an empty array or another default value
@@ -674,20 +666,42 @@ const MicroTask = ({
         user.user?.role.name,
       value: user?.user.email,
     }));
-  
-    
   };
 
-   
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(rowData.start_date);
+    const endDate = new Date(rowData.end_date);
+    const closeDate = rowData.close_date ? new Date(rowData.close_date) : null;
+
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) to complete</span>;
+    } else if (daysUntilEnd >= 0) {
+      return <span style={{ color: "green" }}>{daysUntilEnd} day(s)</span>;
+    } else {
+      return (
+        <span style={{ color: "red" }}>
+          {Math.abs(daysUntilEnd)} day(s) overdue
+        </span>
+      );
+    }
+  };
 
   //updtaing the task details
   const handleEditTaskSave = () => {
     setEditLoading(true);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -810,7 +824,7 @@ const MicroTask = ({
                   Add Task
                 </button>
               )}
-        
+
               {/* Search Input - outside the conditional rendering */}
               <div className="mb-4 flex justify-end mt-0.5">
                 <input
@@ -853,114 +867,131 @@ const MicroTask = ({
             </div>
           }
         >
+          {isloading ? (
+            <div className="flex justify-center items-center h-24">
+              <i className="pi pi-spin pi-spinner text-blue-500 text-4xl"></i>
+            </div>
+          ) : subtasks.length === 0 ? (
+            <div>No subtasks found.</div>
+          ) : (
+            <div>
+            
 
-{isloading ? (
-  <div className="flex justify-center items-center h-24">
-    <i className="pi pi-spin pi-spinner text-blue-500 text-4xl"></i>
-  </div>
-) : subtasks.length === 0 ? (
-  <div>No subtasks found.</div>
-) : (
+              <InputText
+              placeholder="Search task by name or department...."
+              onInput={(e)=> setFilters({
+                global:{value:e.target.value,matchMode: FilterMatchMode.CONTAINS},
+              })}
+              />
 
-          <DataTable
-            value={subtasks}
-            emptyMessage="No subtasks found."
-            className="p-datatable-gridlines"
-            removableSort
-            selectionMode="checkbox"
-            selection={selectedRows}
-            onSelectionChange={(e) => setSelectedRows(e.value)}
-            dataKey="id"
-          >
-            {hasWritePermissionSprint && (
-              <Column
-                selectionMode="multiple"
-                headerStyle={{ width: "3rem" }}
-              ></Column>
-            )}
 
-            <Column
-              field="task"
-              header="Task Name"
-              sortable
-              filter
-              filterPlaceholder="Search by task name"
-              body={(rowData) => `${subtasks.indexOf(rowData) + 1}. ${rowData.task}`}
 
-            ></Column>
-            {/* <Column field="description" header="Task Description"></Column> */}
-            <Column field="start_date" header="Start Date" sortable></Column>
-            <Column field="end_date" header="End Date" sortable></Column>
-            <Column
-              field="businessanalyst"
-              header="Business Analyst"
-              sortable
-              body={(rowData) => (
-                <div key={rowData.id}>
-                  {rowData.baassigned_to
-                    .filter((user) => user.deassigned === 0)
-                    .map((user) => (
-                      <div key={user.id}>{user.email}</div>
-                    ))}
-                </div>
-              )}
-            ></Column>
-            <Column
-              field="department"
-              header="Department"
-              sortable
-              filter
-              filterPlaceholder="Search by department"
-            ></Column>
-            <Column
-              field="assigned_to"
-              header="Assigned Team Lead"
-              body={(rowData) => (
-                <div key={rowData.id}>
-                  {rowData.assigned_to
-                    .filter((user) => user.deassigned === 0)
-                    .map((user) => (
-                      <div key={user.id}>{user.email}</div>
-                    ))}
-                </div>
-              )}
-              sortable
-              filter
-              filterPlaceholder="Search by assigned to"
-            ></Column>
-            {/* <Column field="delegatedTo" header="Delegated" sortable></Column> */}
-            <Column
-              field="status"
-              header="Status"
-              sortable
-              body={statusBodyTemplate}
-              filter
-              filterElement={statusFilterTemplate}
-              filterPlaceholder="Search by status"
-            ></Column>
-            {hasWritePermissionTasks && (
-              <Column
-                header="Edit"
-                body={(rowData) => (
-                  <div className="flex" key={rowData.id}>
-                    <AiFillEdit
-                      className="bg-blue-500 text-white rounded"
-                      size={30}
-                      style={{ marginRight: 4 }}
-                      onClick={() => handleTaskSelection(rowData)} // Add this line
-                    />
-                    <RiDeleteBin5Fill
-                      className="bg-red-500 text-white rounded"
-                      size={30}
-                      style={{ marginRight: 4 }}
-                      onClick={() => confirmDelete(rowData.id)}
-                    />
-                  </div>
+              <DataTable
+                value={subtasks}
+              
+                stripedRows
+                emptyMessage="No subtasks found."
+                className="p-datatable-gridlines"
+                removableSort
+                selectionMode="checkbox"
+                selection={selectedRows}
+                filters={filters}
+                onSelectionChange={(e) => setSelectedRows(e.value)}
+                dataKey="id"
+              >
+                {hasWritePermissionSprint && (
+                  <Column
+                    selectionMode="multiple"
+                    headerStyle={{ width: "1rem" }}
+                  ></Column>
                 )}
-              ></Column>
-            )}
-          </DataTable>
-)}
+
+                <Column
+                  field="task"
+                  header="Task Name"
+                  sortable
+                  body={(rowData) =>
+                    `${subtasks.indexOf(rowData) + 1}. ${rowData.task}`
+                  }
+                ></Column>
+                {/* <Column field="description" header="Task Description"></Column> */}
+                <Column
+                  field="start_date"
+                  header="Start Date"
+                  sortable
+                ></Column>
+                <Column field="end_date" header="End Date" sortable></Column>
+                <Column
+                  field="close_date"
+                  header="Completion Date"
+                  sortable
+                ></Column>
+
+                <Column header="Duration" body={durationTemplate}></Column>
+                <Column
+                  field="businessanalyst"
+                  header="Business Analyst"
+                  sortable
+                  body={(rowData) => (
+                    <div key={rowData.id}>
+                      {rowData.baassigned_to
+                        .filter((user) => user.deassigned === 0)
+                        .map((user) => (
+                          <div key={user.id}>{user.email}</div>
+                        ))}
+                    </div>
+                  )}
+                ></Column>
+                <Column
+                  field="department"
+                  header="Department"
+                  sortable
+                ></Column>
+                <Column
+                  field="assigned_to"
+                  header="Assigned Team Lead"
+                  body={(rowData) => (
+                    <div key={rowData.id}>
+                      {rowData.assigned_to
+                        .filter((user) => user.deassigned === 0)
+                        .map((user) => (
+                          <div key={user.id}>{user.email}</div>
+                        ))}
+                    </div>
+                  )}
+                  sortable
+                ></Column>
+                {/* <Column field="delegatedTo" header="Delegated" sortable></Column> */}
+                <Column
+                  field="status"
+                  header="Status"
+                  sortable
+                  body={statusBodyTemplate}
+                ></Column>
+                {hasWritePermissionTasks && (
+                  <Column
+                    header="Edit"
+                    body={(rowData) => (
+                      <div className="flex" key={rowData.id}>
+                        <AiFillEdit
+                          className="bg-blue-500 text-white rounded"
+                          size={30}
+                          style={{ marginRight: 4 }}
+                          onClick={() => handleTaskSelection(rowData)} // Add this line
+                        />
+                        <RiDeleteBin5Fill
+                          className="bg-red-500 text-white rounded"
+                          size={30}
+                          style={{ marginRight: 4 }}
+                          onClick={() => confirmDelete(rowData.id)}
+                        />
+                      </div>
+                    )}
+                  ></Column>
+                )}
+              </DataTable>
+            </div>
+          )}
           {/* Pagination Controls */}
 
           <div className="mb-6">
@@ -1250,7 +1281,9 @@ const MicroTask = ({
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="teamLead">Assign To Team Lead or Project Manager:</label>
+                <label htmlFor="teamLead">
+                  Assign To Team Lead or Project Manager:
+                </label>
                 <Dropdown
                   id="team-lead"
                   value={editingTask.assignedTl}

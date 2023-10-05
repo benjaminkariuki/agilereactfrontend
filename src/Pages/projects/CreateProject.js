@@ -5,6 +5,9 @@ import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import _ from "lodash";
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
+
 
 const CreateProject = ({ routeToListProjects }) => {
   const [projectData, setProjectData] = useState({
@@ -23,6 +26,7 @@ const CreateProject = ({ routeToListProjects }) => {
   const [usersData, setUsersData] = useState([]);
   const [create, setCreate] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [contact, setcontact] = useState();
   
   const categoryOptions = [
     { label: "Implementation", value: "implementation" },
@@ -154,7 +158,8 @@ const CreateProject = ({ routeToListProjects }) => {
     formData.append("title", projectData.title);
     formData.append("overview", projectData.overview);
     formData.append("clientname", projectData.clientName);
-    formData.append("clientcontact", projectData.clientContacts);
+    formData.append("clientcontact", contact);
+
     formData.append("clientemail", projectData.clientEmail);
     formData.append("start_date", formatDate(projectData.startDate));
     formData.append("end_date", formatDate(projectData.endDate));
@@ -199,6 +204,7 @@ const CreateProject = ({ routeToListProjects }) => {
           startDate: "",
           endDate: "",
         });
+        setcontact();
         setisloading(false);
         setSelectedUsers([]);
       })
@@ -272,6 +278,7 @@ const CreateProject = ({ routeToListProjects }) => {
       endDate: "",
     });
     setSelectedUsers([]);
+    setcontact();
     setisloading(false);
     setCreate(!create);
     routeToListProjects();
@@ -460,21 +467,21 @@ const CreateProject = ({ routeToListProjects }) => {
                 }}
               >
                 {usersData
-                 .filter((user) => {
-                  const nameMatch = `${user.firstName} ${user.lastName}`
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase());
-              
-                  const departmentMatch = user.department
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase());
-              
-                  const roleMatch = user.role.name
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase());
-              
-                  return nameMatch || departmentMatch || roleMatch;
-                })
+                  .filter((user) => {
+                    const nameMatch = `${user.firstName} ${user.lastName}`
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase());
+
+                    const departmentMatch = user.department
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase());
+
+                    const roleMatch = user.role.name
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase());
+
+                    return nameMatch || departmentMatch || roleMatch;
+                  })
                   .map((user) => (
                     <div key={user.id}>
                       <input
@@ -535,15 +542,23 @@ const CreateProject = ({ routeToListProjects }) => {
                 htmlFor="clientEmail"
                 className="block text-sm font-medium"
               >
-                Client Conatcts
+                Client Contact
               </label>
-              <input
+              {/* <input
                 type="text"
                 id="clientContacts"
                 name="clientContacts"
                 value={projectData.clientContacts}
                 onChange={handleInputChange}
                 className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
+                required
+              /> */}
+              <PhoneInput
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                international
+                defaultCountry="KE"
+                value={contact}
+                onChange={setcontact}
                 required
               />
             </div>

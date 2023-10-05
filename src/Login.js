@@ -62,7 +62,7 @@ const LoginForm = () => {
           onLoginError(error.response.data.message);
         }
       }
-      onLoginError(error.message);
+      // onLoginError(error.message);
 
       setIsPending(false);
     }
@@ -127,13 +127,13 @@ const LoginForm = () => {
           Login to Your Dashboard
         </h2>
         <p className="text-center text-gray-600 mt-2">
-          Enter your username and password
+          Enter your Email and Password
         </p>
 
         <form className="mt-4" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium">
-              Username
+              Email
             </label>
             <input
               type="email"
@@ -163,6 +163,7 @@ const LoginForm = () => {
                 value={password}
                 onChange={handlePasswordChange}
                 className="mt-1 p-2 w-full border rounded focus:outline-none focus:border-blue-500"
+                required
               />
               <button
                 type="button"
@@ -183,7 +184,12 @@ const LoginForm = () => {
               }`}
               disabled={isPending}
             >
-              {isPending ? "Logging in..." : "Login"}
+              {isPending ? (
+              <i
+                className="pi pi-spin pi-spinner"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
+            ) : "Login"}
             </button>
           </div>
           <div className="text-center">

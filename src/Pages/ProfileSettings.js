@@ -8,6 +8,8 @@ import { Dialog } from "primereact/dialog";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
 
 
 const EditProfile = () => {
@@ -28,7 +30,6 @@ const EditProfile = () => {
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [contacts, setConatcts] = useState("");
   const [password, setNewPassword] = useState("");
   const [Oldpassword, setOldPassword] = useState("");
 
@@ -40,6 +41,8 @@ const EditProfile = () => {
   const [profile_pic, setPhoto] = useState("");
   const [previewImage, setPreviewImage] = useState();
   const [error, setError] = useState(null);
+  const [contact, setcontact] = useState();
+
   const [isConfirmPasswordMismatch, setIsConfirmPasswordMismatch] =
     useState(false);
 
@@ -52,6 +55,28 @@ const EditProfile = () => {
         life: 3000,
       });
     }
+  };
+
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
   };
 
   const onError = (error) => {
@@ -76,22 +101,7 @@ const EditProfile = () => {
   };
 
   
-  const handleErrorMessage = (error) => {
-    if (error && error.response && error.response.data) {
-      // Check if there's a specific error message in the response
-      if (error.response.data.message) {
-        return error.response.data.message;
-      } else if (error.response.data.errors) {
-        // Extract error messages and join them into a single string
-        return Object.values(error.response.data.errors).flat().join(" ");
-      }
-    } else if (error && error.message) {
-      // Client-side error (e.g., no internet)
-      return error.message;
-    }
-    // If no errors property is found, return a default error message
-    return "An unexpected error occurred.";
-  };
+
   
 
   const handleFirstNameChange = (event) => {
@@ -102,9 +112,7 @@ const EditProfile = () => {
     setLastName(event.target.value);
   };
 
-  const handleContactChange = (event) => {
-    setConatcts(event.target.value);
-  };
+  
 
   const handleProfilePic = (event) => {
     const file = event.target.files[0];
@@ -117,13 +125,14 @@ const EditProfile = () => {
       setPhoto(file);
     }
   };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
-    formData.append("contacts", contacts);
+    formData.append("contacts", contact);
     formData.append("profile_pic", profile_pic);
 
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
@@ -146,6 +155,7 @@ const EditProfile = () => {
         }
       )
       .then((response) => {
+        setIsLoading(false);
         onSuccess(response.data.message);
         const { user } = response.data;
         dispatch(updateUser(user));
@@ -156,20 +166,17 @@ const EditProfile = () => {
           setIsEditing(false);
           setFirstName("");
           setLastName("");
-          setConatcts("");
+          setcontact("");
           setPreviewImage();
           setPhoto("");
-          setIsLoading(false);
+          setcontact();
         }, 1000);
       })
       .catch((error) => {
-        if (error.response.status === 422) {
-          console.log(error.response.data);
-          onError(error.response.data.errors.profile_pic.join("\n"));
-        } else {
-          onError(error.response.data);
-        }
         setIsLoading(false);
+          onError(error);
+        
+        
       });
   };
 
@@ -232,7 +239,7 @@ const EditProfile = () => {
         })
         .catch((error) => {
           // Error occurred while changing password
-          console.log(error);
+          
           onError(error);
           setIsLoading(false);
         });
@@ -243,9 +250,10 @@ const EditProfile = () => {
     setIsEditing(!isEditing);
     setFirstName("");
     setLastName("");
-    setConatcts("");
+    setcontact("");
     setPhoto("");
     setPreviewImage();
+    setIsLoading(false);
   };
 
   //DELETING THE PROFILE pHOTO
@@ -286,13 +294,11 @@ const EditProfile = () => {
       >
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
           <div className="relative">
-          <div className="mb-4 absolute top-0 right-0">
+            <div className="mb-4 absolute top-0 right-0">
               <label
                 className="block text-gray-700  font-bold mb-2"
                 htmlFor="profile_pic"
-              >
-                
-              </label>
+              ></label>
               <div className="relative w-24 h-24 rounded-full overflow-hidden">
                 <img
                   src={
@@ -332,8 +338,7 @@ const EditProfile = () => {
                 <strong> Full Name:</strong>
               </label>
               <span className="text-gray-700">
-              {_.startCase(userFName)} {_.startCase(userLName)}
-
+                {_.startCase(userFName)} {_.startCase(userLName)}
               </span>
             </div>
             <div className="mb-4">
@@ -362,8 +367,10 @@ const EditProfile = () => {
                 Department:
               </label>
 
-              <span className="text-gray-700">{_.startCase(userDepartment)}</span>
-              </div>
+              <span className="text-gray-700">
+                {_.startCase(userDepartment)}
+              </span>
+            </div>
 
             <div className="flex justify-between mt-4">
               <button
@@ -426,22 +433,33 @@ const EditProfile = () => {
                 placeholder={userLName}
               />
             </div>
+
             <div className="mb-4">
-              <label
-                className="block text-gray-700  font-bold mb-2"
-                htmlFor="contact"
-              >
-                Contacts
-              </label>
-              <input
+              <div className="flex items-center">
+                <label
+                  className="block text-gray-700  font-bold mb-2 mr-2"
+                  htmlFor="contact"
+                >
+                  Contacts:
+                </label>
+
+                <label
+                  htmlFor="contact"
+                  className="block text-sm font-medium mb-2"
+                >
+                  {userContacts}
+                </label>
+              </div>
+
+              <PhoneInput
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="contacts"
-                type="contacts"
-                value={contacts}
-                onChange={handleContactChange}
-                placeholder={userContacts}
+                international
+                defaultCountry="KE"
+                value={contact}
+                onChange={setcontact}
               />
             </div>
+
             <div className="mb-4">
               <label
                 className="block text-gray-700 font-bold mb-2"
@@ -496,7 +514,7 @@ const EditProfile = () => {
           <div>
             {error && <p className="text-red-500">{error}</p>}
             <form>
-            <div className="mb-4">
+              <div className="mb-4">
                 <label
                   className="block text-gray-700  font-bold mb-2"
                   htmlFor="old-password"

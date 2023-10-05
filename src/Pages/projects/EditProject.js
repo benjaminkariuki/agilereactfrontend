@@ -5,11 +5,14 @@ import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import _ from "lodash";
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
 
 const EditProject = ({ projectId, routeToListProjects }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedUsersArray, setSelectedUsersArray] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [contact, setcontact] = useState();
 
   const [projectData, setProjectData] = useState({
     title: "",
@@ -21,7 +24,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     excel_file: null,
 
     status: "active",
-
 
     clientName: "",
     editedClientName: "", // updating client names
@@ -80,10 +82,32 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
+  };
+
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
   };
 
   const handleInputChange = (event) => {
@@ -123,11 +147,11 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   }, [projectId]);
 
   const fetchUsers = () => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -141,15 +165,18 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   };
 
   const fetchProjectDetails = (projectId) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,config)
+      .get(
+        `https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
+        config
+      )
       .then((response) => {
         const fetchedprojectsid = response.data.data;
         const sDate = new Date(fetchedprojectsid.start_date);
@@ -180,8 +207,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       });
   };
 
- 
-
   const handleCheckboxChange = (user, isChecked) => {
     if (isChecked) {
       setSelectedUsers((prevUsers) => [...prevUsers, user]);
@@ -196,7 +221,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     event.preventDefault();
 
     setIsLoading(true);
-    const selectedUserIds = selectedUsers.map(user => user.id);
+    const selectedUserIds = selectedUsers.map((user) => user.id);
 
     const formData = new FormData();
     // Check and append edited fields if they exist and are not empty
@@ -216,11 +241,8 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     ) {
       formData.append("clientname", projectData.editedClientName);
     }
-    if (
-      projectData.editedClientContacts &&
-      projectData.editedClientContacts.trim() !== ""
-    ) {
-      formData.append("clientcontact", projectData.editedClientContacts);
+    if (contact && contact.trim() !== "") {
+      formData.append("clientcontact", contact);
     }
 
     if (
@@ -240,9 +262,9 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
     if (selectedUserIds.length > 0) {
       selectedUserIds.forEach((id, index) => {
-          formData.append(`selectedUsers[${index}]`, id);
+        formData.append(`selectedUsers[${index}]`, id);
       });
-  }
+    }
 
     if (projectData.editedcategory && projectData.editedcategory.trim !== "") {
       formData.append("category", projectData.editedcategory);
@@ -251,11 +273,11 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       formData.append("system_type", projectData.editedsystem);
     }
 
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -265,20 +287,20 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         {
           headers: {
             ...config.headers,
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "multipart/form-data",
           },
         }
       )
       .then((response) => {
         onSuccess(response.data.message);
-          
+
         setTimeout(() => {
           setIsLoading(false);
           routeToListProjects();
         }, 1000);
       })
       .catch((error) => {
-        onError(error.response.data.error);
+        onError(error);
         setIsLoading(false);
       });
   };
@@ -286,13 +308,13 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   //HANDLING DOWNLOADING THE EXCEL TEMPLATE
   const downloadExcelFile = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
         `https://agile-pm.agilebiz.co.ke/api/download-excel-edit/${projectId}`,
         {
@@ -302,7 +324,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       );
       FileDownload(response.data, "project_data.xlsx");
     } catch (error) {
-      onError(error.response.data.message);
+      onError(error);
     }
   };
 
@@ -653,21 +675,30 @@ const EditProject = ({ projectId, routeToListProjects }) => {
             </div>
             {/* Client Email */}
             <div className="mb-4">
-              <label
-                htmlFor="clientEmail"
-                className="block text-sm font-medium"
-              >
-                Client Conatcts
-              </label>
-              <input
-                type="text"
-                id="clientContacts"
-                name="editedClientContacts"
-                placeholder={projectData.clientContacts}
-                value={projectData.editedClientContacts}
-                onChange={handleInputChange}
-                className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
+              <div className="flex items-center">
+                <label
+                  htmlFor="clientEmail"
+                  className="block text-sm font-medium mr-4" // added 'mr-4' for some right margin space
+                >
+                  Client Contacts
+                </label>
+                <label
+                  htmlFor="clientEmail"
+                  className="block text-sm font-medium"
+                >
+                  {projectData.clientContacts}
+                </label>
+              </div>
+
+              <PhoneInput
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                international
+                defaultCountry="KE"
+                value={contact}
+                onChange={setcontact}
+                
               />
+
             </div>
           </div>
         </div>

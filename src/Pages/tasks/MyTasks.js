@@ -31,6 +31,8 @@ const MyTasks = () => {
   const [projectSubtasks, setProjectSubtasks] = useState([]);
   const [projectInfo, setProjectInfo] = useState(null);
   const [refreshTasks, setRefreshTasks] = useState(false);
+  const [showSprintPopup, setShowSprintPopUp] = useState(false);
+
 
   const [activeView, setActiveView] = useState("My Tasks");
 
@@ -69,7 +71,7 @@ const MyTasks = () => {
     if (error) {
       toast.current?.show({
         severity: "error",
-        summary: "Error occurred",
+        summary: "Error",
         detail: `${error}`,
         life: 3000,
       });
@@ -125,7 +127,11 @@ const MyTasks = () => {
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
 
@@ -151,7 +157,12 @@ const MyTasks = () => {
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
+
       });
   };
   // Truncate comments to 5 words
@@ -330,8 +341,10 @@ const MyTasks = () => {
 
       <h1> My task</h1>
 
-      <div className="flex p-4 space-x-0.5">
-        <button
+      <div className="flex justify-between p-4 space-x-0.5 items-center">
+    {/* Buttons on the left */}
+    <div className="flex space-x-0.5">
+    <button
           onClick={() => setActiveView("My Tasks")}
           className={`p-2 rounded-md ${
             activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
@@ -339,6 +352,8 @@ const MyTasks = () => {
         >
           My Tasks
         </button>
+
+
         {hasPermissionTasksProjects && (
           <button
             onClick={() => {
@@ -355,24 +370,33 @@ const MyTasks = () => {
         )}
       </div>
 
-      <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
-        <p className="text-gray-600">
-          <span className="font-semibold">Sprint name:</span>
-          {_.startCase(tasksData.name)}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-semibold">Status:</span>{" "}
-          {_.startCase(tasksData.status)}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-semibold">Start Date:</span>
-          {tasksData.start_date}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-semibold">End Date:</span>
-          {tasksData.end_date}
-        </p>
-      </div>
+    {/* Sprint name on the right */}
+    <p 
+    className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto"
+    onMouseEnter={() => setShowSprintPopUp(true)}
+    onMouseLeave={() => setShowSprintPopUp(false)}
+>
+    <span className="font-semibold">Sprint name:</span>
+    {_.startCase(tasksData.name)}
+    {showSprintPopup && (
+        <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+            <p className="text-gray-600">
+                <span className="font-semibold">Status:</span>{" "}
+                {_.startCase(tasksData.status)}
+            </p>
+            <p className="text-gray-600">
+                <span className="font-semibold">Start Date:</span>
+                {tasksData.start_date}
+            </p>
+            <p className="text-gray-600">
+                <span className="font-semibold">End Date:</span>
+                {tasksData.end_date}
+            </p>
+        </div>
+    )}
+</p>
+
+</div>
 
       {/* My Tasks section */}
       {activeView === "My Tasks" && (

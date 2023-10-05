@@ -44,8 +44,6 @@ const Oversight = ({ onClose }) => {
     setChartDataProjectIndividualFromAPi,
   ] = useState([]);
 
-
-
   const [showDetailsSupport, setShowDetailsSupport] = useState(false);
 
   const [showDetailsArchived, setShowDetailsArchived] = useState(false);
@@ -82,8 +80,6 @@ const Oversight = ({ onClose }) => {
     });
   }, []); // The empty dependency array ensures the effect runs once after the component mounts.
 
- 
-
   useEffect(() => {
     fetchProjectsTasksCountPerSubtask();
   }, []);
@@ -101,15 +97,16 @@ const Oversight = ({ onClose }) => {
 
   const fetchProjectsImplementationCount = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectImplementation",config
+        "https://agile-pm.agilebiz.co.ke/api/allProjectImplementation",
+        config
       );
 
       const fetchedimplementation = response.data.supportProjectsCount;
@@ -126,17 +123,17 @@ const Oversight = ({ onClose }) => {
 
   const fetchSupportProjectsCount = async () => {
     try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
-
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectSupport",config
+        "https://agile-pm.agilebiz.co.ke/api/allProjectSupport",
+        config
       );
 
       const fetchedsupportcount = response.data.supportProjectsCount;
@@ -153,15 +150,16 @@ const Oversight = ({ onClose }) => {
 
   const fetchArchivedProjectsCount = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectsArchivedCount",config
+        "https://agile-pm.agilebiz.co.ke/api/allProjectsArchivedCount",
+        config
       );
 
       const fetchedProjectsArchivedcount = response.data.archivedProjectsCount;
@@ -178,16 +176,17 @@ const Oversight = ({ onClose }) => {
 
   const fetchProjectsTasksCountPerSubtask = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       setIsLoadingAllProjectsCount(true);
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive",config
+        "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive",
+        config
       );
 
       const fetchedProjectTaskCountPerUser = response.data;
@@ -206,15 +205,16 @@ const Oversight = ({ onClose }) => {
 
   const fetchActiveSprint = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/fetchActiveSprint",config
+        "https://agile-pm.agilebiz.co.ke/api/fetchActiveSprint",
+        config
       );
 
       const fetchedActiveSprint = response.data[0];
@@ -236,8 +236,6 @@ const Oversight = ({ onClose }) => {
       onFetchingRoles(error);
     }
   };
-
-  
 
   useEffect(() => {
     const projects = chartProjectSubtaskActiveDatafromApi.map(
@@ -307,8 +305,6 @@ const Oversight = ({ onClose }) => {
       ],
     });
   }, [chartProjectSubtaskActiveDatafromApi]);
-
- 
 
   const chartOptions = {
     scales: {
@@ -459,7 +455,7 @@ const Oversight = ({ onClose }) => {
   };
 
   return !isLoading ? (
-<div className="flex flex-col p-5 md:space-y-8 space-y-4 h-full w-9/10 mb-12 overflow-auto  bg-blue-50">
+    <div className="flex flex-col p-5 md:space-y-8 space-y-4 h-full w-9/10 mb-12 overflow-auto  bg-blue-50">
       <div className="text-right">
         <i
           onClick={onClose}
@@ -604,34 +600,39 @@ const Oversight = ({ onClose }) => {
       )}
 
       <div className="flex-1 p-4 ">
-        <div
-          className="rounded shadow-md p-4 flex-grow relative"
-          style={{ backgroundColor: "white" }}
-        >
-          <p className="text-xl font-semibold mb-2 text-black-500">
-            Project and Phases Details
-          </p>
-          <p className="text-xl mb-2 text-black-500">
-            Sprint Name: {_.startCase(activeSprint.name)}
-          </p>
-          <p className="text-xl mb-2 text-black-500">
-            Start Date: {activeSprint.startDate}
-          </p>
-          <p className="text-xl mb-12 text-black-500">
-            End Date: {activeSprint.endDate}
-          </p>
-          <p className="text-xl md:absolute bottom-2 left-2 bg-green-500 text-white rounded-xl p-2 hover:bg-green-600">
-            Status: {_.startCase(activeSprint.status)}
-          </p>
-          <p
-            className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
-            onClick={() => showDetailsDialog()}
-          >
-            View More
-          </p>
-        </div>
+        {activeSprint &&
+          activeSprint.name &&
+          activeSprint.startDate &&
+          activeSprint.endDate &&
+          activeSprint.status && (
+            <div
+              className="rounded shadow-md p-4 flex-grow relative"
+              style={{ backgroundColor: "white" }}
+            >
+              <p className="text-xl font-semibold mb-2 text-black-500">
+                Project and Phases Details
+              </p>
+              <p className="text-xl mb-2 text-black-500">
+                Sprint Name: {_.startCase(activeSprint.name)}
+              </p>
+              <p className="text-xl mb-2 text-black-500">
+                Start Date: {activeSprint.startDate}
+              </p>
+              <p className="text-xl mb-12 text-black-500">
+                End Date: {activeSprint.endDate}
+              </p>
+              <p className="text-xl md:absolute bottom-2 left-2 bg-green-500 text-white rounded-xl p-2 hover:bg-green-600">
+                Status: {_.startCase(activeSprint.status)}
+              </p>
+              <p
+                className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+                onClick={() => showDetailsDialog()}
+              >
+                View More
+              </p>
+            </div>
+          )}
       </div>
-
 
       <DetailsMoreDialog
         showDetailsMore={showDetails}

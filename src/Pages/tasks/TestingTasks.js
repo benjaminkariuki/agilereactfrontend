@@ -27,7 +27,8 @@ const TestingTasks = () => {
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const [pushLoading, setPushLoading] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
-  const [selectedFile, setSelectedFile] = useState();
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [comment, setComment] = useState("");
   const [pushLoadingDev, setPushLoadingDev] = useState(false);
   const [otherData, setOtherData] = useState([]);
@@ -37,6 +38,7 @@ const TestingTasks = () => {
   const [refreshTasks, setRefreshTasks] = useState(false);
   const [activeView, setActiveView] = useState("My Tasks");
   const [returnedTaskLogs, setReturnedTaskLogs] = useState([]);
+  const [flattenedLogs, setFlattenedLogs] = useState([]);
 
   //getting permission for tasks
   const tasksActivity = userActivities.find(
@@ -51,14 +53,18 @@ const TestingTasks = () => {
   const normalizedDepartment = userDepartment.toLowerCase();
 
   const hasPermissionTasksProjects =
-  normalizedRole.includes("portfolio manager") ||
-  normalizedRole.includes("head") ||
-  normalizedRole.includes("team lead");
+    normalizedRole.includes("portfolio manager") ||
+    normalizedRole.includes("head") ||
+    normalizedRole.includes("team lead");
 
-  const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
+  const hasPermissionTaskDelegation =
+    normalizedRole.includes("team lead") ||
+    normalizedRole.includes("head") ||
+    normalizedRole.includes("portfolio manager");
 
   const hasPermissionPushReviewAndBackTesting =
-    normalizedDepartment.includes("implementation") ||  normalizedDepartment.includes("infrastructure");
+    normalizedDepartment.includes("implementation") ||
+    normalizedDepartment.includes("infrastructure");
 
   const onSuccess = (success) => {
     if (success) {
@@ -75,7 +81,7 @@ const TestingTasks = () => {
     if (error) {
       toast.current?.show({
         severity: "error",
-        summary: "Error occurred",
+        summary: "Error",
         detail: `${error}`,
         life: 3000,
       });
@@ -108,11 +114,11 @@ const TestingTasks = () => {
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -122,23 +128,28 @@ const TestingTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config,  // spread the config object here
+        ...config, // spread the config object here
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -148,25 +159,26 @@ const TestingTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config,  // spread the config object here
-
+        ...config, // spread the config object here
       })
       .then((response) => {
-      
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
 
-
   const fetchReturnedTaskLogs = () => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -175,15 +187,22 @@ const TestingTasks = () => {
           email: userEmail,
           roleName: userRole,
         },
-        ...config,  // spread the config object here
+        ...config, // spread the config object here
       })
       .then((response) => {
         setReturnedTaskLogs(response.data);
-        console.log(returnedTaskLogs);
+        const logs = response.data.user_tasks.flatMap((task) => task.task_logs);
+        setFlattenedLogs(logs);
+        console.log(logs);
       })
       .catch((error) => {
-        onError("Error fetching history");
-      });
+
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
+            });
   };
 
   // Truncate comments to 5 words
@@ -281,23 +300,40 @@ const TestingTasks = () => {
     return _.startCase(rowData[column.field]);
   };
 
+  function truncateAndFormatDescription(description) {
+    // Truncate to 5 words
+    const words = description.split(" ");
+    let truncatedDescription;
+    if (words.length > 5) {
+      truncatedDescription = words.slice(0, 5).join(" ") + "...";
+    } else {
+      truncatedDescription = description;
+    }
+
+    // Convert to sentence case
+    return _.startCase(truncatedDescription);
+  }
+
   //function to push to the next stage(i.e Development)
   const pushToReview = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
       const config = {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       };
       axios
-        .post("https://agile-pm.agilebiz.co.ke/api/pushToReview", {
-          taskIds: selectedIds,
-          
-        },config)
+        .post(
+          "https://agile-pm.agilebiz.co.ke/api/pushToReview",
+          {
+            taskIds: selectedIds,
+          },
+          config
+        )
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
@@ -323,17 +359,27 @@ const TestingTasks = () => {
     else onWarn("Select atleast one Micro-task");
   };
   //handle file upload
+  // const onFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setSelectedFile(file);
+  //     };
+  //     reader.readAsDataURL(file);
+  //     setSelectedFile(file);
+  //   }
+  // };
+
   const onFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setSelectedFile(file);
-      };
-      reader.readAsDataURL(file);
-      setSelectedFile(file);
-    }
+    setSelectedFile(file); // Set selectedFile to null if no file is selected
   };
+
+  // Define a custom rendering function for the 'Start Date' column
+ 
+
+  // Define a custom rendering function for the 'End Date' column
 
   //submit the reason to push back
   const submitPushBack = (event) => {
@@ -341,13 +387,17 @@ const TestingTasks = () => {
     setPushLoadingDev(true);
     const formData = new FormData();
     formData.append("taskId", selectedTasks[0].id);
-    formData.append("imageUpload", selectedFile);
+
+    if (selectedFile !== null && selectedFile !== undefined) {
+      formData.append("imageUpload", selectedFile);
+    }
+
     formData.append("comment", comment);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -357,7 +407,7 @@ const TestingTasks = () => {
         {
           headers: {
             ...config.headers,
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "multipart/form-data",
           },
         }
       )
@@ -385,7 +435,6 @@ const TestingTasks = () => {
       <div className="flex p-4 space-x-0.5">
         <button
           onClick={() => setActiveView("My Tasks")}
-
           className={`p-2 rounded-md ${
             activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
           } transition-colors`}
@@ -395,11 +444,9 @@ const TestingTasks = () => {
 
         {hasPermissionTasksProjects && (
           <button
-
             onClick={() => {
               setActiveView("Other Tasks");
               fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-
             }}
             className={`p-2 rounded-md ${
               activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
@@ -564,29 +611,29 @@ const TestingTasks = () => {
 
       {activeView === "Returned task history" && (
         <div>
-          {returnedTaskLogs?.user_tasks?.length > 0 ? (
+          {flattenedLogs.length > 0 ? (
             <DataTable
-              value={returnedTaskLogs.user_tasks.map(
-                (task) => task.task_details
-              )}
+              value={flattenedLogs}
               className="border rounded-md p-4 bg-white"
             >
               <Column
                 field="task"
                 header="Task"
-                body={sentenceCaseFormatter}
+                body={(rowData, columnProps) => {
+                  const task = sentenceCaseFormatter(rowData, columnProps);
+                  return `${columnProps.rowIndex + 1}. ${task}`;
+                }}
               ></Column>
+             
               <Column
                 field="description"
                 header="Description"
-                body={sentenceCaseFormatter}
+                body={(rowData) =>
+                  truncateAndFormatDescription(rowData.description)
+                }
               ></Column>
-              <Column
-                field="department"
-                header="Department"
-                body={sentenceCaseFormatter}
-              ></Column>
-              <Column
+
+              {/* <Column
                 field="status"
                 header="Status"
                 body={sentenceCaseFormatter}
@@ -595,14 +642,20 @@ const TestingTasks = () => {
                 field="stage"
                 header="Stage"
                 body={sentenceCaseFormatter}
+              ></Column> */}
+              <Column
+                header="Time Stamp"
+                body={(rowData) => `${rowData.date} ${rowData.time}`}
               ></Column>
-              <Column field="start_date" header="Start Date"></Column>
-              <Column field="end_date" header="End Date"></Column>
+              <Column field="count" header="Times Returned"></Column>
               <Column
                 field="comment"
                 header="Comments"
-                body={truncateComments}
+                body={(rowData) =>
+                  truncateAndFormatDescription(rowData.comment)
+                }
               ></Column>
+
               <Column header="Download Data" body={downloadLink}></Column>
 
               <Column
@@ -680,7 +733,7 @@ const TestingTasks = () => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
-             <Column
+            <Column
               field="task"
               header="Task"
               body={(rowData, columnProps) => {
@@ -736,10 +789,11 @@ const TestingTasks = () => {
           onHide={() => setShowSubmit(false)}
           style={{ width: "50vw" }}
         >
-          <div className="flex flex-col items-center">
-            <h2 className="mb-4 font-bold">Add Comment</h2>
+          <form>
+            <div className="flex flex-col items-center">
+              <h2 className="mb-4 font-bold">Add Comment</h2>
 
-            <textarea
+              <textarea
                 type="text"
                 name="comment"
                 placeholder="Comment section"
@@ -750,37 +804,38 @@ const TestingTasks = () => {
                 style={{ height: "150px" }}
               />
 
-            <div className="mb-4">
-              <label
-                className="block text-gray-700 font-bold mb-2"
-                htmlFor="proof-file"
-              >
-                Upload File
-              </label>
-              <input
-                type="file"
-                onChange={onFileUpload}
-                name="imageUpload"
-                accept="*"
-              />
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="proof-file"
+                >
+                  Upload File
+                </label>
+                <input
+                  type="file"
+                  onChange={onFileUpload}
+                  name="imageUpload" // Ensure this name matches the backend expectation
+                  accept="image/*"
+                />
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={submitPushBack}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-2"
+                  disabled={pushLoadingDev}
+                >
+                  {pushLoadingDev ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
             </div>
-            <div className="mt-4">
-              <button
-                onClick={submitPushBack}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:shadow-outline mt-2"
-                disabled={pushLoadingDev}
-              >
-                {pushLoadingDev ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                ) : (
-                  "Submit"
-                )}
-              </button>
-            </div>
-          </div>
+          </form>
         </Dialog>
       </div>
 

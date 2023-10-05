@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Toast } from "primereact/toast";
 import axios from "axios";
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
 
 const CreateUser = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [contacts, setContacts] = useState("");
+  const [contact, setcontact] = useState();
+
   const [role_id, setRole] = useState("");
   const [selelctedDepartment, setSelelctedDepartment] = useState(""); // New department state
   const [roles, setRoles] = useState([]);
@@ -116,7 +119,7 @@ const CreateUser = () => {
         firstName,
         lastName,
         email,
-        contacts,
+        contact,
         department: selelctedDepartment,
         role_id,
       },config)
@@ -129,7 +132,7 @@ const CreateUser = () => {
         setFirstName("");
         setLastName("");
         setEmail("");
-        setContacts("");
+        setcontact("");
         setRole("");
         setSelelctedDepartment("");
       })
@@ -218,13 +221,13 @@ const CreateUser = () => {
             >
               Contacts
             </label>
-            <input
+
+            <PhoneInput
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="contacts"
-              type="text"
-              placeholder="Enter contacts"
-              value={contacts}
-              onChange={(e) => setContacts(e.target.value)}
+              international
+              defaultCountry="KE"
+              value={contact}
+              onChange={setcontact}
               required
             />
           </div>

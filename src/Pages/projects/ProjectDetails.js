@@ -94,8 +94,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
         const fetchedprojectsid = response.data.data;
 
         setProjectData(fetchedprojectsid);
-        console.log(fetchedprojectsid);
-        onSuccess("Project Found");
+       
       })
       .catch((error) => {
         onError("Error getting project details:");
@@ -148,7 +147,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
           <p className="text-gray-600">Status: {_.startCase(projectData.status)}</p>
           <p className="text-gray-600">Client Name: {_.startCase(projectData.clientname)}</p>
           <p className="text-gray-600">
-            Client Contact: {_.startCase(projectData.clientcontact)}
+            Client Contact: {projectData.clientcontact}
           </p>
           <p className="text-gray-600">
             Client Email: {projectData.clientemail}
@@ -197,13 +196,13 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                                 "view"
                               )
                             }
-                            size={30}
+                            size={18}
                             style={{ marginRight: 4 }}
                           />
                           {hasWritePermissionTasks && (
                             <PiMicrosoftExcelLogoFill
                               className="bg-blue-500 text-white rounded"
-                              size={30}
+                              size={18}
                               onClick={() =>
                                 handleMicroTasksModal(
                                   projectId,

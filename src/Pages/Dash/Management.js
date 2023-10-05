@@ -19,9 +19,8 @@ const Management = () => {
   const role = useSelector((state) => state.user.userRole);
   const department = useSelector((state) => state.user.userDepartment);
   const [isLoadingProjectsCount, setIsLoadingProjectsCount] = useState(false);
-  const [isLoadingAllProjectsCount, setIsLoadingAllProjectsCount] = useState(false);
-
-
+  const [isLoadingAllProjectsCount, setIsLoadingAllProjectsCount] =
+    useState(false);
 
   const [projectImplementationCount, setImplementationProjectsCount] =
     useState(0);
@@ -81,13 +80,9 @@ const Management = () => {
       fetchSupportProjectsCount(),
       fetchArchivedProjectsCount(),
       fetchActiveSprint(),
-      
     ]).finally(() => {
       setIsLoading(false);
     });
-
-    
-
   }, []); // The empty dependency array ensures the effect runs once after the component mounts.
 
   useEffect(() => {
@@ -111,14 +106,13 @@ const Management = () => {
 
   const fetchProjectsImplementationCount = async () => {
     try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
-
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allProjectImplementation",
         config
@@ -138,20 +132,18 @@ const Management = () => {
 
   const fetchSupportProjectsCount = async () => {
     try {
-
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
-      console.log('Token from sessionStorage:', token);
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+      console.log("Token from sessionStorage:", token);
 
       const configs = {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       };
 
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allProjectSupport",
         configs
-
       );
 
       const fetchedsupportcount = response.data.supportProjectsCount;
@@ -167,12 +159,11 @@ const Management = () => {
   };
 
   const fetchArchivedProjectsCount = async () => {
-
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     try {
@@ -197,13 +188,13 @@ const Management = () => {
     try {
       setIsLoadingAllProjectsCount(true);
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive",
@@ -226,14 +217,13 @@ const Management = () => {
 
   const fetchActiveSprint = async () => {
     try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
-
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/fetchActiveSprint",
@@ -266,16 +256,15 @@ const Management = () => {
     department
   ) => {
     try {
-
       setIsLoadingProjectsCount(true);
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
         {
@@ -284,7 +273,7 @@ const Management = () => {
             role: role,
             department: department,
           },
-          headers: config.headers
+          headers: config.headers,
         }
       );
 
@@ -654,35 +643,31 @@ const Management = () => {
           <i className="pi pi-spin pi-spinner text-blue-500 md:text-4xl text-3xl"></i>
         </div>
       ) : (
-
         <div className="flex-1 p-4">
-        <div
-          className="rounded shadow-md p-4 relative"
-          style={{ backgroundColor: "white" }}
-        >
-          <p className="text-xl font-semibold mb-2 text-black-500">
-            Project Subtasks in Active Sprint
-          </p>
-          <div className="h-full">
-            <Chart
-              className="h-80"
-              type="bar"
-              data={chartDataSubtsaks}
-              options={chartOptions}
-            />
-          </div>
-          <p
-            className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
-            onClick={() => showSubtaskCountAllProjects()}
+          <div
+            className="rounded shadow-md p-4 relative"
+            style={{ backgroundColor: "white" }}
           >
-            View All Projects Graph
-          </p>
+            <p className="text-xl font-semibold mb-2 text-black-500">
+              Project Subtasks in Active Sprint
+            </p>
+            <div className="h-full">
+              <Chart
+                className="h-80"
+                type="bar"
+                data={chartDataSubtsaks}
+                options={chartOptions}
+              />
+            </div>
+            <p
+              className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+              onClick={() => showSubtaskCountAllProjects()}
+            >
+              View All Projects Graph
+            </p>
+          </div>
         </div>
-      </div>
-
       )}
-
-
 
       {/* <div className="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0 flex-grow mb-8"> */}
 
@@ -693,62 +678,65 @@ const Management = () => {
           <i className="pi pi-spin pi-spinner text-blue-500 md:text-4xl text-3xl"></i>
         </div>
       ) : (
-
         <div className="flex-1 p-4">
-        <div
-          className="rounded shadow-md relative p-4"
-          style={{ backgroundColor: "white" }}
-        >
-          <p className="text-xl font-semibold mb-2 text-black-500">
-            Active Sprint Burned Down Chart
-          </p>
-          <div className="h-full">
-            <Chart
-              className="h-80"
-              type="bar"
-              data={chartLineDataSubtsaks}
-              options={chartOptionsStacked}
-            />
-          </div>
-          <p
-            className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
-            onClick={() => showDetailsSprint()}
+          <div
+            className="rounded shadow-md relative p-4"
+            style={{ backgroundColor: "white" }}
           >
-            View More Sprints
-          </p>
+            <p className="text-xl font-semibold mb-2 text-black-500">
+              Active Sprint Burned Down Chart
+            </p>
+            <div className="h-full">
+              <Chart
+                className="h-80"
+                type="bar"
+                data={chartLineDataSubtsaks}
+                options={chartOptionsStacked}
+              />
+            </div>
+            <p
+              className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+              onClick={() => showDetailsSprint()}
+            >
+              View More Sprints
+            </p>
+          </div>
         </div>
-      </div>
-
       )}
 
-
-      <div className="flex-1 p-4 ">
-        <div
-          className="rounded shadow-md p-4 flex-grow relative"
-          style={{ backgroundColor: "white" }}
-        >
-          <p className="text-xl font-semibold mb-2 text-black-500">
-            Project and Phases Details
-          </p>
-          <p className="text-xl mb-2 text-black-500">
-            Sprint Name: {_.startCase(activeSprint.name)}
-          </p>
-          <p className="text-xl mb-2 text-black-500">
-            Start Date: {activeSprint.startDate}
-          </p>
-          <p className="text-xl mb-12 text-black-500">
-            End Date: {activeSprint.endDate}
-          </p>
-          <p className="text-xl md:absolute bottom-2 left-2 bg-green-500 text-white rounded-xl p-2 hover:bg-green-600">
-            Status: {_.startCase(activeSprint.status)}
-          </p>
-          <p
-            className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
-            onClick={() => showDetailsDialog()}
-          >
-            View More
-          </p>
-        </div>
+<div className="flex-1 p-4 ">
+        {activeSprint &&
+          activeSprint.name &&
+          activeSprint.startDate &&
+          activeSprint.endDate &&
+          activeSprint.status && (
+            <div
+              className="rounded shadow-md p-4 flex-grow relative"
+              style={{ backgroundColor: "white" }}
+            >
+              <p className="text-xl font-semibold mb-2 text-black-500">
+                Project and Phases Details
+              </p>
+              <p className="text-xl mb-2 text-black-500">
+                Sprint Name: {_.startCase(activeSprint.name)}
+              </p>
+              <p className="text-xl mb-2 text-black-500">
+                Start Date: {activeSprint.startDate}
+              </p>
+              <p className="text-xl mb-12 text-black-500">
+                End Date: {activeSprint.endDate}
+              </p>
+              <p className="text-xl md:absolute bottom-2 left-2 bg-green-500 text-white rounded-xl p-2 hover:bg-green-600">
+                Status: {_.startCase(activeSprint.status)}
+              </p>
+              <p
+                className="text-xl md:absolute bottom-2 right-2 text-blue-400 hover:text-blue-600 cursor-pointer"
+                onClick={() => showDetailsDialog()}
+              >
+                View More
+              </p>
+            </div>
+          )}
       </div>
 
       <div className="flex-1 p-4">

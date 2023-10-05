@@ -11,7 +11,9 @@ import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
 
 const DevelopmentTasks = () => {
-  const { userRole, userEmail, userDepartment } = useSelector((state) => state.user);
+  const { userRole, userEmail, userDepartment } = useSelector(
+    (state) => state.user
+  );
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [tasksData, setTasksData] = useState([]); // State to store API data
   const [microTasksData, setMicroTasksData] = useState([]);
@@ -26,24 +28,28 @@ const DevelopmentTasks = () => {
   const [projectSubtasks, setProjectSubtasks] = useState([]);
   const [projectInfo, setProjectInfo] = useState(null);
   const [refreshTasks, setRefreshTasks] = useState(false);
+  const [flattenedLogs, setFlattenedLogs] = useState([]);
 
   const [activeView, setActiveView] = useState("My Tasks");
   const [returnedTaskLogs, setReturnedTaskLogs] = useState([]);
 
   const Role = userRole; // Replace this with how you get the user's role
   const normalizedRole = Role.toLowerCase();
-   // Convert the role to lowercase for case-insensitive checking
-   const normalizedDepartment = userDepartment.toLowerCase();
+  // Convert the role to lowercase for case-insensitive checking
+  const normalizedDepartment = userDepartment.toLowerCase();
 
   const hasPermissionTasksProjects =
     normalizedRole.includes("portfolio manager") ||
     normalizedRole.includes("head") ||
     normalizedRole.includes("team lead");
 
-    const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
-    const hasPermissionPushTesting = normalizedDepartment.includes("implementation") ||  normalizedDepartment.includes("infrastructure");
-
-   
+  const hasPermissionTaskDelegation =
+    normalizedRole.includes("team lead") ||
+    normalizedRole.includes("head") ||
+    normalizedRole.includes("portfolio manager");
+  const hasPermissionPushTesting =
+    normalizedDepartment.includes("web") ||
+    normalizedDepartment.includes("infrastructure");
 
   const onSuccess = (success) => {
     if (success) {
@@ -60,7 +66,7 @@ const DevelopmentTasks = () => {
     if (error) {
       toast.current?.show({
         severity: "error",
-        summary: "Error occurred",
+        summary: "Error",
         detail: `${error}`,
         life: 3000,
       });
@@ -90,15 +96,15 @@ const DevelopmentTasks = () => {
   };
 
   useEffect(() => {
-    fetchMyTasks(userEmail, userRole,userDepartment); // Fetch data from the API when the component mounts
+    fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userEmail, userRole]); // Empty dependency array ensures this effect runs once
 
-  const fetchMyTasks = (userEmail, userRole,userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  const fetchMyTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -108,23 +114,27 @@ const DevelopmentTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config, 
+        ...config,
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -134,28 +144,32 @@ const DevelopmentTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config, 
+        ...config,
       })
       .then((response) => {
-      
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
-      });
+
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }     
+       });
   };
 
   const fetchReturnedTaskLogs = () => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/fromtestingtodevelopment", {
-        ...config,  
+        ...config,
         params: {
           email: userEmail,
           roleName: userRole,
@@ -163,11 +177,18 @@ const DevelopmentTasks = () => {
       })
       .then((response) => {
         setReturnedTaskLogs(response.data);
-        console.log(returnedTaskLogs);
+        console.log(response.data);
+        const logs = response.data.user_tasks.flatMap((task) => task.task_logs);
+        setFlattenedLogs(logs);
+        console.log(logs);
       })
       .catch((error) => {
-        onError("Error fetching history");
-      });
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
+            });
   };
 
   // Truncate comments to 5 words
@@ -189,6 +210,19 @@ const DevelopmentTasks = () => {
   };
 
   // Create a download link
+  function truncateAndFormatDescription(description) {
+    // Truncate to 5 words
+    const words = description.split(" ");
+    let truncatedDescription;
+    if (words.length > 5) {
+      truncatedDescription = words.slice(0, 5).join(" ") + "...";
+    } else {
+      truncatedDescription = description;
+    }
+
+    // Convert to sentence case
+    return _.startCase(truncatedDescription);
+  }
 
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
@@ -272,22 +306,25 @@ const DevelopmentTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       axios
-        .post("https://agile-pm.agilebiz.co.ke/api/pushToTesting", {
-          taskIds: selectedIds,
-          
-        },config)
+        .post(
+          "https://agile-pm.agilebiz.co.ke/api/pushToTesting",
+          {
+            taskIds: selectedIds,
+          },
+          config
+        )
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
-            fetchMyTasks(userEmail, userRole,userDepartment);
+            fetchMyTasks(userEmail, userRole, userDepartment);
             setPushLoading(false);
           }, 1000);
           setViewMore(false);
@@ -317,11 +354,9 @@ const DevelopmentTasks = () => {
         </button>
         {hasPermissionTasksProjects && (
           <button
-            
             onClick={() => {
               setActiveView("Other Tasks");
               fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-
             }}
             className={`p-2 rounded-md ${
               activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
@@ -486,29 +521,29 @@ const DevelopmentTasks = () => {
 
       {activeView === "Returned task history" && (
         <div>
-          {returnedTaskLogs?.user_tasks?.length > 0 ? (
+          {flattenedLogs.length > 0 ? (
             <DataTable
-              value={returnedTaskLogs.user_tasks.map(
-                (task) => task.task_details
-              )}
+              value={flattenedLogs}
               className="border rounded-md p-4 bg-white"
             >
               <Column
                 field="task"
                 header="Task"
-                body={sentenceCaseFormatter}
+                body={(rowData, columnProps) => {
+                  const task = sentenceCaseFormatter(rowData, columnProps);
+                  return `${columnProps.rowIndex + 1}. ${task}`;
+                }}
               ></Column>
+            
               <Column
                 field="description"
                 header="Description"
-                body={sentenceCaseFormatter}
+                body={(rowData) =>
+                  truncateAndFormatDescription(rowData.description)
+                }
               ></Column>
-              <Column
-                field="department"
-                header="Department"
-                body={sentenceCaseFormatter}
-              ></Column>
-              <Column
+
+              {/* <Column
                 field="status"
                 header="Status"
                 body={sentenceCaseFormatter}
@@ -517,14 +552,20 @@ const DevelopmentTasks = () => {
                 field="stage"
                 header="Stage"
                 body={sentenceCaseFormatter}
+              ></Column> */}
+              <Column
+                header="Time Stamp"
+                body={(rowData) => `${rowData.date} ${rowData.time}`}
               ></Column>
-              <Column field="start_date" header="Start Date"></Column>
-              <Column field="end_date" header="End Date"></Column>
+              <Column field="count" header="Times Returned"></Column>
               <Column
                 field="comment"
                 header="Comments"
-                body={truncateComments}
+                body={(rowData) =>
+                  truncateAndFormatDescription(rowData.comment)
+                }
               ></Column>
+
               <Column header="Download Data" body={downloadLink}></Column>
 
               <Column
@@ -560,23 +601,24 @@ const DevelopmentTasks = () => {
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
           footer={
-            hasPermissionPushTesting &&  ( <div>
-            <button
-              className="px-4 py-2 bg-green-500 text-white rounded-md"
-              onClick={pushTodevelopment}
-              disabled={pushLoading} // Disable the button while loading
-            >
-              {pushLoading ? (
-                <i
-                  className="pi pi-spin pi-spinner"
-                  style={{ fontSize: "1.4rem" }}
-                ></i>
-              ) : (
-                "Push to Testing"
-              )}
-            </button>
-            </div>
-          )
+            hasPermissionPushTesting && (
+              <div>
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded-md"
+                  onClick={pushTodevelopment}
+                  disabled={pushLoading} // Disable the button while loading
+                >
+                  {pushLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Push to Testing"
+                  )}
+                </button>
+              </div>
+            )
           }
         >
           <DataTable
@@ -592,7 +634,7 @@ const DevelopmentTasks = () => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
-             <Column
+            <Column
               field="task"
               header="Task"
               body={(rowData, columnProps) => {
@@ -778,7 +820,7 @@ const DevelopmentTasks = () => {
                 <span className="font-semibold">Assigned To:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.assigned_to?.map((item, index) => (
+                {moreDetailsData.assignedto?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
@@ -799,7 +841,7 @@ const DevelopmentTasks = () => {
                 <span className="font-semibold">Assigned BA:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.baassigned_to?.map((item, index) => (
+                {moreDetailsData.baassignedto?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"

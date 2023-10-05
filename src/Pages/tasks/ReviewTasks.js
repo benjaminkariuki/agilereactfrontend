@@ -72,7 +72,7 @@ const ReviewTasks = () => {
     if (error) {
       toast.current?.show({
         severity: "error",
-        summary: "Error occurred",
+        summary: "Error",
         detail: `${error}`,
         life: 3000,
       });
@@ -146,7 +146,12 @@ const ReviewTasks = () => {
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
   // Truncate comments to 5 words
@@ -172,7 +177,11 @@ const ReviewTasks = () => {
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
 

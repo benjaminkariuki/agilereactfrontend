@@ -7,6 +7,8 @@ import axios from "axios";
 import { Toast } from "primereact/toast";
 import { FaInfoCircle } from "react-icons/fa";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { InputText } from 'primereact/inputtext';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 
 const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [visible, setVisible] = useState(false);
@@ -16,6 +18,10 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const toast = useRef(null);
+
+  const [filters,setFilters] = useState({
+    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
+  })
 
   const confirmRemove = (sprintId) => {
     confirmDialog({
@@ -57,6 +63,52 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
     }
   };
 
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(rowData.start_date);
+    const endDate = new Date(rowData.end_date);
+    const closeDate = rowData.close_date ? new Date(rowData.close_date) : null;
+
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) to complete</span>;
+    } else if (daysUntilEnd >= 0) {
+      return <span style={{ color: "green" }}>{daysUntilEnd} day(s)</span>;
+    } else {
+      return (
+        <span style={{ color: "red" }}>
+          {Math.abs(daysUntilEnd)} day(s) overdue
+        </span>
+      );
+    }
+  };
+
+  const customHeader = (
+    <div className="flex justify-between items-center">
+        <div>Subtask Details</div>
+        <InputText
+               style={{ width: "33.3333%", marginRight: "1rem" }}
+
+            placeholder="Search task by name, department, status or stage...."
+            onInput={(e) =>
+                setFilters({
+                    global: {
+                        value: e.target.value,
+                        matchMode: FilterMatchMode.CONTAINS,
+                    },
+                })
+            }
+        />
+    </div>
+);
+
+
   const openDialog = (projectTitle) => {
     const projectSubtasks = subtasks.filter(
       (subtask) => subtask.project.title === projectTitle
@@ -84,18 +136,21 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
     if (selectedTask.length > 0) {
       setremoveLoading(true);
       const removedTask = selectedTask.map((task) => task.id);
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       axios
-        .post(`https://agile-pm.agilebiz.co.ke/api/removeTasks/${sprintId}`, {
-          taskIds: removedTask,
-         
-        }, config)
+        .post(
+          `https://agile-pm.agilebiz.co.ke/api/removeTasks/${sprintId}`,
+          {
+            taskIds: removedTask,
+          },
+          config
+        )
         .then((response) => {
           setremoveLoading(false);
           onSuccess(response.data.message);
@@ -153,7 +208,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
       </div>
 
       <Dialog
-        header="Subtask Details"
+        header={customHeader}
         visible={visible}
         onHide={closeDialogue}
         style={{ width: "98vw" }}
@@ -179,57 +234,71 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
         }
       >
         {selectedSubtasks && (
-          <DataTable
-            value={selectedSubtasks}
-            selectionMode="checkbox"
-            selection={selectedTask}
-            onSelectionChange={(e) => setSelectedTask(e.value)}
-            dataKey="id"
-          >
-            <Column
-              selectionMode="multiple"
-              headerStyle={{ width: "3rem" }}
-            ></Column>
-            <Column
-              field="task"
-              header="Task"
-              body={(rowData, columnProps) => {
-                const task = sentenceCaseFormatter(rowData, columnProps);
-                return `${columnProps.rowIndex + 1}. ${task}`;
-              }}
-            ></Column>
-            <Column
+          <div>
+            <DataTable
+              value={selectedSubtasks}
+              selectionMode="checkbox"
+              selection={selectedTask}
+              filters={filters}
+              onSelectionChange={(e) => setSelectedTask(e.value)}
+              dataKey="id"
+            >
+              <Column
+                selectionMode="multiple"
+                headerStyle={{ width: "3rem" }}
+              ></Column>
+              <Column
+                field="task"
+                header="Task"
+                body={(rowData, columnProps) => {
+                  const task = sentenceCaseFormatter(rowData, columnProps);
+                  return `${columnProps.rowIndex + 1}. ${task}`;
+                }}
+              ></Column>
+              {/* <Column
               field="description"
               header="Description"
               body={sentenceCaseFormatter}
-            />
-            <Column field="start_date" header="Start Date" />
-            <Column field="end_date" header="End Date" />
-            <Column
-              field="department"
-              header="Department"
-              body={sentenceCaseFormatter}
-            />
-            <Column
-              field="status"
-              header="Status"
-              body={sentenceCaseFormatter}
-            />
-            <Column header="stage" field="stage" body={sentenceCaseFormatter} />
-            <Column
-              header="More Details"
-              body={(rowData) => (
-                <div className="flex" key={rowData.id}>
-                  <FaInfoCircle
-                    className="bg-blue-500 text-white rounded cursor-pointer"
-                    size={30}
-                    style={{ marginRight: 4 }}
-                    onClick={() => showDetailsDialog(rowData)}
-                  />
-                </div>
-              )}
-            ></Column>
-          </DataTable>
+            /> */}
+              <Column field="start_date" header="Start Date" />
+              <Column field="end_date" header="End Date" />
+              <Column
+                field="close_date"
+                header="Completion Date"
+                sortable
+              ></Column>
+
+              <Column header="Duration" body={durationTemplate}></Column>
+              <Column
+                field="department"
+                header="Department"
+                body={sentenceCaseFormatter}
+              />
+              <Column
+                field="status"
+                header="Status"
+                body={sentenceCaseFormatter}
+              />
+              <Column
+                header="stage"
+                field="stage"
+                body={sentenceCaseFormatter}
+              />
+              <Column
+                header="More Details"
+                body={(rowData) => (
+                  <div className="flex" key={rowData.id}>
+                    <FaInfoCircle
+                      className="bg-blue-500 text-white rounded cursor-pointer"
+                      size={30}
+                      style={{ marginRight: 4 }}
+                      onClick={() => showDetailsDialog(rowData)}
+                    />
+                  </div>
+                )}
+              ></Column>
+            </DataTable>
+          </div>
         )}
       </Dialog>
 

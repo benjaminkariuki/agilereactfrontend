@@ -51,7 +51,7 @@ const ClosedTasks = () => {
     if (error) {
       toast.current?.show({
         severity: "error",
-        summary: "Error occurred",
+        summary: "Error",
         detail: `${error}`,
         life: 3000,
       });
@@ -107,7 +107,11 @@ const ClosedTasks = () => {
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
       });
   };
 
@@ -135,8 +139,13 @@ const ClosedTasks = () => {
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
-        onError("Error fetching data");
-      });
+
+        if (error.response && error.response.data && error.response.data.error) {
+          onError(error.response.data.error);
+        } else {
+          onError("An unknown error occurred.");
+        }
+            });
   };
 
 

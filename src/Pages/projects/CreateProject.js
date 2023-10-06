@@ -115,10 +115,8 @@ const CreateProject = ({ routeToListProjects }) => {
       .get("https://agile-pm.agilebiz.co.ke/api/allUsersData",config)
       .then((response) => {
         setUsersData(response.data.users);
-        console.log(response.data.users);
       })
       .catch((error) => {
-        console.log("Error fetching users:", error);
       });
   };
 
@@ -153,7 +151,6 @@ const CreateProject = ({ routeToListProjects }) => {
     event.preventDefault();
     const selectedUserIds = selectedUsers.map(user => user.id);
 
-    console.log(projectData);
     const formData = new FormData();
     formData.append("title", projectData.title);
     formData.append("overview", projectData.overview);
@@ -191,7 +188,6 @@ const CreateProject = ({ routeToListProjects }) => {
       })
       .then((response) => {
         onSuccess(response.data.message);
-        console.log(response.data);
         setProjectData({
           title: "",
           overview: "",

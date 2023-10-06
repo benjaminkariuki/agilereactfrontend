@@ -184,8 +184,7 @@ const Users = () => {
   };
 
   const handleUpdateUser = () => {
-    console.log(updatedUser);
-    console.log(selectedUser);
+  
     setUpdateLoading(true);
     const formData = new FormData();
     formData.append("contacts", contact);

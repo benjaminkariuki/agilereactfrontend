@@ -5,15 +5,15 @@ import DevelopmentTasks from "./tasks/DevelopmentTasks";
 import TestingTasks from "./tasks/TestingTasks";
 import ReviewTasks from "./tasks/ReviewTasks";
 import MyTasks from "./tasks/MyTasks";
-import { FaCheck, FaCode, FaBug, FaSearch, FaUser } from "react-icons/fa";
+import { FaCheck, FaCode, FaBug, FaSearch, FaUser, FaHourglassHalf } from "react-icons/fa";
 
 const ManageTasks = () => {
   const [activeComponent, setActiveComponent] = useState("MyTasks");
 
   const menuItems = [
     {
-      label: "My Tasks",
-      icon: <FaUser className="h-5 w-4 mr-2" />,
+      label: "To Do",
+      icon: <FaHourglassHalf className="h-5 w-4 mr-2" />,
       command: () => setActiveComponent("MyTasks"),
       className: activeComponent === "MyTasks" ? "border-2 border-blue-500 rounded" : "",
 

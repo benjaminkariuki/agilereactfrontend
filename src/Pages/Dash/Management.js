@@ -93,12 +93,50 @@ const Management = () => {
     fetchProjectsTasksCountPerSubtask();
   }, []);
 
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ) {
+      // Handle error messages directly under data property
+      return error.response.data.message;
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.error
+    ) {
+      // Handle error structures like {error: "No active sprint found"}
+      return error.response.data.error;
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+};
+
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
       toast.current.show({
         severity: "warn",
         summary: "Error",
-        detail: `${error}`,
+        detail:handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -133,7 +171,6 @@ const Management = () => {
   const fetchSupportProjectsCount = async () => {
     try {
       const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
-      console.log("Token from sessionStorage:", token);
 
       const configs = {
         headers: {
@@ -239,7 +276,6 @@ const Management = () => {
         response.data[0].incompleteSubtasksCount
       );
       setActiveSprintcompleteCountData(response.data[0].completeSubtasksCount);
-      console.log(response.data[0].incompleteSubtasksCount);
 
       if (response.status === 200) {
         setErrorMessage("");
@@ -509,37 +545,31 @@ const Management = () => {
   const showDetailsDialog = () => {
     setShowDetails(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsDialogImplementation = () => {
     setShowDetailsImplementation(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsDialogSupport = () => {
     setShowDetailsSupport(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsArchiveSupport = () => {
     setShowDetailsArchived(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsSprint = () => {
     setShowDetailsActiveSprint(true);
 
-    console.log("View More Open");
   };
 
   const showSubtaskCountAllProjects = () => {
     setShowAllProjectsCount(true);
 
-    console.log("View More Open");
   };
 
   const disableShowDetailsDialog = () => {

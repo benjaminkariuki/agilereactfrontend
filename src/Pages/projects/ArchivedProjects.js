@@ -119,7 +119,6 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       .get( `https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}`,config)
       .then((response) => {
       
-        console.log(response.data.data.data);
       setProjects(response.data.data.data);
       setTotalRecords(response.data.data.total);
       setIsLoading(false);
@@ -145,7 +144,6 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       axios
         .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
-          console.log(response.data.data.data);
           setProjects(response.data.data.data);
           setTotalRecords(response.data.data.total);
           setIsLoading(false);

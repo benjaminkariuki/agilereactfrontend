@@ -28,7 +28,8 @@ import "primereact/resources/primereact.css"; // core css
 import "primeicons/primeicons.css"; // icons
 
 const ProtectedRoute = ({ element, redirectPath }) => {
-  const loggedIn = useSelector((state) => state.user);
+  
+  const loggedIn =  sessionStorage.getItem('token');
 
   return loggedIn ? element : <Navigate to={redirectPath} />;
 };

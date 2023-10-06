@@ -10,11 +10,10 @@ import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-
-
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 
 const MyTasks = () => {
-
   const { userRole, userEmail, userDepartment } = useSelector(
     (state) => state.user
   );
@@ -33,11 +32,14 @@ const MyTasks = () => {
   const [refreshTasks, setRefreshTasks] = useState(false);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
 
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
   const [activeView, setActiveView] = useState("My Tasks");
 
   const Role = userRole; // Replace this with how you get the user's role
-  const normalizedRole = Role.toLowerCase(); 
+  const normalizedRole = Role.toLowerCase();
   const normalizedDepartment = userDepartment.toLowerCase();
 
   const hasPermissionTasksProjects =
@@ -51,9 +53,10 @@ const MyTasks = () => {
     normalizedRole.includes("portfolio manager");
 
   const hasPermissionPushDevelopment =
-    normalizedDepartment.includes("web") ||  normalizedDepartment.includes("infrastructure");
+    normalizedDepartment.includes("web") ||
+    normalizedDepartment.includes("infrastructure");
 
-    const hasPermissionClose = normalizedRole.includes("portfolio manager");
+  const hasPermissionClose = normalizedRole.includes("portfolio manager");
 
   //toast display functions
   const onSuccess = (success) => {
@@ -100,16 +103,84 @@ const MyTasks = () => {
     }
   };
 
+  const customHeader = (
+    <div className="flex justify-between items-center">
+      <div>Subtask Details</div>
+      <InputText
+        style={{ width: "33.3333%", marginRight: "1rem" }}
+        placeholder="Search task by name, department, status or stage...."
+        onInput={(e) =>
+          setFilters({
+            global: {
+              value: e.target.value,
+              matchMode: FilterMatchMode.CONTAINS,
+            },
+          })
+        }
+      />
+    </div>
+  );
+
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(
+      Date.UTC(
+        new Date(rowData.start_date).getFullYear(),
+        new Date(rowData.start_date).getMonth(),
+        new Date(rowData.start_date).getDate()
+      )
+    );
+    const endDate = new Date(
+      Date.UTC(
+        new Date(rowData.end_date).getFullYear(),
+        new Date(rowData.end_date).getMonth(),
+        new Date(rowData.end_date).getDate()
+      )
+    );
+    const closeDate = rowData.close_date
+      ? new Date(
+          Date.UTC(
+            new Date(rowData.close_date).getFullYear(),
+            new Date(rowData.close_date).getMonth(),
+            new Date(rowData.close_date).getDate()
+          )
+        )
+      : null;
+
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+    const daysOverdue =
+      endDate < currentDate && rowData.status !== "complete"
+        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) taken</span>;
+    } else if (daysUntilEnd >= 0) {
+      return (
+        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+      );
+    } else if (daysOverdue) {
+      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+      return <span>Project not started</span>;
+    }
+  };
+
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userEmail, userRole, refreshTasks]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -119,7 +190,7 @@ const MyTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config, 
+        ...config,
       })
       .then((response) => {
         setTasksData(response.data.activeSprint);
@@ -127,7 +198,11 @@ const MyTasks = () => {
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -136,11 +211,11 @@ const MyTasks = () => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -150,19 +225,21 @@ const MyTasks = () => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config, 
+        ...config,
       })
       .then((response) => {
-      
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
         }
-
       });
   };
   // Truncate comments to 5 words
@@ -222,35 +299,36 @@ const MyTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       axios
-        .post("https://agile-pm.agilebiz.co.ke/api/pushToApproval", {
-          taskIds: selectedIds,
-          
-        },config)
+        .post(
+          "https://agile-pm.agilebiz.co.ke/api/pushToApproval",
+          {
+            taskIds: selectedIds,
+          },
+          config
+        )
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
-            fetchMyTasks(userEmail, userRole,userDepartment);
+            fetchMyTasks(userEmail, userRole, userDepartment);
             setPushLoading(false);
           }, 1000);
           setViewMore(false);
         })
         .catch((error) => {
-          console.log(error.response.data);
           setPushLoading(false);
         });
     } else {
       onWarn("Select atleast one task");
     }
   };
-
 
   const showDetailsDialog = (rowData) => {
     setShowDetails(true);
@@ -259,7 +337,6 @@ const MyTasks = () => {
 
   const showSubtaskMore = (rowData) => {
     setViewMore(true);
-    console.log(rowData);
     setProjectSubtasks(rowData);
   };
 
@@ -271,7 +348,6 @@ const MyTasks = () => {
   const showDelegateDialog = (data) => {
     setShowDelegate(true);
     setProjectInfo(data);
-    console.log(data);
   };
 
   const disableShowDelegateDialog = () => {
@@ -307,18 +383,21 @@ const MyTasks = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       axios
-        .post("https://agile-pm.agilebiz.co.ke/api/pushToDevelopment", {
-          taskIds: selectedIds,
-          
-        },config)
+        .post(
+          "https://agile-pm.agilebiz.co.ke/api/pushToDevelopment",
+          {
+            taskIds: selectedIds,
+          },
+          config
+        )
         .then((response) => {
           setTimeout(() => {
             onSuccess(response.data.message);
@@ -328,7 +407,6 @@ const MyTasks = () => {
           setViewMore(false);
         })
         .catch((error) => {
-          console.log(error.response.data);
           setPushLoading(false);
         });
     } else {
@@ -339,64 +417,61 @@ const MyTasks = () => {
     <div>
       <Toast ref={toast} />
 
-      <h1> My task</h1>
+      <h1>To Do</h1>
 
       <div className="flex justify-between p-4 space-x-0.5 items-center">
-    {/* Buttons on the left */}
-    <div className="flex space-x-0.5">
-    <button
-          onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md ${
-            activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
-          } transition-colors`}
-        >
-          My Tasks
-        </button>
-
-
-        {hasPermissionTasksProjects && (
+        {/* Buttons on the left */}
+        <div className="flex space-x-0.5">
           <button
-            onClick={() => {
-              setActiveView("Other Tasks");
-              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-
-            }}
+            onClick={() => setActiveView("My Tasks")}
             className={`p-2 rounded-md ${
-              activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
           >
-            Other Tasks
+            My Tasks
           </button>
-        )}
-      </div>
 
-    {/* Sprint name on the right */}
-    <p 
-    className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto"
-    onMouseEnter={() => setShowSprintPopUp(true)}
-    onMouseLeave={() => setShowSprintPopUp(false)}
->
-    <span className="font-semibold">Sprint name:</span>
-    {_.startCase(tasksData.name)}
-    {showSprintPopup && (
-        <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
-            <p className="text-gray-600">
+          {hasPermissionTasksProjects && (
+            <button
+              onClick={() => {
+                setActiveView("Other Tasks");
+                fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+              }}
+              className={`p-2 rounded-md ${
+                activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              } transition-colors`}
+            >
+              Other Tasks
+            </button>
+          )}
+        </div>
+
+        {/* Sprint name on the right */}
+        <p
+          className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
+          onMouseEnter={() => setShowSprintPopUp(true)}
+          onMouseLeave={() => setShowSprintPopUp(false)}
+        >
+          <span className="font-semibold">Sprint name:</span>
+          {_.startCase(tasksData.name)}
+          {showSprintPopup && (
+            <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+              <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{" "}
                 {_.startCase(tasksData.status)}
-            </p>
-            <p className="text-gray-600">
+              </p>
+              <p className="text-gray-600">
                 <span className="font-semibold">Start Date:</span>
                 {tasksData.start_date}
-            </p>
-            <p className="text-gray-600">
+              </p>
+              <p className="text-gray-600">
                 <span className="font-semibold">End Date:</span>
                 {tasksData.end_date}
-            </p>
-        </div>
-    )}
-</p>
-
-</div>
+              </p>
+            </div>
+          )}
+        </p>
+      </div>
 
       {/* My Tasks section */}
       {activeView === "My Tasks" && (
@@ -518,15 +593,16 @@ const MyTasks = () => {
 
       <div>
         <Dialog
-          header="Subtasks"
+          header={customHeader}
           visible={viewMore}
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
-          footer=
-          {
+          footer={
             <>
               {hasPermissionPushDevelopment && (
-                <div className="mr-2 inline-block"> {/* Added inline-block and margin to have them side by side */}
+                <div className="mr-2 inline-block">
+                  {" "}
+                  {/* Added inline-block and margin to have them side by side */}
                   <button
                     className="px-4 py-2 bg-green-500 text-white rounded-md"
                     onClick={pushToTesting}
@@ -543,32 +619,31 @@ const MyTasks = () => {
                   </button>
                 </div>
               )}
-          
-              {hasPermissionClose && (   // Assuming the variable for the new button's visibility is called 'hasPermissionClose'
+
+              {hasPermissionClose && ( // Assuming the variable for the new button's visibility is called 'hasPermissionClose'
                 <button
-                className="px-4 py-2 bg-red-500 text-white rounded-md"
-                onClick={openConfirmDialog}
-                disabled={pushLoading} // Disable the button while loading
-              >
-                {pushLoading ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                ) : (
-                  "Close the task (s)"
-                )}
-              </button>
+                  className="px-4 py-2 bg-red-500 text-white rounded-md"
+                  onClick={openConfirmDialog}
+                  disabled={pushLoading} // Disable the button while loading
+                >
+                  {pushLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Close the task (s)"
+                  )}
+                </button>
               )}
             </>
           }
-          
-          
         >
           <DataTable
             value={projectSubtasks}
             className="border rounded-md p-4 bg-white"
             removableSort
+            filters={filters}
             selectionMode="checkbox"
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
@@ -578,7 +653,7 @@ const MyTasks = () => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
             ></Column>
-            
+
             <Column
               field="task"
               header="Task"
@@ -588,16 +663,25 @@ const MyTasks = () => {
               }}
             ></Column>
 
-            <Column
+            {/* <Column
               field="description"
               header="Description"
               body={sentenceCaseFormatter}
-            ></Column>
+            ></Column> */}
             <Column
               field="department"
               header="Department"
               body={sentenceCaseFormatter}
             ></Column>
+            <Column field="start_date" header="Start Date" />
+            <Column field="end_date" header="End Date" />
+            <Column
+              field="close_date"
+              header="Completion Date"
+              sortable
+            ></Column>
+
+            <Column header="Duration" body={durationTemplate}></Column>
             <Column
               field="status"
               header="Status"
@@ -608,8 +692,7 @@ const MyTasks = () => {
               field="stage"
               body={sentenceCaseFormatter}
             />
-            <Column field="start_date" header="Start Date" />
-            <Column field="end_date" header="End Date" />
+
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
             <Column
@@ -645,6 +728,21 @@ const MyTasks = () => {
                 <span className="font-semibold">Task:</span>{" "}
                 {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
               </p>
+
+              {moreDetailsData && moreDetailsData.phase && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase.name)}
+                </p>
+              )}
+
+              {moreDetailsData && moreDetailsData.phase_activity && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase_activity.name)}
+                </p>
+              )}
+
               <p className="text-gray-600">
                 <span className="font-semibold">Description:</span>{" "}
                 {_.startCase(

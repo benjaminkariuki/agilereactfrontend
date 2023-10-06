@@ -93,7 +93,6 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     axios
       .get(`https://agile-pm.agilebiz.co.ke/api/allProjects?page=${page + 1}`,config)
       .then((response) => {
-        console.log(response.data.data.data);
         setProjects(response.data.data.data);
         setTotalRecords(response.data.data.total);
         setIsLoading(false);
@@ -124,7 +123,6 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
           config
         )
         .then((response) => {
-          console.log(response.data.data.data);
           setProjects(response.data.data.data);
           setTotalRecords(response.data.data.total);
           setIsLoading(false);
@@ -162,7 +160,6 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         fetchProjects();
       } else {
         // Handle other status codes if needed
-        console.log("Failed to archive project:", response.data.message);
         setDeleteStatus(response.data.message);
       }
     } catch (error) {

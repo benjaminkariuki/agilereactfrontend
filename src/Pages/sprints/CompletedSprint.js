@@ -23,7 +23,7 @@ const CompletedSprints = () => {
   const onError = (error) => {
     toast.current.show({
       severity: "error",
-      summary: "An Error encountered",
+      summary: "Error",
       detail: `${error}`,
       life: 3000,
     });
@@ -65,7 +65,7 @@ const CompletedSprints = () => {
       .get(`https://agile-pm.agilebiz.co.ke/api/closedSprintById/${id}`,config)
       .then((response) => {
         setData(response.data);
-        onSuccess("message found successfully");
+      //  onSuccess("message found successfully");
         setTimeout(() => {
           setViewMoreActive(true);
         }, 1000);

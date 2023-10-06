@@ -1,28 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 // Create the createUser asynchronous action
+const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
 
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    loggedIn: false,
-    userId: null,
-    baseUrl: "",
-    userFName: "",
-    userLName: "",
-    userEmail: "",
-    userContacts: "",
-    userRole: "",
-    userDepartment:"",
-    userProfilePhoto: "",
-    userActivities: [],
+     loggedIn: storedUser ? true : false,
+
+
+    userId: storedUser.id || null,
+    userFName: storedUser.firstName || "",
+    userLName: storedUser.lastName || "",
+    userEmail: storedUser.email || "",
+    userContacts: storedUser.contacts || "",
+    userDepartment: storedUser.department || "",
+    userRole: storedUser.roleName || "",
+    userProfilePhoto: storedUser.profile_pic || "",
+    userActivities: storedUser.activities || [],
     users: [],
     error: null,
   },
   reducers: {
     login: (state, action) => {
-      state.loggedIn = true;
-      
+     state.loggedIn = true;
       state.userId = action.payload.id;
       state.userFName = action.payload.firstName;
       state.userLName = action.payload.lastName;
@@ -34,7 +35,7 @@ const userSlice = createSlice({
       state.userActivities = action.payload.activities;
     },
     logout: (state) => {
-      state.loggedIn = false;
+     state.loggedIn = false;
       state.userFName = "";
       state.userLName = "";
       state.userEmail = "";
@@ -48,7 +49,7 @@ const userSlice = createSlice({
       sessionStorage.removeItem("token");
     },
     updateUser: (state, action) => {
-      state.loggedIn = true;
+       state.loggedIn = true;
       state.userId = action.payload.id;
       state.userFName = action.payload.firstName;
       state.userLName = action.payload.lastName;

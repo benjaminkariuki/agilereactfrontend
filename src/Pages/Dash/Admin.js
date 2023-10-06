@@ -36,16 +36,56 @@ const Admin = () => {
     });
   }, []); // The empty dependency array ensures the effect runs once after the component mounts.
 
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ) {
+      // Handle error messages directly under data property
+      return error.response.data.message;
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.error
+    ) {
+      // Handle error structures like {error: "No active sprint found"}
+      return error.response.data.error;
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+};
+
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
       toast.current.show({
         severity: "warn",
         summary: "Error",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
   };
+
+
 
   const fetchUsersCount = async () => {
     try {
@@ -139,7 +179,6 @@ const Admin = () => {
         "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCountPerUser",
         config
       );
-      console.log(response.data.departments);
       const fetcheddepartmentcountperUser = response.data.departments;
       setChartDataFromAPi(fetcheddepartmentcountperUser);
 
@@ -167,7 +206,6 @@ const Admin = () => {
         "https://agile-pm.agilebiz.co.ke/api/allRolesCountPerUser",
         config
       );
-      console.log(response.data.roles);
       const fetchedrolescountperUser = response.data.roles;
       setChartDataFromRolesAPi(fetchedrolescountperUser);
 

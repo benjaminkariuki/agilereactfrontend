@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Chart } from "primereact/chart";
-import {  confirmDialog } from "primereact/confirmdialog";
+import { confirmDialog } from "primereact/confirmdialog";
 import Subtasks from "./Subtasks";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
@@ -14,6 +14,7 @@ const ActiveSprint = () => {
   const [summary, setSummary] = useState("");
   const [viewSummaryDialogue, setViewSummaryDialogue] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const confirmClose = () => {
     confirmDialog({
@@ -48,7 +49,6 @@ const ActiveSprint = () => {
         life: 3000,
       });
     }
-
   };
 
   const onError = (error) => {
@@ -73,31 +73,24 @@ const ActiveSprint = () => {
     }
   };
 
-  
-  
   useEffect(() => {
     fetchActiveSprint();
   }, []);
 
   const fetchActiveSprint = () => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-  
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/activeSprint",config)
+      .get("https://agile-pm.agilebiz.co.ke/api/activeSprint", config)
       .then((response) => {
         setData(response.data);
-       
       })
-      .catch((error) => {
-      
-        console.log(error.response.data.error);
-      });
+      .catch((error) => {});
   };
 
   //getting total number of completed tasks pushed to the sprint
@@ -192,17 +185,21 @@ const ActiveSprint = () => {
   //function to close sprint
   const handleCloseSprint = (id) => {
     setCloseLoading(true);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .post(`https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`, {
-        summary,
-      },config)
+      .post(
+        `https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`,
+        {
+          summary,
+        },
+        config
+      )
       .then((response) => {
         onSuccess("Closed successfuly");
         setCloseLoading(true);
@@ -211,6 +208,12 @@ const ActiveSprint = () => {
         onError("Error closing sprint");
         setCloseLoading(true);
       });
+  };
+
+  const calculateDuration = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1; // '+ 1' to make the calculation inclusive
   };
 
   return (
@@ -222,10 +225,30 @@ const ActiveSprint = () => {
             <h1 className="text-2xl font-bold mb-4 text-center">
               <strong>Active Sprint: </strong>
             </h1>
-            <div className="flex justify-between mb-2">
+            <div className="flex justify-between mb-2 relative">
               <h2 className="text-1xl font-bold mb-4 text-center">
-                <strong>{data.name}</strong>
+                <span
+                  className="hover:text-gray-600 cursor-pointer relative"
+                  onMouseEnter={() => setShowPopup(true)}
+                  onMouseLeave={() => setShowPopup(false)}
+                >
+                  <strong>{data.name}</strong>
+                </span>
+
+                {/* Hidden div for hover popup */}
+                <div
+                  className={`absolute left-0 mt-2 bg-white p-2 border rounded shadow-lg ${
+                    showPopup ? "block" : "hidden"
+                  }`}
+                  style={{ zIndex: 1 }}
+                >
+                  <div>Start Date: {data.start_date}</div>
+                  <div>End Date: {data.end_date}</div>
+                  <div>Duration: {calculateDuration(data.start_date, data.end_date)} day(s)</div>
+
+                </div>
               </h2>
+
               <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 onClick={() => handleConfirmOpen()}
@@ -234,6 +257,7 @@ const ActiveSprint = () => {
                 Close
               </button>
             </div>
+
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
               <div className="h-25vw rounded-lg shadow-md border p-2 bg-white">
                 <Chart

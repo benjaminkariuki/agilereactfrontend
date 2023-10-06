@@ -102,7 +102,6 @@ const InActiveSprint = () => {
       }
     } catch (error) {
       onError("Error deleting sprint:", error);
-      console.log(error);
     } finally {
       setLoadingStates((prev) => ({ ...prev, [id]: false }));
     }

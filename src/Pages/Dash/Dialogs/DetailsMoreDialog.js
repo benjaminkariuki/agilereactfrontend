@@ -78,7 +78,6 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
           const projectinfo = transformData(response.data);
           setProjectData(projectinfo);
           setIsLoading(false);
-          console.log(projectData);
         })
         .catch((error) => {
           // Handle any errors here

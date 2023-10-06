@@ -277,7 +277,6 @@ const EditProfile = () => {
         sessionStorage.setItem("user", JSON.stringify(user));
       })
       .catch((error) => {
-        console.log("Error deleting photo:", error);
       });
   };
 

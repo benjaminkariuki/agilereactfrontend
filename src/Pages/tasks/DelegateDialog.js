@@ -93,7 +93,6 @@ const handleErrorMessage = (error) => {
           const projectData = response.data.data;
           setProjectData(projectData);
           setIsLoading(false);
-          console.log(projectData);
         })
         .catch((error) => {
           // Handle any errors here
@@ -152,7 +151,6 @@ const handleErrorMessage = (error) => {
         // Handle success here
         onSuccessRequest("Task delegated successfully");
         setIsSubmitting(false);
-        console.log("Task delegated successfully");
         onSuccess();
       } else {
         // Handle other status codes here if needed

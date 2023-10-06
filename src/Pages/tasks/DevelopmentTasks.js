@@ -9,6 +9,8 @@ import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
+import { InputText } from 'primereact/inputtext';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 
 const DevelopmentTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -29,9 +31,16 @@ const DevelopmentTasks = () => {
   const [projectInfo, setProjectInfo] = useState(null);
   const [refreshTasks, setRefreshTasks] = useState(false);
   const [flattenedLogs, setFlattenedLogs] = useState([]);
+  const [showSprintPopup, setShowSprintPopUp] = useState(false);
+
 
   const [activeView, setActiveView] = useState("My Tasks");
   const [returnedTaskLogs, setReturnedTaskLogs] = useState([]);
+  const [filters,setFilters] = useState({
+    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
+  })
+
+  
 
   const Role = userRole; // Replace this with how you get the user's role
   const normalizedRole = Role.toLowerCase();
@@ -94,6 +103,58 @@ const DevelopmentTasks = () => {
       });
     }
   };
+
+  const customHeader = (
+    <div className="flex justify-between items-center">
+        <div>Subtask Details</div>
+        <InputText
+               style={{ width: "33.3333%", marginRight: "1rem" }}
+
+            placeholder="Search task by name, department, status or stage...."
+            onInput={(e) =>
+                setFilters({
+                    global: {
+                        value: e.target.value,
+                        matchMode: FilterMatchMode.CONTAINS,
+                    },
+                })
+            }
+        />
+    </div>
+);
+
+const durationTemplate = (rowData) => {
+  const currentDate = new Date();
+  const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
+  const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
+  const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
+
+  const daysUntilEnd = Math.floor(
+    (endDate - currentDate) / (1000 * 60 * 60 * 24)
+  );
+  const totalDurationIfClosed = closeDate
+    ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+    : null;
+  const daysOverdue = endDate < currentDate && rowData.status !== "complete"
+    ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+    : null;
+
+  if (rowData.status === "complete" && closeDate) {
+    return <span>{totalDurationIfClosed} day(s) </span>;
+  } else if (daysUntilEnd >= 0) {
+    return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
+  } else if (daysOverdue) {
+    return (
+      <span style={{ color: "red" }}>
+        {daysOverdue} day(s) overdue
+      </span>
+    );
+  } else {
+    return <span>Project not started</span>;
+  }
+};
+
+
 
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
@@ -177,10 +238,8 @@ const DevelopmentTasks = () => {
       })
       .then((response) => {
         setReturnedTaskLogs(response.data);
-        console.log(response.data);
         const logs = response.data.user_tasks.flatMap((task) => task.task_logs);
         setFlattenedLogs(logs);
-        console.log(logs);
       })
       .catch((error) => {
         if (error.response && error.response.data && error.response.data.error) {
@@ -273,7 +332,6 @@ const DevelopmentTasks = () => {
 
   const showSubtaskMore = (rowData) => {
     setViewMore(true);
-    console.log(rowData);
     setProjectSubtasks(rowData);
   };
 
@@ -285,7 +343,6 @@ const DevelopmentTasks = () => {
   const showDelegateDialog = (data) => {
     setShowDelegate(true);
     setProjectInfo(data);
-    console.log(data);
   };
 
   const disableShowDelegateDialog = () => {
@@ -330,7 +387,6 @@ const DevelopmentTasks = () => {
           setViewMore(false);
         })
         .catch((error) => {
-          console.log(error.response.data);
           setPushLoading(false);
         });
     } else {
@@ -343,62 +399,74 @@ const DevelopmentTasks = () => {
       <Toast ref={toast} />
       <h1> Development task(s)</h1>
 
-      <div className="flex p-4 space-x-0.5">
-        <button
-          onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md ${
-            activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
-          } transition-colors`}
-        >
-          My Tasks
-        </button>
-        {hasPermissionTasksProjects && (
+      <div className="flex justify-between p-4 space-x-0.5 items-center">
+        <div className="flex space-x-0.5">
           <button
-            onClick={() => {
-              setActiveView("Other Tasks");
-              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-            }}
+            onClick={() => setActiveView("My Tasks")}
             className={`p-2 rounded-md ${
-              activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
           >
-            Other Tasks
+            My Tasks
           </button>
-        )}
 
-        <button
-          onClick={() => {
-            setActiveView("Returned task history");
-            fetchReturnedTaskLogs();
-          }}
-          className={`p-2 rounded-md ${
-            activeView === "Returned task history"
-              ? "bg-blue-500"
-              : "bg-gray-400"
-          } transition-colors`}
+          {hasPermissionTasksProjects && (
+            <button
+              onClick={() => {
+                setActiveView("Other Tasks");
+                fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+              }}
+              className={`p-2 rounded-md ${
+                activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              } transition-colors`}
+            >
+              Other Tasks
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              setActiveView("Returned task history");
+              fetchReturnedTaskLogs();
+            }}
+            className={`p-2 rounded-md ${
+              activeView === "Returned task history"
+                ? "bg-blue-500"
+                : "bg-gray-400"
+            } transition-colors`}
+          > 
+            Returned task(s) history
+          </button>
+        </div>
+
+        {/* Sprint name on the right */}
+        <p
+          className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
+          onMouseEnter={() => setShowSprintPopUp(true)}
+          onMouseLeave={() => setShowSprintPopUp(false)}
         >
-          Returned task(s) history
-        </button>
-      </div>
-
-      <div className="mb-4 border bg-white rounded-lg shadow-lg p-4 mt-3">
-        <p className="text-gray-600">
           <span className="font-semibold">Sprint name:</span>
           {_.startCase(tasksData.name)}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-semibold">Status:</span>{" "}
-          {_.startCase(tasksData.status)}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-semibold">Start Date:</span>
-          {tasksData.start_date}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-semibold">End Date:</span>
-          {tasksData.end_date}
+          {showSprintPopup && (
+            <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+              <p className="text-gray-600">
+                <span className="font-semibold">Status:</span>{" "}
+                {_.startCase(tasksData.status)}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Start Date:</span>
+                {tasksData.start_date}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">End Date:</span>
+                {tasksData.end_date}
+              </p>
+            </div>
+          )}
         </p>
       </div>
+
+     
 
       {/* My Tasks section */}
       {activeView === "My Tasks" && (
@@ -523,7 +591,9 @@ const DevelopmentTasks = () => {
         <div>
           {flattenedLogs.length > 0 ? (
             <DataTable
-              value={flattenedLogs}
+            header={customHeader}
+            filters={filters}
+ value={flattenedLogs}
               className="border rounded-md p-4 bg-white"
             >
               <Column
@@ -534,7 +604,7 @@ const DevelopmentTasks = () => {
                   return `${columnProps.rowIndex + 1}. ${task}`;
                 }}
               ></Column>
-            
+
               <Column
                 field="description"
                 header="Description"
@@ -555,6 +625,7 @@ const DevelopmentTasks = () => {
               ></Column> */}
               <Column
                 header="Time Stamp"
+               
                 body={(rowData) => `${rowData.date} ${rowData.time}`}
               ></Column>
               <Column field="count" header="Times Returned"></Column>
@@ -596,7 +667,7 @@ const DevelopmentTasks = () => {
 
       <div>
         <Dialog
-          header="Subtasks"
+          header={customHeader}
           visible={viewMore}
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
@@ -626,6 +697,7 @@ const DevelopmentTasks = () => {
             className="border rounded-md p-4 bg-white"
             removableSort
             selectionMode="checkbox"
+            filters={filters}
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
@@ -642,16 +714,25 @@ const DevelopmentTasks = () => {
                 return `${columnProps.rowIndex + 1}. ${task}`;
               }}
             ></Column>
-            <Column
+            {/* <Column
               field="description"
               header="Description"
               body={sentenceCaseFormatter}
-            ></Column>
+            ></Column> */}
             <Column
               field="department"
               header="Department"
               body={sentenceCaseFormatter}
             ></Column>
+            <Column field="start_date" header="Start Date" />
+            <Column field="end_date" header="End Date" />
+            <Column
+                field="close_date"
+                header="Completion Date"
+                sortable
+              ></Column>
+
+              <Column header="Duration" body={durationTemplate}></Column>
             <Column
               field="status"
               header="Status"
@@ -662,8 +743,7 @@ const DevelopmentTasks = () => {
               field="stage"
               body={sentenceCaseFormatter}
             />
-            <Column field="start_date" header="Start Date" />
-            <Column field="end_date" header="End Date" />
+            
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
             <Column

@@ -247,7 +247,6 @@ const Teams = ({ onClose, labels }) => {
 
       setData(response.data);
 
-      console.log(response.data);
 
       if (response.status === 200) {
         setIsLoadingProjectsUserCount(false);

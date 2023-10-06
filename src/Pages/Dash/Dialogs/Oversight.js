@@ -226,7 +226,6 @@ const Oversight = ({ onClose }) => {
         response.data[0].incompleteSubtasksCount
       );
       setActiveSprintcompleteCountData(response.data[0].completeSubtasksCount);
-      console.log(response.data[0].incompleteSubtasksCount);
 
       if (response.status === 200) {
         setErrorMessage("");
@@ -397,37 +396,31 @@ const Oversight = ({ onClose }) => {
   const showDetailsDialog = () => {
     setShowDetails(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsDialogImplementation = () => {
     setShowDetailsImplementation(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsDialogSupport = () => {
     setShowDetailsSupport(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsArchiveSupport = () => {
     setShowDetailsArchived(true);
 
-    console.log("View More Open");
   };
 
   const showDetailsSprint = () => {
     setShowDetailsActiveSprint(true);
 
-    console.log("View More Open");
   };
 
   const showSubtaskCountAllProjects = () => {
     setShowAllProjectsCount(true);
 
-    console.log("View More Open");
   };
 
   const disableShowDetailsDialog = () => {

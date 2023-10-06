@@ -160,7 +160,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         setUsersData(response.data.users);
       })
       .catch((error) => {
-        console.log("Error getting users:", error);
       });
   };
 
@@ -202,7 +201,6 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         setSelectedUsersArray(organizationIds);
       })
       .catch((error) => {
-        console.log("Error fetching project details:", error);
         onError(error);
       });
   };

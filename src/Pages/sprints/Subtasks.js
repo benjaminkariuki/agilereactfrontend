@@ -65,29 +65,37 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
 
   const durationTemplate = (rowData) => {
     const currentDate = new Date();
-    const startDate = new Date(rowData.start_date);
-    const endDate = new Date(rowData.end_date);
-    const closeDate = rowData.close_date ? new Date(rowData.close_date) : null;
-
+    const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
+    const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
+    const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
+  
     const daysUntilEnd = Math.floor(
       (endDate - currentDate) / (1000 * 60 * 60 * 24)
     );
     const totalDurationIfClosed = closeDate
       ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
       : null;
-
+    const daysOverdue = endDate < currentDate && rowData.status !== "complete"
+      ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+      : null;
+  
     if (rowData.status === "complete" && closeDate) {
-      return <span>{totalDurationIfClosed} day(s) to complete</span>;
+      return <span>{totalDurationIfClosed} day(s) </span>;
     } else if (daysUntilEnd >= 0) {
-      return <span style={{ color: "green" }}>{daysUntilEnd} day(s)</span>;
-    } else {
+      return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
+    } else if (daysOverdue) {
       return (
         <span style={{ color: "red" }}>
-          {Math.abs(daysUntilEnd)} day(s) overdue
+          {daysOverdue} day(s) overdue
         </span>
       );
+    } else {
+      return <span>Project not started</span>;
     }
   };
+  
+
+
 
   const customHeader = (
     <div className="flex justify-between items-center">
@@ -125,7 +133,6 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const showDetailsDialog = (rowData) => {
     setShowDetails(true);
     setMoreDetailsData(rowData);
-    console.log(rowData);
   };
 
   const sentenceCaseFormatter = (rowData, column) => {

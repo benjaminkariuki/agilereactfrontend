@@ -71,7 +71,6 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
           setTotalRecords(response.data.projectTitles.total);
           setProjectData(projectinfo);
           setIsLoading(false);
-          console.log(projectData);
         })
         .catch((error) => {
           // Handle any errors here

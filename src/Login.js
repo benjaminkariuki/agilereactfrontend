@@ -49,7 +49,7 @@ const LoginForm = () => {
       setIsPending(false);
       
       sessionStorage.setItem('token', response.data.user.token);
-      console.log(response.data.user.token);
+     
       
       sessionStorage.setItem("user", JSON.stringify(loguser));
       onLoginSuccess(response.data.message);

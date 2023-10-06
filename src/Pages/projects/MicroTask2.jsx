@@ -383,11 +383,8 @@ const MicroTask = ({
         fetchSubtasks(projectId, phaseId, activityId);
       })
       .catch((error) => {
-        if (error.response.status === 422) {
-          onError(error.response.data.message);
-        } else {
-          onError(error.response.message);
-        }
+          onErrorF(error);
+      
       });
   };
 
@@ -412,7 +409,6 @@ const MicroTask = ({
         )
         .then((response) => {
           set_IsLoading(false);
-          console.log(response.data.data.data);
           setSubtasks(response.data.data.data);
           setTotalRecords(response.data.data.total);
         })
@@ -446,7 +442,6 @@ const MicroTask = ({
       .then((response) => {
         set_IsLoading(false);
         setSubtasks(response.data.data.data);
-        console.log(response.data.data.data);
         setTotalRecords(response.data.data.total);
         // onSuccess("Successfully fetched Micro tasks");
       })
@@ -485,11 +480,9 @@ const MicroTask = ({
         setIsViewModalOpen(false);
       })
       .catch((error) => {
-        if (error.response.status === 400) {
-          onError(error.response.data.error);
-        } else {
-          onError(error.response.message);
-        }
+
+          onErrorF(error);
+
         setPushLoading(false);
       });
   };
@@ -545,7 +538,7 @@ const MicroTask = ({
         fetchSubtasks(projectId, phaseId, activityId);
       })
       .catch((error) => {
-        onError(error.response.data.message);
+        onErrorF(error);
         setTaskCreate(false);
       });
   };
@@ -737,7 +730,7 @@ const MicroTask = ({
         });
       })
       .catch((error) => {
-        onError("Error updating task details.");
+        onErrorF(error);
         setEditLoading(false);
       });
   };

@@ -47,7 +47,6 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
         // Handle the search results here
         const sprints = response.data;
         setIsLoading(false);
-        console.log(sprints);
         setSearchResults(sprints);
       })
       .catch((error) => {

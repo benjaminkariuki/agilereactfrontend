@@ -73,7 +73,6 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
 
           setProjectData(projectinfo);
           setIsLoading(false);
-          console.log(projectData);
         })
         .catch((error) => {
           // Handle any errors here

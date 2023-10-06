@@ -24,8 +24,8 @@ const CreateSprint = ({ rerouting }) => {
   const onError = (error) => {
     toast.current.show({
       severity: "error",
-      summary: "An Error encountered",
-      detail: `${error}`,
+      summary: "Error",
+      detail: handleErrorMessage(error),
       life: 3000,
     });
   };
@@ -45,6 +45,37 @@ const CreateSprint = ({ rerouting }) => {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
+
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ) {
+      // Handle error messages directly under data property
+      return error.response.data.message;
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+  };
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -76,17 +107,8 @@ const CreateSprint = ({ rerouting }) => {
         setCreating(false);
       }
     } catch (error) {
-      if (error && error.response && error.response.data) {
-        if (error.response.data.message) {
-          onError(error.response.data.message);
-        }
 
-        if (error.response.data.errors) {
-          setValidError(error.response.data.errors);
-        }
-      } else {
-        onError("An unexpected error has occurred");
-      }
+          onError(error);
       setCreating(false);
     }
   };

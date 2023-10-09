@@ -46,6 +46,29 @@ const CreateUser = () => {
     "Sales",
   ]);
 
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+      ? error.response.data.message
+      : "An unexpected error occurred.";
+  };
+
+
   const onSuccessCreate = (success) => {
     if (success) {
       toast.current.show({
@@ -62,7 +85,7 @@ const CreateUser = () => {
       toast.current.show({
         severity: "warn",
         summary: "Error creating user",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -164,8 +187,8 @@ const CreateUser = () => {
       .catch((error) => {
         setLoading(false);
         
-        onCreatingUser("Error creating users");
-        onCreatingUserInfo(error.message);
+        onCreatingUser(error);
+       
        
       });
   };

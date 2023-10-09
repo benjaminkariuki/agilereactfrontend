@@ -15,7 +15,8 @@ import PhoneInput from 'react-phone-number-input';
 const EditProfile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  useEffect(() => {});
+  
+  
   const {
     userId,
     userRole,
@@ -161,15 +162,14 @@ const EditProfile = () => {
       .then((response) => {
         setIsLoading(false);
         onSuccess(response.data.message);
-        const { user } = response.data;
+        const  user = response.data.user;
         if (response.status === 401) {
           navigate('/');
         }
+        
         dispatch(updateUser(user));
         // Update session storage with the new user data
         sessionStorage.setItem("user", JSON.stringify(user));
-        
-        setTimeout(() => {
           setIsLoading(false);
           setIsEditing(false);
           setFirstName("");
@@ -177,8 +177,7 @@ const EditProfile = () => {
           setcontact("");
           setPreviewImage();
           setPhoto("");
-          setcontact();
-        }, 1000);
+      
       })
       .catch((error) => {
         setIsLoading(false);
@@ -260,7 +259,7 @@ const EditProfile = () => {
   };
 
   const handleCloseEdit = () => {
-    setIsEditing(!isEditing);
+    setIsEditing(false);
     setFirstName("");
     setLastName("");
     setcontact("");

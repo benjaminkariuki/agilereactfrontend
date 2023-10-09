@@ -3,19 +3,34 @@ import { Toast } from "primereact/toast";
 import axios from "axios";
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+
 
 const CreateUser = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [contact, setcontact] = useState();
+  const navigate = useNavigate();
+
 
   const [role_id, setRole] = useState("");
   const [selelctedDepartment, setSelelctedDepartment] = useState(""); // New department state
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
-  
+  const { userActivities } = useSelector((state) => state.user);
+
+  const createActivity = userActivities.find(
+    (activity) => activity.name === "Create-User"
+  );
+  const hasReadPermissionCreateUser =
+  createActivity.pivot.permissions.includes("read");
+
+  const hasWritePermissionCreateUser =
+  createActivity.pivot.permissions.includes("write");
 
   const [departments] = useState([
     "Management",
@@ -43,7 +58,7 @@ const CreateUser = () => {
   };
 
   const onCreatingUser = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error creating user",
@@ -54,7 +69,7 @@ const CreateUser = () => {
   };
 
   const onFetchingRoles = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error fetching roles",
@@ -63,7 +78,7 @@ const CreateUser = () => {
       });
     }
   };
-
+ 
   const onCreatingUserInfo = (error) => {
     if (error) {
       toast.current.show({
@@ -96,9 +111,15 @@ const CreateUser = () => {
           headers: config.headers 
         }
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const data = await response.json();
       setRoles(data.roles);
     } catch (error) {
+      
       onFetchingRoles("Can't fetch roles, contact the admin");
     }
   };
@@ -128,6 +149,10 @@ const CreateUser = () => {
           onSuccessCreate(response.data.message);
         }
 
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setLoading(false);
         setFirstName("");
         setLastName("");
@@ -137,9 +162,11 @@ const CreateUser = () => {
         setSelelctedDepartment("");
       })
       .catch((error) => {
+        setLoading(false);
+        
         onCreatingUser("Error creating users");
         onCreatingUserInfo(error.message);
-        setLoading(false);
+       
       });
   };
 
@@ -281,7 +308,8 @@ const CreateUser = () => {
           </div>
 
           <div className="flex items-center justify-center">
-            <button
+           
+           {hasWritePermissionCreateUser && ( <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               type="submit"
               disabled={loading} // Disable button while loading
@@ -294,7 +322,8 @@ const CreateUser = () => {
               ) : (
                 "Create Account"
               )}
-            </button>
+            </button>)}
+
           </div>
         </form>
       </div>

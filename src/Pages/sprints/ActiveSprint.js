@@ -6,6 +6,10 @@ import Subtasks from "./Subtasks";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import _ from "lodash";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+
 
 const ActiveSprint = () => {
   const [data, setData] = useState(null);
@@ -15,6 +19,27 @@ const ActiveSprint = () => {
   const [viewSummaryDialogue, setViewSummaryDialogue] = useState(false);
   const [visible, setVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
+  //getting the permission for Sprints
+const sprintsActivity = userActivities.find(
+  (activity) => activity.name === "Sprints"
+);
+
+//read permission
+const hasReadPermissionSprints = sprintsActivity
+  ? sprintsActivity.pivot.permissions.includes("read")
+  : false;
+
+//write permissions
+const hasWritePermissionSprints = sprintsActivity
+  ? sprintsActivity.pivot.permissions.includes("write")
+  : false;
+
+
+
 
   const confirmClose = () => {
     confirmDialog({
@@ -52,7 +77,7 @@ const ActiveSprint = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -90,7 +115,11 @@ const ActiveSprint = () => {
       .then((response) => {
         setData(response.data);
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        }
+      });
   };
 
   //getting total number of completed tasks pushed to the sprint
@@ -205,8 +234,13 @@ const ActiveSprint = () => {
         setCloseLoading(true);
       })
       .catch((error) => {
-        onError("Error closing sprint");
         setCloseLoading(true);
+
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        }
+        
+        onError("Error closing sprint");
       });
   };
 
@@ -249,13 +283,15 @@ const ActiveSprint = () => {
                 </div>
               </h2>
 
-              <button
+            {hasWritePermissionSprints && ( <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 onClick={() => handleConfirmOpen()}
                 disabled={closeLoading}
               >
                 Close
               </button>
+            )}
+            
             </div>
 
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">

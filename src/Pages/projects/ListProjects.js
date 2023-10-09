@@ -6,6 +6,8 @@ import _ from "lodash";
 
 import * as AiIcons from "react-icons/ai";
 import { Paginator } from "primereact/paginator";
+import { useNavigate } from "react-router-dom";
+
 
 const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   const [projects, setProjects] = useState([]);
@@ -17,6 +19,8 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   const toast = useRef(null);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
 
   const userActivities = useSelector((state) => state.user.userActivities);
 
@@ -49,7 +53,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "danger",
         summary: "Error Encountered",
@@ -93,14 +97,20 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     axios
       .get(`https://agile-pm.agilebiz.co.ke/api/allProjects?page=${page + 1}`,config)
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setProjects(response.data.data.data);
         setTotalRecords(response.data.data.total);
         setIsLoading(false);
       })
       .catch((error) => {
-        onError(error);
-        console.error("Error getting projects:", error);
         setIsLoading(false);
+
+      
+        onError(error);
       });
   };
 
@@ -123,14 +133,19 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
           config
         )
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setProjects(response.data.data.data);
           setTotalRecords(response.data.data.total);
           setIsLoading(false);
         })
         .catch((error) => {
-          onError(error);
-          console.error("Error getting projects:", error);
           setIsLoading(false);
+         
+          onError(error);
         });
     } else {
       // If there is no search term, just fetch porjects normally
@@ -155,6 +170,10 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         config
       );
       // If archive was successful
+      if (response.status === 401) {
+        navigate('/');
+      }
+      
       if (response.status === 200) {
         // Archive successful
         fetchProjects();
@@ -163,6 +182,8 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         setDeleteStatus(response.data.message);
       }
     } catch (error) {
+     
+      
       if (
         error.response &&
         error.response.data &&

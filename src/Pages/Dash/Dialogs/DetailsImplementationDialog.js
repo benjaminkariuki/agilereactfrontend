@@ -7,6 +7,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
+import { useNavigate } from "react-router-dom";
+
 
 
 
@@ -17,6 +19,8 @@ const DetailsImplementationDialog = ({showDetailsIm, disableShowDelegateDialogIm
 
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
 
 
 
@@ -33,7 +37,7 @@ const DetailsImplementationDialog = ({showDetailsIm, disableShowDelegateDialogIm
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -66,6 +70,9 @@ const DetailsImplementationDialog = ({showDetailsIm, disableShowDelegateDialogIm
         )
         .then((response) => {
           // Handle the response data
+          if (response.status === 401) {
+            navigate('/');
+          }
           
           const projectinfo = (response.data.projectTitles.data);
           setTotalRecords(response.data.projectTitles.total);
@@ -74,10 +81,7 @@ const DetailsImplementationDialog = ({showDetailsIm, disableShowDelegateDialogIm
         })
         .catch((error) => {
           // Handle any errors here
-          console.error(
-            "Error fetching projects in implementation.",
-            error
-          );
+        
           setIsLoading(false);
         });
     }

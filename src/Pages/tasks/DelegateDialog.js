@@ -4,6 +4,8 @@ import { Dropdown } from "primereact/dropdown";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import levenshtein from 'fast-levenshtein';
+import { useNavigate } from "react-router-dom";
+
 
 const DelegateTaskDialog = ({
   showDelegate,
@@ -17,6 +19,8 @@ const DelegateTaskDialog = ({
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
 
   const isCloseEnough = (input, target, threshold = 3) => {
     if (!input || !target) return false;
@@ -63,7 +67,7 @@ const handleErrorMessage = (error) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -90,14 +94,18 @@ const handleErrorMessage = (error) => {
         )
         .then((response) => {
           // Handle the response data
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           const projectData = response.data.data;
           setProjectData(projectData);
           setIsLoading(false);
         })
         .catch((error) => {
           // Handle any errors here
-          console.error("Error fetching project data:", error);
           setIsLoading(false);
+         
         });
     }
   }, [showDelegate]);
@@ -146,6 +154,10 @@ const handleErrorMessage = (error) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       // Check if the request was successful
       if (response.status === 200) {
         // Handle success here
@@ -154,49 +166,30 @@ const handleErrorMessage = (error) => {
         onSuccess();
       } else {
         // Handle other status codes here if needed
-        console.error("Task delegation failed");
         onError("Task delegation failed"); // <-- Show error toast
         setIsSubmitting(false);
       }
     } catch (error) {
       // Handle any errors that occurred during the request
-      console.error("Error delegating task:", error);
-    
+      setIsSubmitting(false);
       onError(error); 
       // <-- Show error toast
-      setIsSubmitting(false);
     }
   };
 
   const getOptions = () => {
     if (!projectData) return [];
   
-    const lowerCaseRoleName = roleName.toLowerCase();
-  
- 
-  
-    let departmentToFilter;
-  
-    if (lowerCaseRoleName.includes("team lead")) {
-      if (isCloseEnough(lowerCaseRoleName, "team lead-web and mobile")) departmentToFilter = "Web and Mobile";
-      else if (isCloseEnough(lowerCaseRoleName, "team lead-infrastructure")) departmentToFilter = "Infrastructure";
-      else if (isCloseEnough(lowerCaseRoleName, "team lead-implementation")) departmentToFilter = "Implementation";
-      else if (isCloseEnough(lowerCaseRoleName, "team lead-business application") || isCloseEnough(lowerCaseRoleName, "team lead-business central")) departmentToFilter = "Business Central";
-    } else if (isCloseEnough(lowerCaseRoleName, "portfolio manager")) {
-      departmentToFilter = "Project Managers";
-    } else if (isCloseEnough(lowerCaseRoleName, "head business analyst")) {
-      departmentToFilter = "Implementation";
-    }
-  
-    const users = projectData.organization?.filter(
-      (user) => isCloseEnough(user.user.department.toLowerCase(), departmentToFilter)
-    ) || [];
+    const users = projectData.organization || [];
   
     return users.map((user) => ({
-      label: `${user.user.firstName} ${user.user.lastName}`,
+      label: `${user.user.firstName} ${user.user.lastName} - ${user.user.email}` +
+        (user.user?.department ? " [Department: " + user.user?.department + "]" : "") +
+        (user.user?.role?.name ? " [Role: " + user.user?.role?.name + "]" : ""),
       value: user.user.email,
     }));
   };
+  
 
   // Conditional rendering: Render the dialog and its contents only when projectData is not null
   return (

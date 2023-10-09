@@ -9,6 +9,10 @@ import { FaInfoCircle } from "react-icons/fa";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+
 
 const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [visible, setVisible] = useState(false);
@@ -18,10 +22,28 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [moreDetailsData, setMoreDetailsData] = useState([]);
   const toast = useRef(null);
+  const navigate = useNavigate();
+
+
+  const { userActivities } = useSelector((state) => state.user);
 
   const [filters,setFilters] = useState({
     global:{value:null, matchMode:FilterMatchMode.CONTAINS},
   })
+
+  const sprintsActivity = userActivities.find(
+    (activity) => activity.name === "Sprints"
+  );
+  
+  //read permission
+  const hasReadPermissionSprints = sprintsActivity
+    ? sprintsActivity.pivot.permissions.includes("read")
+    : false;
+  
+  //write permissions
+  const hasWritePermissionSprints = sprintsActivity
+    ? sprintsActivity.pivot.permissions.includes("write")
+    : false;
 
   const confirmRemove = (sprintId) => {
     confirmDialog({
@@ -43,7 +65,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -53,7 +75,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
     }
   };
   const onWarn = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "warn",
         summary: "Error occurred",
@@ -159,14 +181,21 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
           config
         )
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setremoveLoading(false);
           onSuccess(response.data.message);
           setVisible(false);
           reloadData();
+          
         })
         .catch((error) => {
           setremoveLoading(false);
-          onError(error.response.data.errors);
+         
+          onError(error);
         });
     } else {
       onWarn("Select atleast one Micro-task");
@@ -222,7 +251,8 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
         footer={
           component === "active" && (
             <div className="flex justify-end">
-              <button
+            
+           {hasWritePermissionSprints && (   <button
                 className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
                 onClick={() => confirmRemove(sprintId)}
                 disabled={removeLoading}
@@ -235,7 +265,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
                 ) : (
                   "Remove from current sprint"
                 )}
-              </button>
+              </button>)}
             </div>
           )
         }
@@ -247,6 +277,9 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               selectionMode="checkbox"
               selection={selectedTask}
               filters={filters}
+              paginator
+              rows={10}
+              rowsPerPageOptions={[10,20,30]}
               onSelectionChange={(e) => setSelectedTask(e.value)}
               dataKey="id"
             >

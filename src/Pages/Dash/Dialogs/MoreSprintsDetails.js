@@ -7,6 +7,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
 import { Chart } from "primereact/chart";
+import { useNavigate } from "react-router-dom";
+
 
 const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
   const toast = useRef(null);
@@ -16,6 +18,8 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
   const searchTimeoutRef = useRef(null);
   const [searchResults, setSearchResults] = useState([]);
   const [chartLineData, setChartLineData] = useState({});
+  const navigate = useNavigate();
+
 
   const [duration, setDuration] = useState("");
   const [incompleteSubtasksCount, setIncompleteSubtasksCount] = useState(0);
@@ -45,12 +49,16 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
       })
       .then((response) => {
         // Handle the search results here
+        if (response.status === 401) {
+          navigate('/');
+        }
         const sprints = response.data;
         setIsLoading(false);
         setSearchResults(sprints);
       })
       .catch((error) => {
         setIsLoading(false);
+        
         handleAxiosError(error);
       });
   };
@@ -91,7 +99,7 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -161,6 +169,11 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
         `https://agile-pm.agilebiz.co.ke/api/infoSprintsAnalysis/${sprintId}`,config
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         const data = response.data;
         // Assuming that the response has a format where the data is in an array
         const sprintDetails = data;
@@ -174,6 +187,7 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
       })
       .catch((error) => {
         setIsLoading2(false);
+       
         handleAxiosError(error);
       });
   };

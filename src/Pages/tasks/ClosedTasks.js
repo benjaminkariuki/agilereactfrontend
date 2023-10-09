@@ -10,6 +10,8 @@ import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from "react-router-dom";
+
 
 
 const ClosedTasks = () => {
@@ -30,6 +32,10 @@ const ClosedTasks = () => {
   const [showDelegate, setShowDelegate] = useState(false);
   const [activeView, setActiveView] = useState("My Tasks");
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
   
   const [filters,setFilters] = useState({
     global:{value:null, matchMode:FilterMatchMode.CONTAINS},
@@ -39,10 +45,37 @@ const ClosedTasks = () => {
   const Role = userRole; // Replace this with how you get the user's role
   const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
 
-  const hasPermissionTasksProjects =
-  normalizedRole.includes("portfolio manager") ||
-  normalizedRole.includes("head") ||
-  normalizedRole.includes("team lead");
+   //getting the permission for projects
+   const taskActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasAssignPermissionTasks =
+    taskActivity.pivot.permissions.includes("Assign-Tasks");
+
+  const hasCloseTasks =
+    taskActivity.pivot.permissions.includes("Close-tasks");
+
+    const hasPushDevelopment =
+    taskActivity.pivot.permissions.includes("Push-Development");
+
+    const hasPushTesting =
+    taskActivity.pivot.permissions.includes("Push-Testing");
+
+    const hasPushReview =
+    taskActivity.pivot.permissions.includes("Push-Review");
+
+    const hasreturnTesting =
+    taskActivity.pivot.permissions.includes("Return-Testing");
+
+    
+    const hasViewAllTasks =
+    taskActivity.pivot.permissions.includes("View-All-Tasks");
+
+    const hasTeamTasks =
+    taskActivity.pivot.permissions.includes("View-Team-Tasks");
+
+
+
 
   //toast display functions
   const onSuccess = (success) => {
@@ -57,7 +90,7 @@ const ClosedTasks = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
@@ -162,10 +195,17 @@ const durationTemplate = (rowData) => {
         }
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
+       
+
         if (error.response && error.response.data && error.response.data.error) {
           onError(error.response.data.error);
         } else {
@@ -194,17 +234,22 @@ const durationTemplate = (rowData) => {
         }
       })
       .then((response) => {
+        
+        if (response.status === 401) {
+          navigate('/');
+        }
       
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
 
         if (error.response && error.response.data && error.response.data.error) {
-          onError(error.response.data.error);
+          onError(error);
         } else {
           onError("An unknown error occurred.");
         }
-            });
+            
+      });
   };
 
 
@@ -307,7 +352,7 @@ const durationTemplate = (rowData) => {
         >
           My Tasks
         </button>
-        {hasPermissionTasksProjects && (
+        {(hasViewAllTasks || hasTeamTasks) && (
           <button
             onClick={() => {
               setActiveView("Other Tasks");
@@ -411,7 +456,7 @@ const durationTemplate = (rowData) => {
       )}
 
       {/* Other Tasks section */}
-      {activeView === "Other Tasks" && hasPermissionTasksProjects && (
+      {activeView === "Other Tasks" && (hasViewAllTasks || hasTeamTasks) && (
         <div>
           {otherData && otherData.length > 0 ? (
             <div>
@@ -484,7 +529,9 @@ const durationTemplate = (rowData) => {
             selectionMode="checkbox"
             selection={selectedTasks}
             filters={filters}
-
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10,20,30]}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
           >

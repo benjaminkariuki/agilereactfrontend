@@ -3,10 +3,34 @@ import axios from "axios";
 import { AiFillClockCircle } from "react-icons/ai";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { useSelector } from "react-redux";
+import _ from "lodash";
+import { useNavigate } from "react-router-dom";
+
+
+
 
 const InActiveSprint = () => {
   const [inactiveSprints, setInactiveSprints] = useState([]);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
   const toast = useRef(null);
+   //getting the permission for Sprints
+const sprintsActivity = userActivities.find(
+  (activity) => activity.name === "Sprints"
+);
+
+//read permission
+const hasReadPermissionSprints = sprintsActivity
+  ? sprintsActivity.pivot.permissions.includes("read")
+  : false;
+
+//write permissions
+const hasWritePermissionSprints = sprintsActivity
+  ? sprintsActivity.pivot.permissions.includes("write")
+  : false;
 
   const onSuccess = (success) => {
     toast.current.show({
@@ -18,12 +42,14 @@ const InActiveSprint = () => {
   };
 
   const onError = (error) => {
+    if(toast.current && error){
     toast.current.show({
       severity: "error",
       summary: "An Error encountered",
       detail: `${error}`,
       life: 3000,
     });
+  }
   };
 
   useEffect(() => {
@@ -43,11 +69,16 @@ const InActiveSprint = () => {
         "https://agile-pm.agilebiz.co.ke/api/allInactiveSprints",
         config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedSprints = response.data.sprints;
       // Process the fetched data if needed
       setInactiveSprints(fetchedSprints);
     } catch (error) {
-      console.error("Error getting inactive sprints:", error);
+      
       onError("Failed to fetch inactive sprints");
     }
   };
@@ -69,12 +100,16 @@ const InActiveSprint = () => {
         {},
         config
       );
+      if (response.status === 401) {
+        navigate('/');
+      }
 
       if (response.status === 200) {
         onSuccess("Sprint activated successfully");
         fetchInactiveSprints();
       }
     } catch (error) {
+     
       onError(error.response.data.error);
     } finally {
       setLoadingStates((prev) => ({ ...prev, [id]: false }));
@@ -96,11 +131,16 @@ const InActiveSprint = () => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       if (response.status === 200) {
         onSuccess("Sprint deleted successfully");
         fetchInactiveSprints();
       }
     } catch (error) {
+     
       onError("Error deleting sprint:", error);
     } finally {
       setLoadingStates((prev) => ({ ...prev, [id]: false }));
@@ -139,9 +179,9 @@ const InActiveSprint = () => {
         className="bg-white rounded-lg shadow p-4 h-64 flex flex-col justify-between relative"
       >
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-semibold">{sprint.name}</h2>
+          <h2 className="text-xl font-semibold">{_.startCase(sprint.name)}</h2>
           <p>
-            {sprint.status}
+            {_.startCase(sprint.status)}
             {sprint.status === "inactive" && (
               <AiFillClockCircle className="text-yellow-500 text-2xl" />
             )}
@@ -158,7 +198,9 @@ const InActiveSprint = () => {
           <p className="text-gray-600 break-words">{sprint.summary}</p>
         </div>
         <div className="flex justify-between">
-          <button
+         
+         
+         {hasWritePermissionSprints && ( <button
             onClick={() => confirmActivate(sprint.id)}
             className={`${
               loadingStates[sprint.id] === "activating"
@@ -170,8 +212,10 @@ const InActiveSprint = () => {
             {loadingStates[sprint.id] === "activating"
               ? "Activating..."
               : "Activate Sprint"}
-          </button>
-          <button
+          </button>)}
+
+
+       { hasWritePermissionSprints && ( <button
             onClick={() => confirmDelete(sprint.id)}
             className={`${
               loadingStates[sprint.id] === "deleting"
@@ -183,7 +227,9 @@ const InActiveSprint = () => {
             {loadingStates[sprint.id] === "deleting"
               ? "Deleting..."
               : "Delete Sprint"}
-          </button>
+          </button>)}
+
+
         </div>
       </div>
     );

@@ -5,6 +5,8 @@ import * as AiIcons from "react-icons/ai";
 import {  confirmDialog } from "primereact/confirmdialog";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
+import { useNavigate } from "react-router-dom";
+
 
 const Archive = ({ onRestoreProject,viewMode }) => {
   const [projects, setProjects] = useState([]);
@@ -16,6 +18,8 @@ const Archive = ({ onRestoreProject,viewMode }) => {
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+
 
   const onSuccess = (success) => {
     if (success) {
@@ -29,7 +33,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -118,15 +122,20 @@ const Archive = ({ onRestoreProject,viewMode }) => {
     axios
       .get( `https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}`,config)
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
       
       setProjects(response.data.data.data);
       setTotalRecords(response.data.data.total);
       setIsLoading(false);
       })
       .catch((error) => {
-        onError(error);
-        console.error("Error getting projects:", error);
         setIsLoading(false);
+
+        
+        onError(error);
       });
   };
 
@@ -144,14 +153,20 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       axios
         .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setProjects(response.data.data.data);
           setTotalRecords(response.data.data.total);
           setIsLoading(false);
         })
         .catch((error) => {
-          onError(error);
-          console.error("Error getting projects:", error);
           setIsLoading(false);
+         
+          onError(error);
+        
         });
     } else {
       // If there is no search term, just fetch porjects normally
@@ -175,15 +190,19 @@ const Archive = ({ onRestoreProject,viewMode }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       if (response.status === 200) {
         onSuccess("Restored");
         setIsRestoring(false);
          fetchProjects();
-      } else {
-        onError("Failed to restore project:");
-        setIsRestoring(false);
-      }
+      } 
     } catch (error) {
+      setIsRestoring(false);
+
+      
       if (
         error.response &&
         error.response.data &&
@@ -193,7 +212,6 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       } else {
         onError("Failed to restore project");
       }
-      setIsRestoring(false);
     }
   };
 
@@ -210,6 +228,10 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       const response = await axios.delete(
         `https://agile-pm.agilebiz.co.ke/api/deletePermanently/${id}`,config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
       // If deletion was successful
       if (response.status === 200) {
         onSuccess("Project deleted successfully");
@@ -217,6 +239,10 @@ const Archive = ({ onRestoreProject,viewMode }) => {
        fetchProjects();
       }
     } catch (error) {
+      setIsDeleting(false);
+
+      
+
       if (
         error.response &&
         error.response.data &&
@@ -226,7 +252,6 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       } else {
         onError("Failed to delete project");
       }
-      setIsDeleting(false);
     }
   };
 

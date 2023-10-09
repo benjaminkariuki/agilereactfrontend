@@ -2,12 +2,30 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import { confirmDialog } from "primereact/confirmdialog";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+
 
 const ViewRoles = () => {
   const [roles, setRoles] = useState([]);
   const [loadingStates, setLoadingStates] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const toast = useRef(null);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
+
+  const UsersRoles = userActivities.find(
+    (activity) => activity.name === "Manage roles"
+  );
+  const hasReadPermissionUsersRoles =
+    UsersRoles.pivot.permissions.includes("read");
+
+  const hasWritePermissionUsersRoles =
+    UsersRoles.pivot.permissions.includes("write");
+
 
   const onSuccessDeleteRole = (success) => {
     if (success) {
@@ -22,7 +40,7 @@ const ViewRoles = () => {
 
   // Function to show a warning toast when fetching activities fails
   const onDeleteRole = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error deleting role",
@@ -32,7 +50,7 @@ const ViewRoles = () => {
     }
   };
   const onFetchingRoles = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error getting roles",
@@ -74,12 +92,18 @@ const ViewRoles = () => {
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allRoles",config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
       if (response.status === 200) {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get roles");
       onFetchingRoles(errorMessage);
     }
@@ -103,6 +127,10 @@ const ViewRoles = () => {
         `https://agile-pm.agilebiz.co.ke/api/deleteRoles/${roleId}`,
         config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
 
       if (response.status === 200) {
         setLoadingStates((prevStates) => ({
@@ -132,6 +160,7 @@ const ViewRoles = () => {
         [roleId]: false,
       }));
 
+
       if (
         error.response &&
         error.response.data &&
@@ -156,13 +185,15 @@ const ViewRoles = () => {
             {roles.map((role) => (
               <div key={role.id} className="flex items-center justify-between">
                 <span>{role.name}</span>
-                <button
+               
+              {hasWritePermissionUsersRoles && (<button
                   className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                   disabled={loadingStates[role.id]}
                   onClick={() => confirmDelete(role.id)}
                 >
                   {loadingStates[role.id] ? "Deleting..." : "Delete"}
-                </button>
+                </button>)}
+
               </div>
             ))}
           </div>

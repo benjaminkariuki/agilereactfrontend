@@ -7,11 +7,15 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
 import { Chart } from "primereact/chart";
+import { useNavigate } from "react-router-dom";
+
 
 const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart }) => {
   const toast = useRef(null);
   const [isLoading2, setIsLoading2] = useState(false);
   const [chartDataAllSubtsaks, setChartDataAllSubtasks] = useState({});
+  const navigate = useNavigate();
+
 
 
   const [chartProjectSubtaskAllDatafromApi, setChartDataAllFromAPi] = useState(
@@ -121,7 +125,7 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -189,10 +193,14 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
         "https://agile-pm.agilebiz.co.ke/api/getAllProjectAndSubtasksCount",
         config
       );
+      if (response.status === 401) {
+        navigate('/');
+      }
 
       const fetchedProjectTaskCountAll = response.data;
       setChartDataAllFromAPi(fetchedProjectTaskCountAll);
     } catch (error) {
+      
       handleAxiosError(error);
     }
   };

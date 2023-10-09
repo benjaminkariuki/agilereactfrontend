@@ -7,6 +7,9 @@ import { InputText } from "primereact/inputtext";
 import _ from "lodash";
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
+import { useNavigate } from "react-router-dom";
+
+
 
 
 const CreateProject = ({ routeToListProjects }) => {
@@ -27,6 +30,8 @@ const CreateProject = ({ routeToListProjects }) => {
   const [create, setCreate] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [contact, setcontact] = useState();
+  const navigate = useNavigate();
+
   
   const categoryOptions = [
     { label: "Implementation", value: "implementation" },
@@ -57,7 +62,7 @@ const CreateProject = ({ routeToListProjects }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -114,9 +119,15 @@ const CreateProject = ({ routeToListProjects }) => {
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/allUsersData",config)
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setUsersData(response.data.users);
       })
       .catch((error) => {
+       
       });
   };
 
@@ -187,6 +198,11 @@ const CreateProject = ({ routeToListProjects }) => {
         },
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onSuccess(response.data.message);
         setProjectData({
           title: "",
@@ -206,6 +222,7 @@ const CreateProject = ({ routeToListProjects }) => {
       })
       .catch((error) => {
         setisloading(false);
+        
         if (
           error.response &&
           error.response.data &&
@@ -242,9 +259,14 @@ const CreateProject = ({ routeToListProjects }) => {
 
         }
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       FileDownload(response.data, "Excel_template.xlsx");
     } catch (error) {
-      console.error("Error downloading Excel file:", error);
+
     }
   };
 
@@ -540,15 +562,7 @@ const CreateProject = ({ routeToListProjects }) => {
               >
                 Client Contact
               </label>
-              {/* <input
-                type="text"
-                id="clientContacts"
-                name="clientContacts"
-                value={projectData.clientContacts}
-                onChange={handleInputChange}
-                className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
-                required
-              /> */}
+             
               <PhoneInput
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 international

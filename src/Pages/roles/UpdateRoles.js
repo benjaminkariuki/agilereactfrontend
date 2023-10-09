@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Toast } from "primereact/toast";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
 
 const UpdateRoles = () => {
   // State variables for managing data and loading state
@@ -15,6 +18,9 @@ const UpdateRoles = () => {
   const [modalData, setModalData] = useState([]);
   const toast = useRef(null);
   const [savedActivities, setSavedActivities] = useState(false);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
 
   // Function to show a success toast when roles are updated successfully
   const onSuccessUpdatingRoles = (success) => {
@@ -30,7 +36,7 @@ const UpdateRoles = () => {
 
   // Function to show a warning toast when fetching activities fails
   const onFetchingActivities = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error getting activities",
@@ -42,7 +48,7 @@ const UpdateRoles = () => {
 
   // Function to show a warning toast when fetching roles fails
   const onFetchingRoles = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error Roles activities",
@@ -54,7 +60,7 @@ const UpdateRoles = () => {
 
   // Function to show a warning toast when updating activities fails
   const onUpdatingActivities = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Unsuccessful",
@@ -63,6 +69,16 @@ const UpdateRoles = () => {
       });
     }
   };
+
+  //getting the permission for projects
+  const UsersRoles = userActivities.find(
+    (activity) => activity.name === "Manage roles"
+  );
+  const hasReadPermissionUsersRoles =
+    UsersRoles.pivot.permissions.includes("read");
+
+  const hasWritePermissionUsersRoles =
+    UsersRoles.pivot.permissions.includes("write");
 
   useEffect(() => {
     fetchAllActivities();
@@ -73,20 +89,26 @@ const UpdateRoles = () => {
 
   const fetchRoles = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allRoles",
         config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
       const fetchedRoles = response.data.roles;
       setRoles(fetchedRoles);
     } catch (error) {
+
+     
       const errmess = "Cannot get roles, contact the admin";
       onFetchingRoles(errmess);
     }
@@ -94,20 +116,26 @@ const UpdateRoles = () => {
 
   const fetchAllActivities = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/activitiesAll",
         config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedActivities = response.data.activities;
       setAllActivities(fetchedActivities);
     } catch (error) {
+      
       const errmess = "Cannot get activities, contact the admin";
       onFetchingActivities(errmess);
     }
@@ -115,17 +143,21 @@ const UpdateRoles = () => {
 
   const getRoleActivitiesWithId = async (roleId) => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const roleResponse = await axios.get(
         `https://agile-pm.agilebiz.co.ke/api/allRolesWithId/${roleId}`,
         config
       );
+
+      if (roleResponse.status === 401) {
+        navigate('/');
+      }
 
       if (roleResponse.data.roles && roleResponse.data.roles.length > 0) {
         const selectedRoleData = roleResponse.data.roles[0];
@@ -135,8 +167,10 @@ const UpdateRoles = () => {
         setErrorActivity(null);
       }
     } catch (error) {
-      onFetchingRoles("Failed to get role activities");
       setSelectedActivities([]);
+
+      
+      onFetchingRoles("Failed to get role activities");
     }
   };
 
@@ -175,13 +209,16 @@ const UpdateRoles = () => {
     setIsLoading(true);
 
     const selectedActivities = Array.from(event.target.activities)
-    .filter((checkbox) => checkbox.checked)
-    .map((checkbox) => ({
-      id: checkbox.value,
-     // permissions: getSelectedPermissions(checkbox.value),
-      name: checkbox.nextElementSibling.textContent,  // Get the activity name
-      permissions: getSelectedPermissions(checkbox.value, checkbox.nextElementSibling.textContent),
-    }));
+      .filter((checkbox) => checkbox.checked)
+      .map((checkbox) => ({
+        id: checkbox.value,
+        // permissions: getSelectedPermissions(checkbox.value),
+        name: checkbox.nextElementSibling.textContent, // Get the activity name
+        permissions: getSelectedPermissions(
+          checkbox.value,
+          checkbox.nextElementSibling.textContent
+        ),
+      }));
 
     // Validation for selected activities
     if (selectedActivities.length === 0) {
@@ -196,20 +233,19 @@ const UpdateRoles = () => {
     );
 
     const dashboardActivitiesWithNoRoles = selectedActivities.filter(
-      (activity) => activity.name.toLowerCase() === 'dashboard' && activity.permissions.length === 0
+      (activity) =>
+        activity.name.toLowerCase() === "dashboard" &&
+        activity.permissions.length === 0
     );
-  
+
     if (dashboardActivitiesWithNoRoles.length > 0) {
-      setErrorActivity(
-        "Assign exactly one role to each 'dashboard' activity"
-      );
+      setErrorActivity("Assign exactly one role to each 'dashboard' activity");
       onUpdatingActivities(errorActivity);
       setIsLoading(false);
       return;
     }
 
-
-    if (activitiesWithNoPermissions.length > 0 ) {
+    if (activitiesWithNoPermissions.length > 0) {
       onUpdatingActivities(
         "Assign at least one permission to each selected activity"
       );
@@ -218,13 +254,13 @@ const UpdateRoles = () => {
     }
 
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const response = await axios.put(
         `https://agile-pm.agilebiz.co.ke/api/updateRoles/${selectedRole}`,
         {
@@ -233,6 +269,11 @@ const UpdateRoles = () => {
         },
         config
       );
+      
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       if (response.status === 200) {
         const success = response.data.message;
         onSuccessUpdatingRoles(success);
@@ -255,6 +296,7 @@ const UpdateRoles = () => {
       }
     } catch (error) {
       setIsLoading(false);
+      
       if (
         error.response &&
         error.response.data &&
@@ -268,7 +310,6 @@ const UpdateRoles = () => {
   };
 
   // Function to get selected permissions for an activity
-  
   const getSelectedPermissions = (activityId, activityName) => {
     const permissions = [];
   
@@ -291,6 +332,27 @@ const UpdateRoles = () => {
           break;  // Since only one radio button can be selected, break the loop once we found the selected role
         }
       }
+    } else if (activityName.toLowerCase() === 'tasks') {
+      const tasks = [
+        'Assign-Tasks',
+        'Close-tasks',
+        'Push-Development',
+        'Push-Testing',
+        'Push-Review',
+        "Return-Development",
+        'Return-Testing',
+        'View-All-Tasks',
+        'View-Team-Tasks',
+      ];
+  
+      for (const task of tasks) {
+        const checkbox = document.querySelector(
+          `#${task}-${activityId}`
+        );
+        if (checkbox && checkbox.checked) {
+          permissions.push(task);
+        }
+      }
     } else {
       const readCheckbox = document.querySelector(
         `#read-permission-${activityId}`
@@ -310,7 +372,7 @@ const UpdateRoles = () => {
   
     return permissions;
   };
-
+  
 
   return (
     <div className="flex justify-center items-center pt-6">
@@ -362,13 +424,15 @@ const UpdateRoles = () => {
             )}
             {selectedRole && (
               <div className="text-center">
-                <button
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold"
-                  onClick={openEditActivities}
-                  type="button"
-                >
-                  Edit Activities
-                </button>
+                {hasWritePermissionUsersRoles && (
+                  <button
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold"
+                    onClick={openEditActivities}
+                    type="button"
+                  >
+                    Edit Activities
+                  </button>
+                )}
               </div>
             )}
           </form>
@@ -429,6 +493,7 @@ const UpdateRoles = () => {
                               {activity.name}
                             </span>
                           </label>
+
                           {activity.name.toLowerCase() === "dashboard" ? (
                             <div className="ml-7 grid grid-cols-2 gap-2">
                               {[
@@ -446,7 +511,7 @@ const UpdateRoles = () => {
                                 >
                                   <input
                                     className="form-radio text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
-                                    type="radio" 
+                                    type="radio"
                                     name={`role-permission-${activity.id}`}
                                     id={`${role}-permission-${activity.id}`}
                                     defaultChecked={
@@ -459,6 +524,43 @@ const UpdateRoles = () => {
                                   />
                                   <span className="text-gray-700 text-xs">
                                     {role}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          ) : activity.name.toLowerCase() === "tasks" ? (
+                            <div className="ml-7 grid grid-cols-2 gap-2">
+                              {[
+                                "Assign-Tasks",
+                                "Close-tasks",
+                                "Push-Development",
+                                "Push-Testing",
+                                "Push-Review",
+                                "Return-Development",
+                                "Return-Testing",
+                                "View-All-Tasks",
+                                "View-Team-Tasks",
+                              ].map((task) => (
+                                <label
+                                  className="inline-flex items-center cursor-pointer"
+                                  htmlFor={`${task}-${activity.id}`}
+                                  key={`${task}-${activity.id}`}
+                                >
+                                  <input
+                                    className="form-checkbox text-blue-500 appearance-none h-4 w-4 mr-1 border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none"
+                                    type="checkbox"
+                                    name={`${task}-${activity.id}`}
+                                    id={`${task}-${activity.id}`}
+                                    defaultChecked={
+                                      modalData.activities.find(
+                                        (act) =>
+                                          act.id === activity.id &&
+                                          act.pivot.permissions.includes(task)
+                                      ) !== undefined
+                                    }
+                                  />
+                                  <span className="text-gray-700 text-xs">
+                                    {task}
                                   </span>
                                 </label>
                               ))}

@@ -12,6 +12,9 @@ import DelegateTaskDialog from "./DelegateDialog";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { useNavigate } from "react-router-dom";
+
+
 
 const MyTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -31,6 +34,10 @@ const MyTasks = () => {
   const [projectInfo, setProjectInfo] = useState(null);
   const [refreshTasks, setRefreshTasks] = useState(false);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -42,21 +49,41 @@ const MyTasks = () => {
   const normalizedRole = Role.toLowerCase();
   const normalizedDepartment = userDepartment.toLowerCase();
 
-  const hasPermissionTasksProjects =
-    normalizedRole.includes("portfolio manager") ||
-    normalizedRole.includes("head") ||
-    normalizedRole.includes("team lead");
+   //getting the permission for projects
+   const taskActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasAssignPermissionTasks =
+    taskActivity.pivot.permissions.includes("Assign-Tasks");
 
-  const hasPermissionTaskDelegation =
-    normalizedRole.includes("team lead") ||
-    normalizedRole.includes("head") ||
-    normalizedRole.includes("portfolio manager");
+  const hasCloseTasks =
+    taskActivity.pivot.permissions.includes("Close-tasks");
 
-  const hasPermissionPushDevelopment =
-    normalizedDepartment.includes("web") ||
-    normalizedDepartment.includes("infrastructure");
+    const hasPushDevelopment =
+    taskActivity.pivot.permissions.includes("Push-Development");
 
-  const hasPermissionClose = normalizedRole.includes("portfolio manager");
+    const hasPushTesting =
+    taskActivity.pivot.permissions.includes("Push-Testing");
+
+    const hasPushReview =
+    taskActivity.pivot.permissions.includes("Push-Review");
+
+    const hasreturnTesting =
+    taskActivity.pivot.permissions.includes("Return-Testing");
+
+    
+    const hasViewAllTasks =
+    taskActivity.pivot.permissions.includes("View-All-Tasks");
+
+    const hasTeamTasks =
+    taskActivity.pivot.permissions.includes("View-Team-Tasks");
+
+    
+
+
+
+  
+
 
   //toast display functions
   const onSuccess = (success) => {
@@ -71,7 +98,7 @@ const MyTasks = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
@@ -82,7 +109,7 @@ const MyTasks = () => {
   };
 
   const onWarn = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "warn",
         summary: "Please upload micro task(s)",
@@ -193,11 +220,17 @@ const MyTasks = () => {
         ...config,
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setTasksData(response.data.activeSprint);
         // setOtherData(response.data.allSubtasks);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
+
         if (
           error.response &&
           error.response.data &&
@@ -228,6 +261,11 @@ const MyTasks = () => {
         ...config,
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
@@ -315,6 +353,11 @@ const MyTasks = () => {
           config
         )
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setTimeout(() => {
             onSuccess(response.data.message);
             fetchMyTasks(userEmail, userRole, userDepartment);
@@ -324,6 +367,7 @@ const MyTasks = () => {
         })
         .catch((error) => {
           setPushLoading(false);
+          onError(error);
         });
     } else {
       onWarn("Select atleast one task");
@@ -399,6 +443,11 @@ const MyTasks = () => {
           config
         )
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setTimeout(() => {
             onSuccess(response.data.message);
             fetchMyTasks(userEmail, userRole, userDepartment);
@@ -408,6 +457,7 @@ const MyTasks = () => {
         })
         .catch((error) => {
           setPushLoading(false);
+          onError(error);
         });
     } else {
       onWarn("Select atleast one task");
@@ -431,7 +481,7 @@ const MyTasks = () => {
             My Tasks
           </button>
 
-          {hasPermissionTasksProjects && (
+          {(hasViewAllTasks || hasTeamTasks)  && (
             <button
               onClick={() => {
                 setActiveView("Other Tasks");
@@ -533,7 +583,7 @@ const MyTasks = () => {
         </div>
       )}
 
-      {activeView === "Other Tasks" && hasPermissionTasksProjects && (
+      {activeView === "Other Tasks" && (hasViewAllTasks || hasTeamTasks) && (
         <div>
           {otherData && otherData.length > 0 ? (
             <div>
@@ -599,7 +649,7 @@ const MyTasks = () => {
           style={{ width: "98vw" }}
           footer={
             <>
-              {hasPermissionPushDevelopment && (
+              {hasPushDevelopment && (
                 <div className="mr-2 inline-block">
                   {" "}
                   {/* Added inline-block and margin to have them side by side */}
@@ -620,7 +670,7 @@ const MyTasks = () => {
                 </div>
               )}
 
-              {hasPermissionClose && ( // Assuming the variable for the new button's visibility is called 'hasPermissionClose'
+              {hasCloseTasks && ( // Assuming the variable for the new button's visibility is called 'hasPermissionClose'
                 <button
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
                   onClick={openConfirmDialog}
@@ -644,6 +694,10 @@ const MyTasks = () => {
             className="border rounded-md p-4 bg-white"
             removableSort
             filters={filters}
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10,20,30]}
+
             selectionMode="checkbox"
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
@@ -822,7 +876,7 @@ const MyTasks = () => {
             ></textarea>
 
             {/* Delegate/Apply Button */}
-            {hasPermissionTaskDelegation && (
+            {hasAssignPermissionTasks && (
               <button
                 className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
                 onClick={() => showDelegateDialog(moreDetailsData)}
@@ -838,7 +892,7 @@ const MyTasks = () => {
         showDelegate={showDelegate}
         disableShowDelegateDialog={disableShowDelegateDialog}
         projectInfomation={projectInfo}
-        roleName={userRole}
+        roleName={userDepartment}
         onSuccess={onSuccessfulDelegation}
       />
     </div>

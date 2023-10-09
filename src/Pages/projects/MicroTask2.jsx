@@ -17,6 +17,8 @@ import { Paginator } from "primereact/paginator";
 import levenshtein from "fast-levenshtein";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from "react-router-dom";
+
 
 
 
@@ -40,6 +42,8 @@ const MicroTask = ({
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
 
   const [filters,setFilters] = useState({
     global:{value:null, matchMode:FilterMatchMode.CONTAINS},
@@ -98,22 +102,15 @@ const MicroTask = ({
   const hasReadPermissionProject = projectsActivity
     ? projectsActivity.pivot.permissions.includes("read")
     : false;
+
   const hasWritePermissionProject = projectsActivity
     ? projectsActivity.pivot.permissions.includes("write")
     : false;
 
-  //getting permission for tasks
-  const tasksActivity = userActivities.find(
-    (activity) => activity.name === "Tasks"
-  );
-
-  const hasWritePermissionTasks = tasksActivity
-    ? tasksActivity.pivot.permissions.includes("write")
-    : false;
 
   //getting permission for sprints Sprint priorities === for pms to push to active sprint
   const sprintprioritiesActivity = userActivities.find(
-    (activity) => activity.name === "Sprint priorities"
+    (activity) => activity.name === "Sprints"
   );
 
   const hasWritePermissionSprint = sprintprioritiesActivity
@@ -167,7 +164,7 @@ const MicroTask = ({
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -178,7 +175,7 @@ const MicroTask = ({
   };
 
   const onErrorF = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -270,14 +267,21 @@ const MicroTask = ({
         },
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onSuccess(response.data.message);
         setIsEditModalOpen(false);
         setSelectedFile(null);
         setIsLoading(false);
       })
       .catch((error) => {
-        onError("Error uploading file:");
         setIsLoading(false);
+
+       
+        onError("Error uploading file:");
       });
   };
 
@@ -295,10 +299,16 @@ const MicroTask = ({
         ...config,
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         FileDownload(response.data, "Project_Micro-Task_Template.xlsx");
       })
 
       .catch((error) => {
+       
         onError("Error downloading Excel file");
       });
   };
@@ -379,10 +389,16 @@ const MicroTask = ({
         ...config,
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onInfo(response.data.message);
         fetchSubtasks(projectId, phaseId, activityId);
       })
       .catch((error) => {
+        
           onErrorF(error);
       
       });
@@ -408,15 +424,19 @@ const MicroTask = ({
           config
         )
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           set_IsLoading(false);
           setSubtasks(response.data.data.data);
           setTotalRecords(response.data.data.total);
         })
         .catch((error) => {
           set_IsLoading(false);
-          // onErrorF(error.response.message);
-          console.error("Error getting projects:", error);
-        });
+          // onErrorF(error.response.message);    
+         });
     } else {
       // If there is no search term, just fetch porjects normally
       fetchSubtasks(projectId, phaseId, activityId);
@@ -440,6 +460,11 @@ const MicroTask = ({
         config
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         set_IsLoading(false);
         setSubtasks(response.data.data.data);
         setTotalRecords(response.data.data.total);
@@ -447,11 +472,6 @@ const MicroTask = ({
       })
       .catch((error) => {
         set_IsLoading(false);
-        if (error.response && error.response.status === 404) {
-          // onWarn(error.response.message);
-        } else {
-          // onErrorF(error.response.message);
-        }
       });
   };
 
@@ -475,15 +495,20 @@ const MicroTask = ({
         config
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onInfo(response.data.message);
         setPushLoading(false);
         setIsViewModalOpen(false);
       })
       .catch((error) => {
+        setPushLoading(false);
 
           onErrorF(error);
 
-        setPushLoading(false);
       });
   };
 
@@ -523,6 +548,11 @@ const MicroTask = ({
         config
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onSuccess(response.data.message);
         setCreateTaskDialogVisible(false);
         setNewTask({
@@ -538,8 +568,8 @@ const MicroTask = ({
         fetchSubtasks(projectId, phaseId, activityId);
       })
       .catch((error) => {
-        onErrorF(error);
         setTaskCreate(false);
+        onErrorF(error);
       });
   };
 
@@ -558,53 +588,7 @@ const MicroTask = ({
   };
   //option based on business analyst in the project
   const bas = organization
-    ?.filter(
-      (user) =>
-        user.status === "active" &&
-        user.user?.department?.toLowerCase() === "implementation" &&
-        (isSimilar(
-          user.user?.role?.name?.replace(/[-\s]/g, "").toLowerCase(),
-          "teamleadimplementation"
-        ) ||
-          isSimilar(
-            user.user?.role?.name?.replace(/\s/g, "").toLowerCase(),
-            "headbusinessanalyst"
-          ))
-    )
-    .map((user, index) => ({
-      key: index,
-      label:
-        user.user?.firstName +
-        " " +
-        user.user?.lastName +
-        " " +
-        user.user?.email,
-      value: user.user?.email,
-    }));
-
-  const imp = organization
-    ?.filter(
-      (user) =>
-        user.status === "active" &&
-        ((isSimilar(
-          user.user?.department?.replace(/\s/g, "").toLowerCase(),
-          "projectmanagers"
-        ) &&
-          isSimilar(
-            user.user?.role?.name?.replace(/\s/g, "").toLowerCase(),
-            "portfoliomanager"
-          )) ||
-          (isSimilar(
-            user.user?.department?.replace(/\s/g, "").toLowerCase(),
-            "businesscentral"
-          ) &&
-            user.user?.role?.name?.toLowerCase().includes("team lead")) ||
-          (isSimilar(
-            user.user?.department?.replace(/\s/g, "").toLowerCase(),
-            "webandmobile"
-          ) &&
-            user.user?.role?.name?.toLowerCase().includes("team lead")))
-    )
+    ?.filter((user) => user.status === "active")
     .map((user, index) => ({
       key: index,
       label:
@@ -612,9 +596,32 @@ const MicroTask = ({
         " " +
         user.user?.lastName +
         " - " +
-        user.user?.email,
+        user.user?.email +
+        (user.user?.department ? " [Department: " + user.user?.department + "]" : "") +
+        (user.user?.role?.name ? " [Role: " + user.user?.role?.name + "]" : ""),
       value: user.user?.email,
     }));
+
+
+
+
+    const imp = organization
+    ?.filter((user) => user.status === "active")
+    .map((user, index) => ({
+      key: index,
+      label:
+        user.user?.firstName +
+        " " +
+        user.user?.lastName +
+        " - " +
+        user.user?.email +
+        (user.user?.department ? " [Department: " + user.user?.department + "]" : "") +
+        (user.user?.role?.name ? " [Role: " + user.user?.role?.name + "]" : ""),
+      value: user.user?.email,
+    }));
+
+
+
 
   //option based on team leads in the project
   const assigningUser = (department) => {
@@ -715,6 +722,11 @@ const MicroTask = ({
         config
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onSuccess(response.data.message);
         handleCloseEditModal();
         fetchSubtasks(projectId, phaseId, activityId);
@@ -730,8 +742,9 @@ const MicroTask = ({
         });
       })
       .catch((error) => {
-        onErrorF(error);
         setEditLoading(false);
+     
+        onErrorF(error);
       });
   };
 
@@ -809,7 +822,7 @@ const MicroTask = ({
           style={{ width: "98vw" }}
           header={
             <>
-              {hasWritePermissionTasks && (
+              {hasWritePermissionProject && (
                 <button
                   className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
                   onClick={() => setCreateTaskDialogVisible(true)}
@@ -892,12 +905,12 @@ const MicroTask = ({
                 onSelectionChange={(e) => setSelectedRows(e.value)}
                 dataKey="id"
               >
-                {hasWritePermissionSprint && (
+             
                   <Column
                     selectionMode="multiple"
                     headerStyle={{ width: "1rem" }}
                   ></Column>
-                )}
+              
 
                 <Column
                   field="task"
@@ -961,7 +974,7 @@ const MicroTask = ({
                   sortable
                   body={statusBodyTemplate}
                 ></Column>
-                {hasWritePermissionTasks && (
+                {hasWritePermissionProject && (
                   <Column
                     header="Edit"
                     body={(rowData) => (
@@ -990,8 +1003,8 @@ const MicroTask = ({
           <div className="mb-6">
             {subtasks.length > 0 ? (
               <Paginator
-                first={page * 10}
-                rows={10}
+                first={page * 30}
+                rows={30}
                 totalRecords={totalRecords}
                 onPageChange={(e) => {
                   setPage(e.page);
@@ -1280,9 +1293,7 @@ const MicroTask = ({
                 <Dropdown
                   id="team-lead"
                   value={editingTask.assignedTl}
-                  options={assigningUser(
-                    editingTask.department ? editingTask.department : ""
-                  )}
+                  options={imp}
                   onChange={(e) =>
                     setEditingTask({ ...editingTask, assignedTl: e.value })
                   }

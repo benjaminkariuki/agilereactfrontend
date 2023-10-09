@@ -5,6 +5,8 @@ import axios from "axios";
 import { Toast } from "primereact/toast";
 import { Chart } from "primereact/chart";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
+
 
 
 
@@ -12,6 +14,8 @@ const Admin = () => {
   const [userCount, setUserCount] = useState(0);
   const [rolesCount, setRolesCount] = useState(0);
   const [departmentCount, setdepartmentCount] = useState(0);
+  const navigate = useNavigate();
+
   
   const [chartDatafromApi, setChartDataFromAPi] = useState([]);
   const [chartDatafromRolesApi, setChartDataFromRolesAPi] = useState([]);
@@ -101,6 +105,9 @@ const Admin = () => {
         "https://agile-pm.agilebiz.co.ke/api/allUsersCount",
         config
       );
+      if (response.status === 401) {
+        navigate('/');
+      }
 
       const fetchedusers = response.data.userCount;
       setUserCount(fetchedusers);
@@ -109,6 +116,7 @@ const Admin = () => {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get users count");
       onFetchingRoles(error);
     }
@@ -128,6 +136,10 @@ const Admin = () => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedrolescount = response.data.rolesCount;
       setRolesCount(fetchedrolescount);
 
@@ -135,6 +147,7 @@ const Admin = () => {
         setErrorMessage("");
       }
     } catch (error) {
+    
       setErrorMessage("Failed to get roles count");
       onFetchingRoles(error);
     }
@@ -153,6 +166,9 @@ const Admin = () => {
         "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCount",
         config
       );
+      if (response.status === 401) {
+        navigate('/');
+      }
 
       const fetcheddepartmentcount = response.data.departmentCount;
       setdepartmentCount(fetcheddepartmentcount);
@@ -161,6 +177,7 @@ const Admin = () => {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get departments count");
       onFetchingRoles(error);
     }
@@ -179,6 +196,11 @@ const Admin = () => {
         "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCountPerUser",
         config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetcheddepartmentcountperUser = response.data.departments;
       setChartDataFromAPi(fetcheddepartmentcountperUser);
 
@@ -186,6 +208,7 @@ const Admin = () => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get departments count per user");
       onFetchingRoles(error);
     }
@@ -206,6 +229,10 @@ const Admin = () => {
         "https://agile-pm.agilebiz.co.ke/api/allRolesCountPerUser",
         config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
       const fetchedrolescountperUser = response.data.roles;
       setChartDataFromRolesAPi(fetchedrolescountperUser);
 
@@ -213,6 +240,7 @@ const Admin = () => {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get roles count per user");
       onFetchingRoles(error);
     }
@@ -262,7 +290,7 @@ const Admin = () => {
         beginAtZero: true,
         ticks: {
           // Ensure only whole numbers are used
-          stepSize: 2,
+          stepSize: 5,
           callback: function (value) {
             if (Math.floor(value) === value) {
               return value;

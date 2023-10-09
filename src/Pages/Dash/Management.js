@@ -11,6 +11,8 @@ import DetailsImplementationDialog from "./Dialogs/DetailsImplementationDialog.j
 import DetailsArchivedDialog from "./Dialogs/DetailsArchivedDialog.js";
 import MoreSprintsDetails from "./Dialogs/MoreSprintsDetails.js";
 import AllProjectsDialog from "./Dialogs/AllProjectsDialog.js";
+import { useNavigate } from "react-router-dom";
+
 
 import DetailsSupportDialog from "./Dialogs/DetailsSupportDialog.js";
 
@@ -21,6 +23,8 @@ const Management = () => {
   const [isLoadingProjectsCount, setIsLoadingProjectsCount] = useState(false);
   const [isLoadingAllProjectsCount, setIsLoadingAllProjectsCount] =
     useState(false);
+    const navigate = useNavigate();
+
 
   const [projectImplementationCount, setImplementationProjectsCount] =
     useState(0);
@@ -156,6 +160,10 @@ const Management = () => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedimplementation = response.data.supportProjectsCount;
       setImplementationProjectsCount(fetchedimplementation);
 
@@ -163,6 +171,7 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -183,6 +192,9 @@ const Management = () => {
         configs
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
       const fetchedsupportcount = response.data.supportProjectsCount;
       setProjectsSupportCount(fetchedsupportcount);
 
@@ -190,6 +202,7 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -209,6 +222,10 @@ const Management = () => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectsArchivedcount = response.data.archivedProjectsCount;
       setProjectsArchivedCount(fetchedProjectsArchivedcount);
 
@@ -216,6 +233,7 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
+   
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -238,6 +256,10 @@ const Management = () => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectTaskCountPerUser = response.data;
       setChartDataFromAPi(fetchedProjectTaskCountPerUser);
 
@@ -247,6 +269,7 @@ const Management = () => {
       }
     } catch (error) {
       setIsLoadingAllProjectsCount(false);
+      
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -267,6 +290,11 @@ const Management = () => {
         config
       );
 
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedActiveSprint = response.data[0];
       setActiveSprint(fetchedActiveSprint);
       setActiveSprintLabels(response.data[0].duration);
@@ -281,6 +309,7 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get active sprint details");
       onFetchingRoles(error);
     }
@@ -313,6 +342,10 @@ const Management = () => {
         }
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectTaskCountPerConsultant = response.data;
       setChartDataProjectIndividualFromAPi(
         fetchedProjectTaskCountPerConsultant
@@ -324,7 +357,7 @@ const Management = () => {
       }
     } catch (error) {
       setIsLoadingProjectsCount(false);
-
+      
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -460,7 +493,7 @@ const Management = () => {
         beginAtZero: true,
         ticks: {
           // Ensure only whole numbers are used
-          stepSize: 2,
+          stepSize: 5,
           callback: function (value) {
             if (Math.floor(value) === value) {
               return value;
@@ -488,7 +521,7 @@ const Management = () => {
         beginAtZero: true,
         ticks: {
           // Ensure only whole numbers are used
-          stepSize: 2,
+          stepSize: 5,
           callback: function (value) {
             if (Math.floor(value) === value) {
               return value;

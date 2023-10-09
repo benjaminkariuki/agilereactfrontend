@@ -80,7 +80,7 @@ const EditProfile = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current.show({
         severity: "warn",
         summary: "Error creating user",
@@ -158,6 +158,9 @@ const EditProfile = () => {
         setIsLoading(false);
         onSuccess(response.data.message);
         const { user } = response.data;
+        if (response.status === 401) {
+          navigate('/');
+        }
         dispatch(updateUser(user));
         // Update session storage with the new user data
         sessionStorage.setItem("user", JSON.stringify(user));
@@ -174,6 +177,7 @@ const EditProfile = () => {
       })
       .catch((error) => {
         setIsLoading(false);
+       
           onError(error);
         
         
@@ -228,6 +232,9 @@ const EditProfile = () => {
         },config)
         .then((response) => {
           onSuccess(response.data.message);
+          if (response.status === 401) {
+            navigate('/');
+          }
           setTimeout(() => {
             setNewPassword("");
             setConfirmPassword("");
@@ -239,9 +246,10 @@ const EditProfile = () => {
         })
         .catch((error) => {
           // Error occurred while changing password
-          
-          onError(error);
           setIsLoading(false);
+        
+          onError(error);
+          
         });
     } else setError("Passwords don't match");
   };
@@ -272,11 +280,16 @@ const EditProfile = () => {
       .delete(`https://agile-pm.agilebiz.co.ke/api/deleteImage/${userId}`,config)
       .then((response) => {
         const { user } = response.data;
+        if (response.status === 401) {
+          navigate('/');
+        }
         dispatch(updateUser(user));
         // Update session storage with the new user data
         sessionStorage.setItem("user", JSON.stringify(user));
       })
       .catch((error) => {
+      
+        onError(error);
       });
   };
 

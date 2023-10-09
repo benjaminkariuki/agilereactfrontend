@@ -8,6 +8,8 @@ import { FaPlus } from "react-icons/fa";
 import MicroTask from "./MicroTask2.jsx";
 import { useSelector } from "react-redux";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
+
 
 const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const [projectData, setProjectData] = useState([]);
@@ -18,6 +20,8 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const toast = useRef(null);
   const { userActivities } = useSelector((state) => state.user);
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+  const navigate = useNavigate();
+
 
   //getting the permission for projects
   const projectsActivity = userActivities.find(
@@ -25,17 +29,14 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   );
   const hasReadPermissionProject =
     projectsActivity.pivot.permissions.includes("read");
+
   const hasWritePermissionProject =
     projectsActivity.pivot.permissions.includes("write");
 
   //getting permission for tasks
-  const tasksActivity = userActivities.find(
-    (activity) => activity.name === "Tasks"
-  );
-  const hasReadPermissionTasks =
-    tasksActivity.pivot.permissions.includes("read");
-  const hasWritePermissionTasks =
-    tasksActivity.pivot.permissions.includes("write");
+
+  
+ 
 
   //getting permission for sprints
   const sprintsActivity = userActivities.find(
@@ -64,12 +65,14 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
 
   // Function to show a warning toast when fetching activities fails
   const onError = (error) => {
+    if(toast.current && error){
     toast.current?.show({
       severity: "warn",
       summary: "Error encountered",
       detail: `${error}`,
       life: 3000,
     });
+  }
   };
 
   //handles the modal functionalities
@@ -91,14 +94,20 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
     axios
       .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`, config)
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         const fetchedprojectsid = response.data.data;
 
         setProjectData(fetchedprojectsid);
        
       })
       .catch((error) => {
-        onError("Error getting project details:");
         setProjectData([]);
+
+        onError("Error getting project details:");
       });
   };
 
@@ -186,7 +195,8 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                       body={(rowData) => (
                         <div className="flex" key={rowData.id}>
                           {/* Placeholder Excel icon */}
-                          <FaPlus
+
+                  <FaPlus
                             className="bg-blue-500 text-white rounded"
                             onClick={() =>
                               handleMicroTasksModal(
@@ -199,8 +209,8 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                             size={18}
                             style={{ marginRight: 4 }}
                           />
-                          {hasWritePermissionTasks && (
-                            <PiMicrosoftExcelLogoFill
+                        
+                           {hasWritePermissionProject && ( <PiMicrosoftExcelLogoFill
                               className="bg-blue-500 text-white rounded"
                               size={18}
                               onClick={() =>
@@ -211,8 +221,8 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                                   "add"
                                 )
                               }
-                            />
-                          )}
+                            />)}
+                          
                         </div>
                       )}
                     />

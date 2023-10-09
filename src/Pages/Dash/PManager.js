@@ -7,6 +7,8 @@ import { Chart } from "primereact/chart";
 import _ from "lodash";
 import { FaBriefcase } from "react-icons/fa";
 import Oversight from "./Dialogs/Oversight";
+import { useNavigate } from "react-router-dom";
+
 
 
 const PManager = () => {
@@ -14,6 +16,8 @@ const PManager = () => {
   const role = useSelector((state) => state.user.userRole);
   const department = useSelector((state) => state.user.userDepartment);
   const [showTeamsModal, setShowTeamsModal] = useState(false);
+  const navigate = useNavigate();
+
 
   const [chartProjectSubtaskActiveDatafromApi, setChartDataFromAPi] = useState(
     []
@@ -151,6 +155,10 @@ const PManager = () => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedActiveSprintMinimal = response.data;
 
       // Concatenate the start_date and end_date
@@ -163,6 +171,7 @@ const PManager = () => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get active sprint details");
       onFetchingRoles(error);
     }
@@ -189,6 +198,10 @@ const PManager = () => {
         }
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedActiveSprintTasks = response.data;
 
       // setActiveSprint(fetchedActiveSprint);
@@ -198,6 +211,7 @@ const PManager = () => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get active sprint details");
       onFetchingRoles(error);
     }
@@ -230,6 +244,10 @@ const PManager = () => {
         }
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedActiveSprintStageTasks = response.data;
 
       // setActiveSprint(fetchedActiveSprint);
@@ -241,6 +259,7 @@ const PManager = () => {
       }
     } catch (error) {
       setIsLoadingStageCount(false);
+      
       setErrorMessage("Failed to get active sprint details");
       onFetchingRoles(error);
     }
@@ -274,6 +293,10 @@ const PManager = () => {
         }
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectTaskCountPerConsultant = response.data;
       setChartDataProjectIndividualFromAPi(
         fetchedProjectTaskCountPerConsultant
@@ -285,7 +308,7 @@ const PManager = () => {
       }
     } catch (error) {
       setIsLoadingProjectsCount(false);
-
+   
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -424,7 +447,7 @@ const PManager = () => {
         beginAtZero: true,
         ticks: {
           // Ensure only whole numbers are used
-          stepSize: 2,
+          stepSize: 5,
           callback: function (value) {
             if (Math.floor(value) === value) {
               return value;
@@ -452,7 +475,7 @@ const PManager = () => {
         beginAtZero: true,
         ticks: {
           // Ensure only whole numbers are used
-          stepSize: 2,
+          stepSize: 5,
           callback: function (value) {
             if (Math.floor(value) === value) {
               return value;

@@ -7,12 +7,15 @@ import { InputText } from "primereact/inputtext";
 import _ from "lodash";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
+import { useNavigate } from "react-router-dom";
+
 
 const EditProject = ({ projectId, routeToListProjects }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedUsersArray, setSelectedUsersArray] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [contact, setcontact] = useState();
+
 
   const [projectData, setProjectData] = useState({
     title: "",
@@ -49,6 +52,8 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   const [usersData, setUsersData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
 
   const categoryOptions = [
     { label: "Implementation", value: "implementation" },
@@ -78,7 +83,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -157,9 +162,16 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/allUsersData", config)
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setUsersData(response.data.users);
       })
       .catch((error) => {
+        
+        onError(error);
       });
   };
 
@@ -177,6 +189,11 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         config
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         const fetchedprojectsid = response.data.data;
         const sDate = new Date(fetchedprojectsid.start_date);
         const eDate = new Date(fetchedprojectsid.end_date);
@@ -201,6 +218,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         setSelectedUsersArray(organizationIds);
       })
       .catch((error) => {
+       
         onError(error);
       });
   };
@@ -290,6 +308,11 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         }
       )
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         onSuccess(response.data.message);
 
         setTimeout(() => {
@@ -298,8 +321,10 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         }, 1000);
       })
       .catch((error) => {
-        onError(error);
         setIsLoading(false);
+
+        
+        onError(error);
       });
   };
 
@@ -320,8 +345,14 @@ const EditProject = ({ projectId, routeToListProjects }) => {
           responseType: "blob",
         }
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       FileDownload(response.data, "project_data.xlsx");
     } catch (error) {
+      
       onError(error);
     }
   };

@@ -26,6 +26,15 @@ import { useSelector } from "react-redux";
 import "primereact/resources/themes/lara-light-indigo/theme.css"; // theme
 import "primereact/resources/primereact.css"; // core css
 import "primeicons/primeicons.css"; // icons
+import setupAxiosInterceptors from './axiosConfig';
+
+// Set up Axios interceptor
+setupAxiosInterceptors(() => {
+  // Since this isn't a component, we can't use hooks directly.
+  // So, we use the traditional way to navigate:
+  window.location.href = "/";
+});
+
 
 const ProtectedRoute = ({ element, redirectPath }) => {
   

@@ -2,6 +2,10 @@ import React, { useRef, useState } from "react";
 import { Calendar } from "primereact/calendar";
 import axios from "axios";
 import { Toast } from "primereact/toast";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+
 
 const CreateSprint = ({ rerouting }) => {
   const [sprintData, setSprintData] = useState({
@@ -12,6 +16,28 @@ const CreateSprint = ({ rerouting }) => {
   const toast = useRef(null);
   const [validError, setValidError] = useState({});
   const [creating, setCreating] = useState(false);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
+
+  //getting the permission for Sprints
+const sprintsActivity = userActivities.find(
+  (activity) => activity.name === "Sprints"
+);
+
+//read permission
+const hasReadPermissionSprints = sprintsActivity
+  ? sprintsActivity.pivot.permissions.includes("read")
+  : false;
+
+//write permissions
+const hasWritePermissionSprints = sprintsActivity
+  ? sprintsActivity.pivot.permissions.includes("write")
+  : false;
+
+
+
   const onSuccess = (success) => {
     toast.current.show({
       severity: "success",
@@ -22,12 +48,14 @@ const CreateSprint = ({ rerouting }) => {
   };
 
   const onError = (error) => {
+    if(toast.current && error){
     toast.current.show({
       severity: "error",
       summary: "Error",
       detail: handleErrorMessage(error),
       life: 3000,
     });
+  }
   };
 
   const handleChange = (event) => {
@@ -98,6 +126,10 @@ const CreateSprint = ({ rerouting }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       if (response.status === 200) {
         onSuccess(response.data.message);
         setTimeout(() => {
@@ -107,9 +139,8 @@ const CreateSprint = ({ rerouting }) => {
         setCreating(false);
       }
     } catch (error) {
-
-          onError(error);
       setCreating(false);
+          onError(error);
     }
   };
 
@@ -182,7 +213,8 @@ const CreateSprint = ({ rerouting }) => {
         {displayError("end_date")}
 
         <div className="flex justify-between pt-5">
-          <button
+         
+         {hasWritePermissionSprints && ( <button
             type="submit"
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             onClick={handleSubmit}
@@ -196,13 +228,18 @@ const CreateSprint = ({ rerouting }) => {
             ) : (
               " Create"
             )}
-          </button>
-          <button
+          </button>)}
+
+
+        {hasWritePermissionSprints &&  (<button
             onClick={handleCancel}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             Cancel
-          </button>
+          </button>)}
+
+
+
         </div>
       </form>
     </div>

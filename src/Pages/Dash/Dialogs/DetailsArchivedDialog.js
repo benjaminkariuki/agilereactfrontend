@@ -7,6 +7,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
+import { useNavigate } from "react-router-dom";
+
 
 
 
@@ -17,6 +19,8 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
 
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
 
 
 
@@ -33,7 +37,7 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -67,6 +71,9 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
         )
         .then((response) => {
           // Handle the response data
+          if (response.status === 401) {
+            navigate('/');
+          }
           
           const projectinfo = (response.data.projectTitles.data);
           setTotalRecords(response.data.projectTitles.total);
@@ -76,11 +83,8 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
         })
         .catch((error) => {
           // Handle any errors here
-          console.error(
-            "Error fetching archived projects.",
-            error
-          );
           setIsLoading(false);
+          
         });
     }
   }, [showDetailsArchived,page]);

@@ -11,6 +11,8 @@ import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from "react-router-dom";
+
 
 const DevelopmentTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -32,6 +34,10 @@ const DevelopmentTasks = () => {
   const [refreshTasks, setRefreshTasks] = useState(false);
   const [flattenedLogs, setFlattenedLogs] = useState([]);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
+  const { userActivities } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+
+
 
 
   const [activeView, setActiveView] = useState("My Tasks");
@@ -47,18 +53,39 @@ const DevelopmentTasks = () => {
   // Convert the role to lowercase for case-insensitive checking
   const normalizedDepartment = userDepartment.toLowerCase();
 
-  const hasPermissionTasksProjects =
-    normalizedRole.includes("portfolio manager") ||
-    normalizedRole.includes("head") ||
-    normalizedRole.includes("team lead");
 
-  const hasPermissionTaskDelegation =
-    normalizedRole.includes("team lead") ||
-    normalizedRole.includes("head") ||
-    normalizedRole.includes("portfolio manager");
-  const hasPermissionPushTesting =
-    normalizedDepartment.includes("web") ||
-    normalizedDepartment.includes("infrastructure");
+  //getting the permission for projects
+   const taskActivity = userActivities.find(
+    (activity) => activity.name === "Tasks"
+  );
+  const hasAssignPermissionTasks =
+    taskActivity.pivot.permissions.includes("Assign-Tasks");
+
+  const hasCloseTasks =
+    taskActivity.pivot.permissions.includes("Close-tasks");
+
+    const hasPushDevelopment =
+    taskActivity.pivot.permissions.includes("Push-Development");
+
+    const hasPushTesting =
+    taskActivity.pivot.permissions.includes("Push-Testing");
+
+    const hasPushReview =
+    taskActivity.pivot.permissions.includes("Push-Review");
+
+    const hasreturnTesting =
+    taskActivity.pivot.permissions.includes("Return-Testing");
+
+    
+    
+    const hasViewAllTasks =
+    taskActivity.pivot.permissions.includes("View-All-Tasks");
+
+    const hasTeamTasks =
+    taskActivity.pivot.permissions.includes("View-Team-Tasks");
+
+    
+
 
   const onSuccess = (success) => {
     if (success) {
@@ -72,7 +99,7 @@ const DevelopmentTasks = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
@@ -83,7 +110,7 @@ const DevelopmentTasks = () => {
   };
 
   const onWarn = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "warn",
         summary: "Please upload micro task(s)",
@@ -178,10 +205,18 @@ const durationTemplate = (rowData) => {
         ...config,
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
       })
       .catch((error) => {
+
+       
+
         if (error.response && error.response.data && error.response.data.error) {
           onError(error.response.data.error);
         } else {
@@ -208,6 +243,11 @@ const durationTemplate = (rowData) => {
         ...config,
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
@@ -233,10 +273,15 @@ const durationTemplate = (rowData) => {
         ...config,
         params: {
           email: userEmail,
-          roleName: userRole,
+          roleName: userDepartment,
         },
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setReturnedTaskLogs(response.data);
         const logs = response.data.user_tasks.flatMap((task) => task.task_logs);
         setFlattenedLogs(logs);
@@ -379,6 +424,11 @@ const durationTemplate = (rowData) => {
           config
         )
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setTimeout(() => {
             onSuccess(response.data.message);
             fetchMyTasks(userEmail, userRole, userDepartment);
@@ -388,6 +438,8 @@ const durationTemplate = (rowData) => {
         })
         .catch((error) => {
           setPushLoading(false);
+        
+          onError(error);
         });
     } else {
       onWarn("Select atleast one task");
@@ -410,7 +462,7 @@ const durationTemplate = (rowData) => {
             My Tasks
           </button>
 
-          {hasPermissionTasksProjects && (
+          {(hasViewAllTasks || hasTeamTasks) && (
             <button
               onClick={() => {
                 setActiveView("Other Tasks");
@@ -529,7 +581,7 @@ const durationTemplate = (rowData) => {
       )}
 
       {/* Other Tasks section */}
-      {activeView === "Other Tasks" && hasPermissionTasksProjects && (
+      {activeView === "Other Tasks" && (hasViewAllTasks || hasTeamTasks) && (
         <div>
           {otherData && otherData.length > 0 ? (
             <div>
@@ -593,6 +645,9 @@ const durationTemplate = (rowData) => {
             <DataTable
             header={customHeader}
             filters={filters}
+            paginator
+              rows={10}
+              rowsPerPageOptions={[10,20,30]}
  value={flattenedLogs}
               className="border rounded-md p-4 bg-white"
             >
@@ -672,7 +727,7 @@ const durationTemplate = (rowData) => {
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
           footer={
-            hasPermissionPushTesting && (
+            hasPushTesting && (
               <div>
                 <button
                   className="px-4 py-2 bg-green-500 text-white rounded-md"
@@ -698,6 +753,9 @@ const durationTemplate = (rowData) => {
             removableSort
             selectionMode="checkbox"
             filters={filters}
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10,20,30]}
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
@@ -858,7 +916,7 @@ const durationTemplate = (rowData) => {
             ></textarea>
 
             {/* Delegate/Apply Button */}
-            {hasPermissionTaskDelegation && (
+            {hasAssignPermissionTasks && (
               <button
                 className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
                 onClick={() => showDelegateDialog(moreDetailsData)}
@@ -971,7 +1029,7 @@ const durationTemplate = (rowData) => {
         showDelegate={showDelegate}
         disableShowDelegateDialog={disableShowDelegateDialog}
         projectInfomation={projectInfo}
-        roleName={userRole}
+        roleName={userDepartment}
         onSuccess={onSuccessfulDelegation}
       />
     </div>

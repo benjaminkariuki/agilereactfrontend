@@ -7,9 +7,15 @@ import { Dialog } from "primereact/dialog";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
 import 'react-phone-number-input/style.css';
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+
 import PhoneInput from 'react-phone-number-input';
 
 const Users = () => {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -17,6 +23,8 @@ const Users = () => {
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const { userActivities } = useSelector((state) => state.user);
+
 
   const [departments] = useState([
     "Management",
@@ -31,6 +39,17 @@ const Users = () => {
     "Sales and Marketing",
     "Sales",
   ]);
+
+  //getting the permission for projects
+  const UsersActivity = userActivities.find(
+    (activity) => activity.name === "Manage users"
+  );
+  const hasReadPermissionUsers =
+    UsersActivity.pivot.permissions.includes("read");
+
+  const hasWritePermissionUsers =
+    UsersActivity.pivot.permissions.includes("write");
+
 
   const [roles, setRoles] = useState([]);
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
@@ -58,7 +77,7 @@ const Users = () => {
   };
 
   const onErrorUpdate = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "warn",
         summary: "Error updating user",
@@ -80,7 +99,7 @@ const Users = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "danger",
         summary: "Error Encountered",
@@ -127,13 +146,19 @@ const Users = () => {
     axios
       .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}`, config)
       .then((response) => {
+        if (response.status === 401) {
+          navigate('/');
+        }
         setUsers(response.data.users.data);
         setTotalRecords(response.data.users.total);
         setIsLoading(false);
+        
       })
       .catch((error) => {
-        onError(error);
         setIsLoading(false);
+       
+        onError(error);
+        
       });
   };
 
@@ -150,9 +175,15 @@ const Users = () => {
     axios
       .get("https://agile-pm.agilebiz.co.ke/api/allRoles",config)
       .then((response) => {
+        if (response.status === 401) {
+          navigate('/');
+        }
         setRoles(response.data.roles);
+        
+       
       })
       .catch((error) => {
+      
         onError(error);
       });
   };
@@ -170,11 +201,16 @@ const Users = () => {
     axios
       .delete(`https://agile-pm.agilebiz.co.ke/api/deleteUsers/${userId}`,config)
       .then((response) => {
+        if (response.status === 401) {
+          navigate('/');
+        }
         onDeleteUser(response.data.message);
         fetchUsers();
+       
       })
       .catch((error) => {
-        onError(error.response.data.message);
+       
+        onError(error);
       });
   };
 
@@ -206,6 +242,9 @@ const Users = () => {
         config
       )
       .then((response) => {
+        if (response.status === 401) {
+          navigate('/');
+        }
         setTimeout(() => {
           onSuccessUpdate(response.data.message);
         }, 1000);
@@ -219,12 +258,13 @@ const Users = () => {
           role: "",
         });
         fetchUsers();
+       
       })
       .catch((error) => {
-        const errorMessage = handleErrorMessage(error.response.data);
-
-        onErrorUpdate(errorMessage);
         setUpdateLoading(false);
+       
+        onErrorUpdate(error);
+      
       });
   };
 
@@ -254,13 +294,18 @@ const Users = () => {
       axios
         .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
+          if (response.status === 401) {
+            navigate('/');
+          }
           setUsers(response.data.users.data);
           setTotalRecords(response.data.users.total);
           setIsLoading(false);
         })
         .catch((error) => {
+          setUpdateLoading(false);
+        
           onError(error);
-          setIsLoading(false);
+       
         });
     } else {
       // If there is no search term, just fetch users normally
@@ -346,18 +391,22 @@ const Users = () => {
                   />
                 </div>
                 <div className="flex flex-col mt-4">
-                  <button
+                 
+                 {hasWritePermissionUsers && ( <button
                     onClick={() => handleEditUser(user)}
                     className="px-4 py-2 mb-2 bg-blue-500 text-white rounded-md"
                   >
                     Edit
-                  </button>
-                  <button
+                  </button>)}
+
+               {hasWritePermissionUsers && (   <button
                     onClick={() => confirmDelete(user.id)}
                     className="px-4 py-2 bg-red-500 text-white rounded-md"
                   >
                     Delete
-                  </button>
+                  </button>)}
+
+
                 </div>
               </div>
             </div>

@@ -12,6 +12,8 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DelegateTaskDialog from "./DelegateDialog";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from "react-router-dom";
+
 
 const ReviewTasks = () => {
   const { userRole, userEmail, userActivities, userDepartment } = useSelector(
@@ -36,33 +38,52 @@ const ReviewTasks = () => {
  const [activeView, setActiveView] = useState("My Tasks");
   const [showDelegate, setShowDelegate] = useState(false);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
+  const navigate = useNavigate();
+
   
   const [filters,setFilters] = useState({
     global:{value:null, matchMode:FilterMatchMode.CONTAINS},
   })
  
-  //getting permission for tasks
-  const tasksActivity = userActivities.find(
+   //getting the permission for projects
+   const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
-  const hasWritePermissionTasks = tasksActivity
-    ? tasksActivity.pivot.permissions.includes("write")
-    : false;
-  //getting permission for only pms to close tasks
+  const hasAssignPermissionTasks =
+    taskActivity.pivot.permissions.includes("Assign-Tasks");
+
+  const hasCloseTasks =
+    taskActivity.pivot.permissions.includes("Close-tasks");
+
+    const hasPushDevelopment =
+    taskActivity.pivot.permissions.includes("Push-Development");
+
+    const hasPushTesting =
+    taskActivity.pivot.permissions.includes("Push-Testing");
+
+    const hasPushReview =
+    taskActivity.pivot.permissions.includes("Push-Review");
+
+    const hasreturnTesting =
+    taskActivity.pivot.permissions.includes("Return-Testing");
+
+    const hasreturnReview =
+    taskActivity.pivot.permissions.includes("Return-Review");
+    
+    const hasViewAllTasks =
+    taskActivity.pivot.permissions.includes("View-All-Tasks");
+
+    const hasTeamTasks =
+    taskActivity.pivot.permissions.includes("View-Team-Tasks");
+
+    const hasReturnDevelpment =
+    taskActivity.pivot.permissions.includes("Return-Development");
+
  
   //getting permission for only pms to view other tasks in different projects
   const Role = userRole; // Replace this with how you get the user's role
   const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
 
-  const hasPermissionTasksProjects =
-    normalizedRole.includes("portfolio manager") ||
-    normalizedRole.includes("head") ||
-    normalizedRole.includes("team lead");
-
-    const hasPermissionTaskDelegation = normalizedRole.includes("team lead") || normalizedRole.includes("head") || normalizedRole.includes("portfolio manager");
-
-    const hasClosePermissionTasks = normalizedRole.includes("portfolio manager");
-    
 
   const onSuccess = (success) => {
     if (success) {
@@ -76,7 +97,7 @@ const ReviewTasks = () => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
@@ -87,7 +108,7 @@ const ReviewTasks = () => {
   };
 
   const onWarn = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "warn",
         summary: "Please upload micro task(s)",
@@ -198,6 +219,10 @@ const durationTemplate = (rowData) => {
         ...config,  // spread the config object here
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
         setTasksData(response.data.activeSprint);
       
         setMicroTasksData(response.data.activeSprint.subtasks);
@@ -230,10 +255,15 @@ const durationTemplate = (rowData) => {
         ...config,  // spread the config object here
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
       
         setOtherData(response.data.allSubtasks);
       })
       .catch((error) => {
+
         if (error.response && error.response.data && error.response.data.error) {
           onError(error.response.data.error);
         } else {
@@ -348,6 +378,11 @@ const durationTemplate = (rowData) => {
           
         },config)
         .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           setTimeout(() => {
             onSuccess(response.data.message);
             fetchMyTasks(userEmail, userRole,userDepartment);
@@ -357,6 +392,7 @@ const durationTemplate = (rowData) => {
         })
         .catch((error) => {
           setPushLoading(false);
+          onError(error);
         });
     } else {
       onWarn("Select atleast one task");
@@ -407,6 +443,11 @@ const durationTemplate = (rowData) => {
         },
       })
       .then((response) => {
+
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setTimeout(() => {
           onInfo(response.data.message);
           fetchMyTasks(userEmail, userRole,userDepartment);
@@ -417,8 +458,8 @@ const durationTemplate = (rowData) => {
         setComment("");
       })
       .catch((error) => {
-        onError("Error encountered");
         setPushLoadingTest(false);
+        onError("Error encountered");
       });
   };
 
@@ -438,7 +479,7 @@ const durationTemplate = (rowData) => {
           My Tasks
         </button>
 
-        {hasPermissionTasksProjects && (
+        {(hasViewAllTasks || hasTeamTasks) && (
           <button
             onClick={() => {
               setActiveView("Other Tasks");
@@ -545,7 +586,7 @@ const durationTemplate = (rowData) => {
       )}
 
       {/* Other Tasks section */}
-      {activeView === "Other Tasks" && hasPermissionTasksProjects && (
+      {activeView === "Other Tasks" && (hasViewAllTasks || hasTeamTasks) && (
         <div>
           {otherData && otherData.length > 0 ? (
             <div>
@@ -613,7 +654,7 @@ const durationTemplate = (rowData) => {
           style={{ width: "98vw" }}
           footer={
             <div className="justify-between flex">
-              {hasClosePermissionTasks && (
+              {hasreturnTesting && (
                 <button
                   className="px-4 py-2 bg-yellow-700 text-white rounded-md"
                   onClick={openSubmitDialog}
@@ -622,7 +663,7 @@ const durationTemplate = (rowData) => {
                   Push Back to Testing
                 </button>
               )}
-              {hasClosePermissionTasks && (
+              {hasCloseTasks && (
                 <button
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
                   onClick={openConfirmDialog}
@@ -648,6 +689,9 @@ const durationTemplate = (rowData) => {
             selectionMode="checkbox"
             selection={selectedTasks}
             filters={filters}
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10,20,30]}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
           >
@@ -856,7 +900,7 @@ const durationTemplate = (rowData) => {
               )}
             ></textarea>
 
-            {hasPermissionTaskDelegation && (
+            {hasAssignPermissionTasks && (
               <button
                 className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
                 onClick={() => showDelegateDialog(moreDetailsData)}
@@ -870,7 +914,7 @@ const durationTemplate = (rowData) => {
             showDelegate={showDelegate}
             disableShowDelegateDialog={disableShowDelegateDialog}
             projectInfomation={projectInfo}
-            roleName={userRole}
+            roleName={userDepartment}
             onSuccess={onSuccessfulDelegation}
           />
         </Dialog>

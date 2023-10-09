@@ -6,6 +6,8 @@ import { Toast } from "primereact/toast";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
+
 
 
 const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
@@ -13,6 +15,8 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
 
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
 
   const transformData = (data) => {
     let result = [];
@@ -44,7 +48,7 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -74,6 +78,9 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
         )
         .then((response) => {
           // Handle the response data
+          if (response.status === 401) {
+            navigate('/');
+          }
           
           const projectinfo = transformData(response.data);
           setProjectData(projectinfo);
@@ -81,10 +88,7 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
         })
         .catch((error) => {
           // Handle any errors here
-          console.error(
-            "Error fetching project,phases in active sprint:",
-            error
-          );
+          
           setIsLoading(false);
         });
     }

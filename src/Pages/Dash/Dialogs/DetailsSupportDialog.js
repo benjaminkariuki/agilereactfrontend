@@ -7,6 +7,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
+import { useNavigate } from "react-router-dom";
+
 
 
 
@@ -18,6 +20,8 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
 
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
 
 
 
@@ -34,7 +38,7 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
   };
 
   const onError = (error) => {
-    if (error) {
+    if (error && toast.current) {
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
@@ -66,7 +70,10 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
         )
         .then((response) => {
           // Handle the response data
-          
+          if (response.status === 401) {
+            navigate('/');
+          }
+
           const projectinfo = (response.data.projectTitles.data);
           setTotalRecords(response.data.projectTitles.total);
           setProjectData(projectinfo);
@@ -74,11 +81,9 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
         })
         .catch((error) => {
           // Handle any errors here
-          console.error(
-            "Error fetching projects in support",
-            error
-          );
+          
           setIsLoading(false);
+          
         });
     }
   }, [showDetailsSupport,page]);

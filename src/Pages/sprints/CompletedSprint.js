@@ -4,12 +4,16 @@ import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { Toast } from "primereact/toast";
 import { Chart } from "primereact/chart";
 import Subtasks from "./Subtasks";
+import { useNavigate } from "react-router-dom";
+
 
 const CompletedSprints = () => {
   const [completeSprints, setCompleteSprints] = useState([]);
   const [viewMoreActive, setViewMoreActive] = useState(false);
   const toast = useRef(null);
   const [data, setData] = useState(null);
+  const navigate = useNavigate();
+
 
   const onSuccess = (success) => {
     toast.current.show({
@@ -21,12 +25,14 @@ const CompletedSprints = () => {
   };
 
   const onError = (error) => {
+    if(toast.current){
     toast.current.show({
       severity: "error",
       summary: "Error",
       detail: `${error}`,
       life: 3000,
     });
+  }
   };
 
   useEffect(() => {
@@ -45,10 +51,15 @@ const CompletedSprints = () => {
       const response = await axios.get(
         "https://agile-pm.agilebiz.co.ke/api/allClosedSprints",config
       );
+
+      if (response.status === 401) {
+        navigate('/');
+      }
+      
       const fetchedSprints = response.data.sprints;
       setCompleteSprints(fetchedSprints);
     } catch (error) {
-      console.error("Error getting inactive sprints:", error);
+     
       onError("Failed to fetch inactive sprints");
     }
   };
@@ -64,6 +75,10 @@ const CompletedSprints = () => {
     axios
       .get(`https://agile-pm.agilebiz.co.ke/api/closedSprintById/${id}`,config)
       .then((response) => {
+        if (response.status === 401) {
+          navigate('/');
+        }
+
         setData(response.data);
       //  onSuccess("message found successfully");
         setTimeout(() => {

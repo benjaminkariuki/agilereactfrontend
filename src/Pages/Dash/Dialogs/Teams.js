@@ -8,6 +8,8 @@ import _ from "lodash";
 import { FaBriefcase } from "react-icons/fa";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { useNavigate } from "react-router-dom";
+
 
 import "primeicons/primeicons.css";
 
@@ -18,6 +20,8 @@ const Teams = ({ onClose, labels }) => {
   const toast = useRef(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [data, setData] = useState([]);
+  const navigate = useNavigate();
+
 
   const [
     isLoadingProjectsDepartmentCount,
@@ -206,6 +210,10 @@ const Teams = ({ onClose, labels }) => {
         }
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectTaskCountPerDepartment = response.data[0];
       setChartDataProjectDepartmentFromAPi(
         fetchedProjectTaskCountPerDepartment
@@ -219,8 +227,8 @@ const Teams = ({ onClose, labels }) => {
       }
     } catch (error) {
       setIsLoadingProjectsDepartmentCount(false);
-
-      setErrorMessage("Failed to get subtasks");
+     
+setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
   };
@@ -245,6 +253,10 @@ const Teams = ({ onClose, labels }) => {
         }
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       setData(response.data);
 
 
@@ -254,7 +266,7 @@ const Teams = ({ onClose, labels }) => {
       }
     } catch (error) {
       setIsLoadingProjectsUserCount(false);
-
+     
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }

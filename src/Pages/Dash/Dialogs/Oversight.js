@@ -11,6 +11,8 @@ import DetailsImplementationDialog from "./DetailsImplementationDialog.js";
 import DetailsArchivedDialog from "./DetailsArchivedDialog.js";
 import MoreSprintsDetails from "./MoreSprintsDetails.js";
 import AllProjectsDialog from "./AllProjectsDialog.js";
+import { useNavigate } from "react-router-dom";
+
 
 import DetailsSupportDialog from "./DetailsSupportDialog.js";
 
@@ -21,6 +23,8 @@ const Oversight = ({ onClose }) => {
   const [isLoadingProjectsCount, setIsLoadingProjectsCount] = useState(false);
   const [isLoadingAllProjectsCount, setIsLoadingAllProjectsCount] =
     useState(false);
+    const navigate = useNavigate();
+
 
   const [projectImplementationCount, setImplementationProjectsCount] =
     useState(0);
@@ -109,6 +113,10 @@ const Oversight = ({ onClose }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedimplementation = response.data.supportProjectsCount;
       setImplementationProjectsCount(fetchedimplementation);
 
@@ -116,6 +124,7 @@ const Oversight = ({ onClose }) => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -136,6 +145,10 @@ const Oversight = ({ onClose }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedsupportcount = response.data.supportProjectsCount;
       setProjectsSupportCount(fetchedsupportcount);
 
@@ -143,6 +156,7 @@ const Oversight = ({ onClose }) => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -162,6 +176,10 @@ const Oversight = ({ onClose }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectsArchivedcount = response.data.archivedProjectsCount;
       setProjectsArchivedCount(fetchedProjectsArchivedcount);
 
@@ -169,6 +187,7 @@ const Oversight = ({ onClose }) => {
         setErrorMessage("");
       }
     } catch (error) {
+     
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -189,6 +208,10 @@ const Oversight = ({ onClose }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedProjectTaskCountPerUser = response.data;
       setChartDataFromAPi(fetchedProjectTaskCountPerUser);
 
@@ -198,6 +221,7 @@ const Oversight = ({ onClose }) => {
       }
     } catch (error) {
       setIsLoadingAllProjectsCount(false);
+      
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -217,6 +241,10 @@ const Oversight = ({ onClose }) => {
         config
       );
 
+      if (response.status === 401) {
+        navigate('/');
+      }
+
       const fetchedActiveSprint = response.data[0];
       setActiveSprint(fetchedActiveSprint);
       setActiveSprintLabels(response.data[0].duration);
@@ -231,6 +259,7 @@ const Oversight = ({ onClose }) => {
         setErrorMessage("");
       }
     } catch (error) {
+      
       setErrorMessage("Failed to get active sprint details");
       onFetchingRoles(error);
     }

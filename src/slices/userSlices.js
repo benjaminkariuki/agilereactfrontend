@@ -1,23 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 // Create the createUser asynchronous action
-const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
 
 const userSlice = createSlice({
   name: "user",
   initialState: {
-     loggedIn: storedUser ? true : false,
+     loggedIn:false,
 
 
-    userId: storedUser.id || null,
-    userFName: storedUser.firstName || "",
-    userLName: storedUser.lastName || "",
-    userEmail: storedUser.email || "",
-    userContacts: storedUser.contacts || "",
-    userDepartment: storedUser.department || "",
-    userRole: storedUser.roleName || "",
-    userProfilePhoto: storedUser.profile_pic || "",
-    userActivities: storedUser.activities || [],
+    userId:null,
+    userFName:  "",
+    userLName:  "",
+    userEmail:  "",
+    userContacts: "",
+    userDepartment:  "",
+    userRole:"",
+    userProfilePhoto: "",
+    userActivities: [],
     users: [],
     error: null,
   },

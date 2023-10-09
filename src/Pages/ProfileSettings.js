@@ -168,6 +168,7 @@ const EditProfile = () => {
         dispatch(updateUser(user));
         // Update session storage with the new user data
         sessionStorage.setItem("user", JSON.stringify(user));
+        
         setTimeout(() => {
           setIsLoading(false);
           setIsEditing(false);

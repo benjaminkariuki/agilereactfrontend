@@ -38,7 +38,7 @@ setupAxiosInterceptors(() => {
 
 const ProtectedRoute = ({ element, redirectPath }) => {
   
-  const loggedIn =  sessionStorage.getItem('token');
+  const loggedIn = useSelector((state) => state.user);
 
   return loggedIn ? element : <Navigate to={redirectPath} />;
 };

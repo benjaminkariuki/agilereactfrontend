@@ -12,6 +12,7 @@ function App() {
         <Route path="/" element={<LoginForm />} />
         <Route path="/forgetpassword" element={<ForgotPass />} />
         <Route path="/resetpassword" element={<PasswordReset />} />
+       
       </Routes>
     </div>
   );

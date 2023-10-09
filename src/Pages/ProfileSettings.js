@@ -5,7 +5,7 @@ import { logout, updateUser } from "../slices/userSlices";
 import { FiTrash2 } from "react-icons/fi";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import {  confirmDialog } from "primereact/confirmdialog";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import 'react-phone-number-input/style.css';
@@ -97,6 +97,9 @@ const EditProfile = () => {
       icon: "pi pi-exclamation-triangle",
       acceptClassName: "p-button-danger",
       accept: () => handleDeletePhoto(),
+      reject: () => {
+        // You can perform any logic if needed when the user clicks "No" or simply do nothing
+      }
     });
   };
 
@@ -132,7 +135,10 @@ const EditProfile = () => {
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
-    formData.append("contacts", contact);
+ 
+    if (contact !== undefined) {
+      formData.append("contacts", contact);
+  }
     formData.append("profile_pic", profile_pic);
 
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
@@ -295,8 +301,6 @@ const EditProfile = () => {
 
   return (
     <div>
-      <Toast ref={toast} />
-      <ConfirmDialog />
       <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
         User account settings
       </h2>

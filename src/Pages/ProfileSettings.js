@@ -133,13 +133,20 @@ const EditProfile = () => {
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
- 
-    if (contact !== undefined) {
-      formData.append("contacts", contact);
-  }
-    formData.append("profile_pic", profile_pic);
+   
+       // Only append if values exist
+       if (firstName) {
+        formData.append("firstName", firstName);
+    }
+    if (lastName) {
+        formData.append("lastName", lastName);
+    }
+    if (contact && contact !== 'undefined') {
+        formData.append("contacts", contact);
+    }
+    if (profile_pic) {
+        formData.append("profile_pic", profile_pic);
+    }
 
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 

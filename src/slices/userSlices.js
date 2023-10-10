@@ -6,8 +6,6 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
      loggedIn:false,
-
-
     userId:null,
     userFName:  "",
     userLName:  "",
@@ -48,16 +46,10 @@ const userSlice = createSlice({
       sessionStorage.removeItem("token");
     },
     updateUser: (state, action) => {
-       state.loggedIn = true;
-      state.userId = action.payload.id;
       state.userFName = action.payload.firstName;
       state.userLName = action.payload.lastName;
-      state.userRole = action.payload.roleName;
-      state.userEmail = action.payload.email;
-      state.userDepartment = action.payload.department;
       state.userContacts = action.payload.contacts;
       state.userProfilePhoto = action.payload.profile_pic;
-      state.userActivities = action.payload.activities;
     },
   },
 });

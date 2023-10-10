@@ -1093,20 +1093,12 @@ const durationTemplate = (rowData) => {
                 <span className="font-semibold">Assigned To:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.assigned_to?.map((item, index) => (
+              {moreDetailsData.assigned_to?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
                   >
-                    <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
-                      {_.startCase(
-                        (item?.custom_user?.lastName ?? "").toLowerCase()
-                      )}{" "}
-                      -{item?.custom_user?.email}
-                    </p>
+                    {item.email && <p key={index}>{item.email}</p>}
                   </div>
                 ))}
               </div>
@@ -1114,20 +1106,12 @@ const durationTemplate = (rowData) => {
                 <span className="font-semibold">Assigned BA:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.baassigned_to?.map((item, index) => (
+              {moreDetailsData.baassigned_to?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
                   >
-                    <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
-                      {_.startCase(
-                        (item?.custom_user?.lastName ?? "").toLowerCase()
-                      )}{" "}
-                      -{item?.custom_user?.email}
-                    </p>
+                    {item.email && <p key={index}>{item.email}</p>}
                   </div>
                 ))}
               </div>

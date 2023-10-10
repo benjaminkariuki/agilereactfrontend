@@ -58,9 +58,8 @@ const LoginForm = () => {
     
     } catch (error) {
       if (error.response) {
-        if (error.response.status === 401) {
-          onLoginError(error.response.data.message);
-        }
+        onLoginError(error.response.data.message);
+
       }
       // onLoginError(error.message);
 

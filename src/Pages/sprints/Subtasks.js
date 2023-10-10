@@ -6,7 +6,7 @@ import _ from "lodash";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import { FaInfoCircle } from "react-icons/fa";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import {  confirmDialog } from "primereact/confirmdialog";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useSelector } from "react-redux";
@@ -205,7 +205,6 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   return (
     <div className="w-full ">
       <Toast ref={toast} />
-      <ConfirmDialog />
       <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
         {Object.entries(_.groupBy(subtasks, "project.title")).map(
           ([projectTitle, projectSubtasks], index) => (

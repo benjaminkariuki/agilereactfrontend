@@ -28,6 +28,8 @@ const EditProfile = () => {
     userContacts,
   } = useSelector((state) => state.user);
 
+
+
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -67,18 +69,17 @@ const EditProfile = () => {
     ) {
       // Extract error messages and join them into a single string
       return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.response && error.response.data && error.response.data.message) {
+      // Server error with a `message` property
+      return error.response.data.message;
     } else if (error && error.message) {
       // Client-side error (e.g., no internet)
       return error.message;
     }
     // If no errors property is found, return the main message or a default error message
-    return error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-      ? error.response.data.message
-      : "An unexpected error occurred.";
+    return "An unexpected error occurred.";
   };
+  
 
   const onError = (error) => {
     if (error && toast.current) {
@@ -161,22 +162,12 @@ const EditProfile = () => {
       )
       .then((response) => {
         setIsLoading(false);
-        onSuccess(response.data.message);
         const  user = response.data.user;
-        if (response.status === 401) {
-          navigate('/');
-        }
-        
+       
+
         dispatch(updateUser(user));
-        // Update session storage with the new user data
-        sessionStorage.setItem("user", JSON.stringify(user));
-          setIsLoading(false);
-          setIsEditing(false);
-          setFirstName("");
-          setLastName("");
-          setcontact("");
-          setPreviewImage();
-          setPhoto("");
+        handleCloseEdit();
+      
       
       })
       .catch((error) => {
@@ -235,18 +226,13 @@ const EditProfile = () => {
           previousPass:Oldpassword,
         },config)
         .then((response) => {
-          onSuccess(response.data.message);
-          if (response.status === 401) {
-            navigate('/');
-          }
+         
           setTimeout(() => {
-            setNewPassword("");
-            setConfirmPassword("");
-            setIsLoading(false);
-            setShowPasswordModal(false);
+          handleTogglePasswordModal();
             dispatch(logout());
             navigate("/");
           }, 1000);
+
         })
         .catch((error) => {
           // Error occurred while changing password
@@ -299,13 +285,15 @@ const EditProfile = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
-        User account settings
-      </h2>
+      <Toast ref={toast} />
       <div
         className="w-full"
         style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
       >
+         <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
+        User account settings
+      </h2>
+
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
           <div className="relative">
             <div className="mb-4 absolute top-0 right-0">
@@ -389,7 +377,7 @@ const EditProfile = () => {
             <div className="flex justify-between mt-4">
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => setIsEditing(true)}
               >
                 Edit details
               </button>
@@ -402,13 +390,11 @@ const EditProfile = () => {
             </div>
           </div>
         </div>
-        {/*Edit profile deatils
-      @param firstname
-      @param lastname
-      @contacts
-      @photo      
-      */}
-        <Dialog
+      
+   
+      </div>
+
+      <Dialog
           header="Edit User"
           visible={isEditing}
           onHide={handleCloseEdit}
@@ -494,7 +480,6 @@ const EditProfile = () => {
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 onClick={handleSubmit}
-                disabled={isLoading}
               >
                 {isLoading ? (
                   <i
@@ -514,11 +499,7 @@ const EditProfile = () => {
             </div>
           </div>
         </Dialog>
-        {/*Edit password/change
-      @param paswword
-      @param confirm-passwpord
-            
-      */}
+      
 
         <Dialog
           header="Change Password"
@@ -584,7 +565,6 @@ const EditProfile = () => {
                 <button
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   onClick={handlePasswordSave}
-                  disabled={isLoading}
                 >
                   {isLoading ? (
                     <i
@@ -605,7 +585,8 @@ const EditProfile = () => {
             </form>
           </div>
         </Dialog>
-      </div>
+
+
     </div>
   );
 };

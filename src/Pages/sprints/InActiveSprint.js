@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { AiFillClockCircle } from "react-icons/ai";
 import { Toast } from "primereact/toast";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import {  confirmDialog } from "primereact/confirmdialog";
 import { useSelector } from "react-redux";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
@@ -238,7 +238,6 @@ const hasWritePermissionSprints = sprintsActivity
   return (
     <div>
       <Toast ref={toast} />
-      <ConfirmDialog />
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
         {inactiveSprints.map((sprint) => (
           <div key={sprint.id}>

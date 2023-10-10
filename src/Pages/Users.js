@@ -453,8 +453,8 @@ const Users = () => {
       <div className="mb-6">
 
        {users.length > 0 ? (<Paginator
-          first={page * 10}
-          rows={10}
+          first={page * 12}
+          rows={12}
           totalRecords={totalRecords}
           onPageChange={(e) => {
             setPage(e.page);

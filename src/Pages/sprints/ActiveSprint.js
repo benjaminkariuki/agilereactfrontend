@@ -11,8 +11,10 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const ActiveSprint = () => {
+
+const ActiveSprint = ({setRefreshKey }) => {
   const [data, setData] = useState(null);
+
   const toast = useRef(null);
   const [closeLoading, setCloseLoading] = useState(false);
   const [summary, setSummary] = useState("");
@@ -39,6 +41,26 @@ const hasWritePermissionSprints = sprintsActivity
   : false;
 
 
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.response && error.response.data && error.response.data.message) {
+      // Server error with a `message` property
+      return error.response.data.message;
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return "An unexpected error occurred.";
+  };
+  
 
 
   const confirmClose = () => {
@@ -48,6 +70,7 @@ const hasWritePermissionSprints = sprintsActivity
       icon: "pi pi-exclamation-triangle",
       accept: () => {
         handleConfirmClose();
+
       },
       reject: () => {
         // You can perform any logic if needed when the user clicks "No" or simply do nothing
@@ -56,12 +79,12 @@ const hasWritePermissionSprints = sprintsActivity
   };
 
   const handleConfirmClose = () => {
-    setViewSummaryDialogue(true);
+    setViewSummaryDialogue(false);
     setVisible(false);
   };
 
   const handleConfirmOpen = () => {
-    setVisible(true);
+    setViewSummaryDialogue(true);
     confirmClose();
   };
 
@@ -81,7 +104,7 @@ const hasWritePermissionSprints = sprintsActivity
       toast.current?.show({
         severity: "error",
         summary: "Error occurred",
-        detail: `${error}`,
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -230,17 +253,17 @@ const hasWritePermissionSprints = sprintsActivity
         config
       )
       .then((response) => {
-        onSuccess("Closed successfuly");
-        setCloseLoading(true);
+        setCloseLoading(false);
+        setRefreshKey((prevKey) => prevKey + 1);
+
+
       })
       .catch((error) => {
-        setCloseLoading(true);
+        setCloseLoading(false);
 
-        if (error.response && error.response.status === 401) {
-          navigate('/login');
-        }
         
-        onError("Error closing sprint");
+        
+        onError(error);
       });
   };
 
@@ -286,7 +309,6 @@ const hasWritePermissionSprints = sprintsActivity
             {hasWritePermissionSprints && ( <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 onClick={() => handleConfirmOpen()}
-                disabled={closeLoading}
               >
                 Close
               </button>
@@ -326,7 +348,6 @@ const hasWritePermissionSprints = sprintsActivity
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 onClick={() => handleCloseSprint(data.id)}
-                disabled={closeLoading}
               >
                 {closeLoading ? (
                   <i

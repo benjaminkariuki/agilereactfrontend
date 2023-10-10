@@ -486,7 +486,7 @@ const durationTemplate = (rowData) => {
                 ? "bg-blue-500"
                 : "bg-gray-400"
             } transition-colors`}
-          > 
+          >
             Returned task(s) history
           </button>
         </div>
@@ -517,8 +517,6 @@ const durationTemplate = (rowData) => {
           )}
         </p>
       </div>
-
-     
 
       {/* My Tasks section */}
       {activeView === "My Tasks" && (
@@ -643,12 +641,12 @@ const durationTemplate = (rowData) => {
         <div>
           {flattenedLogs.length > 0 ? (
             <DataTable
-            header={customHeader}
-            filters={filters}
-            paginator
+              header={customHeader}
+              filters={filters}
+              paginator
               rows={10}
-              rowsPerPageOptions={[10,20,30]}
- value={flattenedLogs}
+              rowsPerPageOptions={[10, 20, 30]}
+              value={flattenedLogs}
               className="border rounded-md p-4 bg-white"
             >
               <Column
@@ -680,7 +678,6 @@ const durationTemplate = (rowData) => {
               ></Column> */}
               <Column
                 header="Time Stamp"
-               
                 body={(rowData) => `${rowData.date} ${rowData.time}`}
               ></Column>
               <Column field="count" header="Times Returned"></Column>
@@ -755,7 +752,7 @@ const durationTemplate = (rowData) => {
             filters={filters}
             paginator
             rows={10}
-            rowsPerPageOptions={[10,20,30]}
+            rowsPerPageOptions={[10, 20, 30]}
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
@@ -785,12 +782,12 @@ const durationTemplate = (rowData) => {
             <Column field="start_date" header="Start Date" />
             <Column field="end_date" header="End Date" />
             <Column
-                field="close_date"
-                header="Completion Date"
-                sortable
-              ></Column>
+              field="close_date"
+              header="Completion Date"
+              sortable
+            ></Column>
 
-              <Column header="Duration" body={durationTemplate}></Column>
+            <Column header="Duration" body={durationTemplate}></Column>
             <Column
               field="status"
               header="Status"
@@ -801,7 +798,7 @@ const durationTemplate = (rowData) => {
               field="stage"
               body={sentenceCaseFormatter}
             />
-            
+
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
             <Column
@@ -958,20 +955,12 @@ const durationTemplate = (rowData) => {
                 <span className="font-semibold">Assigned To:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.assignedto?.map((item, index) => (
+                {moreDetailsData.assigned_to?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
                   >
-                    <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
-                      {_.startCase(
-                        (item?.custom_user?.lastName ?? "").toLowerCase()
-                      )}{" "}
-                      -{item?.custom_user?.email}
-                    </p>
+                    {item.email && <p key={index}>{item.email}</p>}
                   </div>
                 ))}
               </div>
@@ -979,20 +968,12 @@ const durationTemplate = (rowData) => {
                 <span className="font-semibold">Assigned BA:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.baassignedto?.map((item, index) => (
+                {moreDetailsData.baassigned_to?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
                   >
-                    <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
-                      {_.startCase(
-                        (item?.custom_user?.lastName ?? "").toLowerCase()
-                      )}{" "}
-                      -{item?.custom_user?.email}
-                    </p>
+                    {item.email && <p key={index}>{item.email}</p>}
                   </div>
                 ))}
               </div>

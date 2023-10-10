@@ -15,19 +15,22 @@ const Dashboard = () => {
     (activity) => activity.name.toLowerCase() === "dashboard".toLowerCase()
   );
 
-  const hasAdminPermission =
-    dashActivity.pivot.permissions.includes("Administrator");
-  const hasManagePermission =
-    dashActivity.pivot.permissions.includes("Management");
-  const hasPmanagePermission =
-    dashActivity.pivot.permissions.includes("ProjectManager");
-  const hasLeadPermission =
-    dashActivity.pivot.permissions.includes("TeamLeads");
+ 
 
-  const hasConsultPermission =
-    dashActivity.pivot.permissions.includes("Consultant");
-  const hasDefaultPermission =
-    dashActivity.pivot.permissions.includes("Default");
+    const hasAdminPermission =
+  dashActivity && dashActivity.pivot.permissions.includes("Administrator");
+const hasManagePermission =
+  dashActivity && dashActivity.pivot.permissions.includes("Management");
+const hasPmanagePermission =
+  dashActivity && dashActivity.pivot.permissions.includes("ProjectManager");
+const hasLeadPermission =
+  dashActivity && dashActivity.pivot.permissions.includes("TeamLeads");
+
+const hasConsultPermission =
+  dashActivity && dashActivity.pivot.permissions.includes("Consultant");
+const hasDefaultPermission =
+  dashActivity && dashActivity.pivot.permissions.includes("Default");
+
 
   return (
     <div className="h-full">

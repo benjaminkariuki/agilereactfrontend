@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const InActiveSprint = () => {
+const InActiveSprint = ({ rerouting }) => {
   const [inactiveSprints, setInactiveSprints] = useState([]);
   const { userActivities } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -82,6 +82,7 @@ const hasWritePermissionSprints = sprintsActivity
       onError("Failed to fetch inactive sprints");
     }
   };
+
   const [loadingStates, setLoadingStates] = useState({});
 
   const handleActivateSprint = async (id) => {
@@ -106,7 +107,8 @@ const hasWritePermissionSprints = sprintsActivity
 
       if (response.status === 200) {
         onSuccess("Sprint activated successfully");
-        fetchInactiveSprints();
+        rerouting();      
+        
       }
     } catch (error) {
      

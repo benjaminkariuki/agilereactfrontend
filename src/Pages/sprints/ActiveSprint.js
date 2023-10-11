@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const ActiveSprint = ({setRefreshKey }) => {
+const ActiveSprint = ({ rerouting }) => {
   const [data, setData] = useState(null);
 
   const toast = useRef(null);
@@ -22,6 +22,8 @@ const ActiveSprint = ({setRefreshKey }) => {
   const [visible, setVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { userActivities } = useSelector((state) => state.user);
+  const [remount, setRemount] = useState(0);
+
   const navigate = useNavigate();
 
 
@@ -254,15 +256,12 @@ const hasWritePermissionSprints = sprintsActivity
       )
       .then((response) => {
         setCloseLoading(false);
-        setRefreshKey((prevKey) => prevKey + 1);
-
-
+        setViewSummaryDialogue(false);
+        onSuccess("Sprint closed Successfully");
+        fetchActiveSprint();    
       })
       .catch((error) => {
         setCloseLoading(false);
-
-        
-        
         onError(error);
       });
   };

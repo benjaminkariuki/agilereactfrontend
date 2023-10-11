@@ -278,7 +278,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               filters={filters}
               paginator
               rows={10}
-              rowsPerPageOptions={[10,20,30]}
+              rowsPerPageOptions={[10,20]}
               onSelectionChange={(e) => setSelectedTask(e.value)}
               dataKey="id"
             >
@@ -423,6 +423,15 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>
                 {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
+                {/* {moreDetailsData.subtask_sprints?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                  >
+                   {_.startCase((item?.status ?? "").toLowerCase())}
+
+                  </div>
+                ))} */}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>

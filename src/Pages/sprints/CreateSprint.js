@@ -79,29 +79,32 @@ const hasWritePermissionSprints = sprintsActivity
       error &&
       error.response &&
       error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
       error.response.data.message
     ) {
-      // Handle error messages directly under data property
+      // Server error with a `message` property
       return error.response.data.message;
     } else if (
       error &&
       error.response &&
       error.response.data &&
-      error.response.data.errors
+      error.response.data.error
     ) {
-      // Extract error messages and join them into a single string
-      return Object.values(error.response.data.errors).flat().join(" ");
+      // Server error with an `error` property
+      return error.response.data.error;
     } else if (error && error.message) {
       // Client-side error (e.g., no internet)
       return error.message;
     }
     // If no errors property is found, return the main message or a default error message
-    return error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-      ? error.response.data.message
-      : "An unexpected error occurred.";
+    return "An unexpected error occurred.";
   };
 
 

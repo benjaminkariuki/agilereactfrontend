@@ -44,7 +44,7 @@ const ManageSprints = () => {
       case "CreateSprint":
         return <CreateSprint rerouting={routeToListing} />;
       case "ActiveSprint":
-        return <ActiveSprint rerouting={routeToListing}  setRefreshKey={setRefreshKey}/>;
+        return <ActiveSprint rerouting={routeToListing} />;
       case "InActiveSprint":
         return <InActiveSprint rerouting={routeToListing} />;
       case "CompletedSprints":

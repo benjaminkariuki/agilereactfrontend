@@ -163,6 +163,41 @@ const MicroTask = ({
     }
   };
 
+  const handleErrorMessage = (error) => {
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.errors
+    ) {
+      // Extract error messages and join them into a single string
+      return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ) {
+      // Server error with a `message` property
+      return error.response.data.message;
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.error
+    ) {
+      // Server error with an `error` property
+      return error.response.data.error;
+    } else if (error && error.message) {
+      // Client-side error (e.g., no internet)
+      return error.message;
+    }
+    // If no errors property is found, return the main message or a default error message
+    return "An unexpected error occurred.";
+  };
+
+  
+
   const onError = (error) => {
     if (error && toast.current) {
       toast.current?.show({
@@ -262,9 +297,6 @@ const MicroTask = ({
           phaseActivityId: activityId,
         },
         ...config, // Include the config object here
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
       })
       .then((response) => {
 
@@ -334,28 +366,7 @@ const MicroTask = ({
     setIsEditTaskModalOpen(true); // Open the edit modal
   };
 
-  const handleErrorMessage = (error) => {
-    if (
-      error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.errors
-    ) {
-      // Extract error messages and join them into a single string
-      return Object.values(error.response.data.errors).flat().join(" ");
-    } else if (error && error.message) {
-      // Client-side error (e.g., no internet)
-      return error.message;
-    }
-    // If no errors property is found, return the main message or a default error message
-    return error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-      ? error.response.data.message
-      : "An unexpected error occurred.";
-  };
-
+ 
   const handleCloseEditModal = () => {
     setEditingTask({
       id: null,

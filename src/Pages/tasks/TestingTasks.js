@@ -9,7 +9,6 @@ import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
-import { Editor } from "@tinymce/tinymce-react";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from "react-router-dom";
@@ -46,15 +45,17 @@ const TestingTasks = () => {
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
   const navigate = useNavigate();
 
+  const [myTaskCount, setMyTaskCount] = useState(0);
+  const [viewOtherTaskCircle, setViewOtherTasksCircleButton] = useState(false);
+
+  const [otherTaskCount, setOtherTaskCount] = useState(0);
+
 
   const [filters,setFilters] = useState({
     global:{value:null, matchMode:FilterMatchMode.CONTAINS},
   })
 
-  const Role = userRole; // Replace this with how you get the user's role
-  const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
-  const normalizedDepartment = userDepartment.toLowerCase();
-
+  
    //getting the permission for projects
    const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
@@ -215,6 +216,7 @@ const durationTemplate = (rowData) => {
 
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
+        setMyTaskCount(response.data.subtasksCount);
       })
       .catch((error) => {
        
@@ -250,6 +252,8 @@ const durationTemplate = (rowData) => {
         }
 
         setOtherData(response.data.allSubtasks);
+        setOtherTaskCount(response.data.allSubtasksCount);
+        setViewOtherTasksCircleButton(true);
       })
       .catch((error) => {
 
@@ -525,28 +529,72 @@ const durationTemplate = (rowData) => {
         <div className="flex space-x-0.5">
         <button
           onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md ${
+          className={`p-2 rounded-md relative ${
             activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
           } transition-colors`}
         >
           My Tasks
+
+              {/* The circle element displaying the count */}
+              <div
+              style={{
+                position: "absolute",
+                top: "-10px",
+                right: "-10px",
+                backgroundColor: "black", // Change this to your preferred color
+                color: "white",
+                borderRadius: "50%",
+                width: "20px", // Adjust these values
+                height: "20px", // as needed
+                textAlign: "center",
+                lineHeight: "20px", // Should be equal to height for vertical centering
+                fontSize: "12px", // Adjust as needed
+              }}
+            >
+              {myTaskCount} {/* Replace 'count' with the actual count */}
+            </div>
         </button>
 
         {(hasViewAllTasks || hasTeamTasks) && (
           <button
+          style={{ marginLeft: "10px" }}
             onClick={() => {
               setActiveView("Other Tasks");
               fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
             }}
-            className={`p-2 rounded-md ${
+            className={`p-2 rounded-md relative ${
               activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
           >
             Other Tasks
+
+            {viewOtherTaskCircle && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-10px",
+                    right: "-10px",
+                    backgroundColor: "black",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "20px", //
+                    height: "20px", //
+                    textAlign: "center",
+                    lineHeight: "20px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {otherTaskCount}
+                </div>
+              )}
+
+
           </button>
         )}
 
         <button
+        style={{ marginLeft: "10px" }}
+
           onClick={() => {
             setActiveView("Returned task history");
             fetchReturnedTaskLogs();
@@ -563,14 +611,16 @@ const durationTemplate = (rowData) => {
 
        {/* Sprint name on the right */}
        <p
-          className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
+                 style={{ marginRight: "30px" }}
+
+          className="text-black-600 cursor-pointer hover:text-black-600 mr-18 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
         >
           <span className="font-semibold">Sprint name:</span>
           {_.startCase(tasksData.name)}
           {showSprintPopup && (
-            <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+            <div className="absolute bg-white p-3 w-48 border rounded-md shadow-lg mt-2">
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{" "}
                 {_.startCase(tasksData.status)}

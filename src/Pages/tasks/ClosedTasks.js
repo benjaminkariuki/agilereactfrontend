@@ -18,6 +18,7 @@ const ClosedTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
     (state) => state.user
   );
+
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [tasksData, setTasksData] = useState([]); // State to store API data
   const [microTasksData, setMicroTasksData] = useState([]);
@@ -34,6 +35,11 @@ const ClosedTasks = () => {
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
   const { userActivities } = useSelector((state) => state.user);
   const navigate = useNavigate();
+
+  const [myTaskCount, setMyTaskCount] = useState(0);
+  const [viewOtherTaskCircle, setViewOtherTasksCircleButton] = useState(false);
+
+  const [otherTaskCount, setOtherTaskCount] = useState(0);
 
 
   
@@ -202,6 +208,8 @@ const durationTemplate = (rowData) => {
 
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
+        setMyTaskCount(response.data.subtasksCount);
+
       })
       .catch((error) => {
        
@@ -240,6 +248,9 @@ const durationTemplate = (rowData) => {
         }
       
         setOtherData(response.data.allSubtasks);
+        setOtherData(response.data.allSubtasks);
+        setOtherTaskCount(response.data.allSubtasksCount);
+        setViewOtherTasksCircleButton(true);
       })
       .catch((error) => {
 
@@ -346,30 +357,75 @@ const durationTemplate = (rowData) => {
         <div className="flex space-x-0.5">
         <button
           onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md ${
+          className={`p-2 rounded-md relative ${
             activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
           } transition-colors`}
         >
           My Tasks
+          <div
+              style={{
+                position: "absolute",
+                top: "-10px",
+                right: "-10px",
+                backgroundColor: "black", // Change this to your preferred color
+                color: "white",
+                borderRadius: "50%",
+                width: "20px", // Adjust these values
+                height: "20px", // as needed
+                textAlign: "center",
+                lineHeight: "20px", // Should be equal to height for vertical centering
+                fontSize: "12px", // Adjust as needed
+              }}
+            >
+              {myTaskCount} {/* Replace 'count' with the actual count */}
+            </div>
         </button>
+
+
         {(hasViewAllTasks || hasTeamTasks) && (
           <button
+          style={{ marginLeft: "10px" }}
+
             onClick={() => {
               setActiveView("Other Tasks");
               fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
 
             }}
-            className={`p-2 rounded-md ${
-              activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+            className={`p-2 rounded-md relative ${
+
+            activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
           >
             Other Tasks
+
+            {viewOtherTaskCircle && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-10px",
+                    right: "-10px",
+                    backgroundColor: "black",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "20px", //
+                    height: "20px", //
+                    textAlign: "center",
+                    lineHeight: "20px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {otherTaskCount}
+                </div>
+              )}
+
           </button>
         )}
       </div>
 
      {/* Sprint name on the right */}
  <p
+                   style={{ marginRight: "30px" }}
+
           className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
@@ -377,7 +433,7 @@ const durationTemplate = (rowData) => {
           <span className="font-semibold">Sprint name:</span>
           {_.startCase(tasksData.name)}
           {showSprintPopup && (
-            <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+            <div className="absolute bg-white p-3 w-48 border rounded-md shadow-lg mt-2">
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{" "}
                 {_.startCase(tasksData.status)}

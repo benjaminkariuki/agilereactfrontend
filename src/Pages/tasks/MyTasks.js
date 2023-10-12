@@ -14,8 +14,6 @@ import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
 
-
-
 const MyTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
     (state) => state.user
@@ -35,9 +33,12 @@ const MyTasks = () => {
   const [refreshTasks, setRefreshTasks] = useState(false);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
   const { userActivities } = useSelector((state) => state.user);
+  const [myTaskCount, setMyTaskCount] = useState(0);
+  const [viewOtherTaskCircle, setViewOtherTasksCircleButton] = useState(false);
+
+  const [otherTaskCount, setOtherTaskCount] = useState(0);
+
   const navigate = useNavigate();
-
-
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -45,45 +46,34 @@ const MyTasks = () => {
 
   const [activeView, setActiveView] = useState("My Tasks");
 
-  const Role = userRole; // Replace this with how you get the user's role
-  const normalizedRole = Role.toLowerCase();
-  const normalizedDepartment = userDepartment.toLowerCase();
+  // Replace this with how you get the user's role
 
-   //getting the permission for projects
-   const taskActivity = userActivities.find(
+
+  //getting the permission for projects
+  const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
   const hasAssignPermissionTasks =
     taskActivity.pivot.permissions.includes("Assign-Tasks");
 
-  const hasCloseTasks =
-    taskActivity.pivot.permissions.includes("Close-tasks");
+  const hasCloseTasks = taskActivity.pivot.permissions.includes("Close-tasks");
 
-    const hasPushDevelopment =
+  const hasPushDevelopment =
     taskActivity.pivot.permissions.includes("Push-Development");
 
-    const hasPushTesting =
+  const hasPushTesting =
     taskActivity.pivot.permissions.includes("Push-Testing");
 
-    const hasPushReview =
-    taskActivity.pivot.permissions.includes("Push-Review");
+  const hasPushReview = taskActivity.pivot.permissions.includes("Push-Review");
 
-    const hasreturnTesting =
+  const hasreturnTesting =
     taskActivity.pivot.permissions.includes("Return-Testing");
 
-    
-    const hasViewAllTasks =
+  const hasViewAllTasks =
     taskActivity.pivot.permissions.includes("View-All-Tasks");
 
-    const hasTeamTasks =
+  const hasTeamTasks =
     taskActivity.pivot.permissions.includes("View-Team-Tasks");
-
-    
-
-
-
-  
-
 
   //toast display functions
   const onSuccess = (success) => {
@@ -220,17 +210,16 @@ const MyTasks = () => {
         ...config,
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setTasksData(response.data.activeSprint);
         // setOtherData(response.data.allSubtasks);
         setMicroTasksData(response.data.activeSprint.subtasks);
+        setMyTaskCount(response.data.subtasksCount);
       })
       .catch((error) => {
-
         if (
           error.response &&
           error.response.data &&
@@ -261,12 +250,13 @@ const MyTasks = () => {
         ...config,
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setOtherData(response.data.allSubtasks);
+        setOtherTaskCount(response.data.allSubtasksCount);
+        setViewOtherTasksCircleButton(true);
       })
       .catch((error) => {
         if (
@@ -353,9 +343,8 @@ const MyTasks = () => {
           config
         )
         .then((response) => {
-
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
 
           setTimeout(() => {
@@ -443,9 +432,8 @@ const MyTasks = () => {
           config
         )
         .then((response) => {
-
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
 
           setTimeout(() => {
@@ -463,6 +451,7 @@ const MyTasks = () => {
       onWarn("Select atleast one task");
     }
   };
+
   return (
     <div>
       <Toast ref={toast} />
@@ -474,38 +463,83 @@ const MyTasks = () => {
         <div className="flex space-x-0.5">
           <button
             onClick={() => setActiveView("My Tasks")}
-            className={`p-2 rounded-md ${
+            className={`p-2 rounded-md relative ${
               activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
           >
             My Tasks
+            {/* The circle element displaying the count */}
+            <div
+              style={{
+                position: "absolute",
+                top: "-10px",
+                right: "-10px",
+                backgroundColor: "black", // Change this to your preferred color
+                color: "white",
+                borderRadius: "50%",
+                width: "20px", // Adjust these values
+                height: "20px", // as needed
+                textAlign: "center",
+                lineHeight: "20px", // Should be equal to height for vertical centering
+                fontSize: "12px", // Adjust as needed
+              }}
+            >
+              {myTaskCount} {/* Replace 'count' with the actual count */}
+            </div>
+
           </button>
 
-          {(hasViewAllTasks || hasTeamTasks)  && (
+          {(hasViewAllTasks || hasTeamTasks) && (
             <button
+              style={{ marginLeft: "10px" }}
               onClick={() => {
                 setActiveView("Other Tasks");
                 fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
               }}
-              className={`p-2 rounded-md ${
+              className={`p-2  rounded-md relative ${
                 activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
               } transition-colors`}
             >
               Other Tasks
+              {viewOtherTaskCircle && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-10px",
+                    right: "-10px",
+                    backgroundColor: "black",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "20px", //
+                    height: "20px", //
+                    textAlign: "center",
+                    lineHeight: "20px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {otherTaskCount}
+                </div>
+              )}
+              
             </button>
           )}
         </div>
 
         {/* Sprint name on the right */}
         <p
-          className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
+          style={{ marginRight: "30px" }}
+
+          className="text-black-600  cursor-pointer hover:text-black-600 mr-8 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
         >
           <span className="font-semibold">Sprint name:</span>
           {_.startCase(tasksData.name)}
           {showSprintPopup && (
-            <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+            <div
+
+              className="absolute bg-white p-3 border w-48  rounded-md shadow-lg mt-2"
+            >
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{" "}
                 {_.startCase(tasksData.status)}
@@ -696,8 +730,7 @@ const MyTasks = () => {
             filters={filters}
             paginator
             rows={10}
-            rowsPerPageOptions={[10,20,30]}
-
+            rowsPerPageOptions={[10, 20, 30]}
             selectionMode="checkbox"
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}

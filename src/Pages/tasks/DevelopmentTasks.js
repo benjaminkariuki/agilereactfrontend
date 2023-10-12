@@ -9,15 +9,15 @@ import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
-import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
-
 
 const DevelopmentTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
     (state) => state.user
   );
+
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [tasksData, setTasksData] = useState([]); // State to store API data
   const [microTasksData, setMicroTasksData] = useState([]);
@@ -35,57 +35,45 @@ const DevelopmentTasks = () => {
   const [flattenedLogs, setFlattenedLogs] = useState([]);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
   const { userActivities } = useSelector((state) => state.user);
+  const [myTaskCount, setMyTaskCount] = useState(0);
+  const [viewOtherTaskCircle, setViewOtherTasksCircleButton] = useState(false);
+
+  const [otherTaskCount, setOtherTaskCount] = useState(0);
   const navigate = useNavigate();
-
-
-
 
   const [activeView, setActiveView] = useState("My Tasks");
   const [returnedTaskLogs, setReturnedTaskLogs] = useState([]);
-  const [filters,setFilters] = useState({
-    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
-  })
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
-  
-
-  const Role = userRole; // Replace this with how you get the user's role
-  const normalizedRole = Role.toLowerCase();
   // Convert the role to lowercase for case-insensitive checking
-  const normalizedDepartment = userDepartment.toLowerCase();
-
 
   //getting the permission for projects
-   const taskActivity = userActivities.find(
+  const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
   const hasAssignPermissionTasks =
     taskActivity.pivot.permissions.includes("Assign-Tasks");
 
-  const hasCloseTasks =
-    taskActivity.pivot.permissions.includes("Close-tasks");
+  const hasCloseTasks = taskActivity.pivot.permissions.includes("Close-tasks");
 
-    const hasPushDevelopment =
+  const hasPushDevelopment =
     taskActivity.pivot.permissions.includes("Push-Development");
 
-    const hasPushTesting =
+  const hasPushTesting =
     taskActivity.pivot.permissions.includes("Push-Testing");
 
-    const hasPushReview =
-    taskActivity.pivot.permissions.includes("Push-Review");
+  const hasPushReview = taskActivity.pivot.permissions.includes("Push-Review");
 
-    const hasreturnTesting =
+  const hasreturnTesting =
     taskActivity.pivot.permissions.includes("Return-Testing");
 
-    
-    
-    const hasViewAllTasks =
+  const hasViewAllTasks =
     taskActivity.pivot.permissions.includes("View-All-Tasks");
 
-    const hasTeamTasks =
+  const hasTeamTasks =
     taskActivity.pivot.permissions.includes("View-Team-Tasks");
-
-    
-
 
   const onSuccess = (success) => {
     if (success) {
@@ -133,55 +121,71 @@ const DevelopmentTasks = () => {
 
   const customHeader = (
     <div className="flex justify-between items-center">
-        <div>Subtask Details</div>
-        <InputText
-               style={{ width: "33.3333%", marginRight: "1rem" }}
-
-            placeholder="Search task by name, department, status or stage...."
-            onInput={(e) =>
-                setFilters({
-                    global: {
-                        value: e.target.value,
-                        matchMode: FilterMatchMode.CONTAINS,
-                    },
-                })
-            }
-        />
+      <div>Subtask Details</div>
+      <InputText
+        style={{ width: "33.3333%", marginRight: "1rem" }}
+        placeholder="Search task by name, department, status or stage...."
+        onInput={(e) =>
+          setFilters({
+            global: {
+              value: e.target.value,
+              matchMode: FilterMatchMode.CONTAINS,
+            },
+          })
+        }
+      />
     </div>
-);
-
-const durationTemplate = (rowData) => {
-  const currentDate = new Date();
-  const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
-  const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
-  const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
-
-  const daysUntilEnd = Math.floor(
-    (endDate - currentDate) / (1000 * 60 * 60 * 24)
   );
-  const totalDurationIfClosed = closeDate
-    ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
-    : null;
-  const daysOverdue = endDate < currentDate && rowData.status !== "complete"
-    ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
-    : null;
 
-  if (rowData.status === "complete" && closeDate) {
-    return <span>{totalDurationIfClosed} day(s) </span>;
-  } else if (daysUntilEnd >= 0) {
-    return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
-  } else if (daysOverdue) {
-    return (
-      <span style={{ color: "red" }}>
-        {daysOverdue} day(s) overdue
-      </span>
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(
+      Date.UTC(
+        new Date(rowData.start_date).getFullYear(),
+        new Date(rowData.start_date).getMonth(),
+        new Date(rowData.start_date).getDate()
+      )
     );
-  } else {
-    return <span>Project not started</span>;
-  }
-};
+    const endDate = new Date(
+      Date.UTC(
+        new Date(rowData.end_date).getFullYear(),
+        new Date(rowData.end_date).getMonth(),
+        new Date(rowData.end_date).getDate()
+      )
+    );
+    const closeDate = rowData.close_date
+      ? new Date(
+          Date.UTC(
+            new Date(rowData.close_date).getFullYear(),
+            new Date(rowData.close_date).getMonth(),
+            new Date(rowData.close_date).getDate()
+          )
+        )
+      : null;
 
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+    const daysOverdue =
+      endDate < currentDate && rowData.status !== "complete"
+        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
 
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) </span>;
+    } else if (daysUntilEnd >= 0) {
+      return (
+        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+      );
+    } else if (daysOverdue) {
+      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+      return <span>Project not started</span>;
+    }
+  };
 
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
@@ -205,19 +209,20 @@ const durationTemplate = (rowData) => {
         ...config,
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
+        setMyTaskCount(response.data.subtasksCount);
       })
       .catch((error) => {
-
-       
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -243,21 +248,25 @@ const durationTemplate = (rowData) => {
         ...config,
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setOtherData(response.data.allSubtasks);
+        setOtherTaskCount(response.data.allSubtasksCount);
+        setViewOtherTasksCircleButton(true);
       })
       .catch((error) => {
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
-        }     
-       });
+        }
+      });
   };
 
   const fetchReturnedTaskLogs = () => {
@@ -277,9 +286,8 @@ const durationTemplate = (rowData) => {
         },
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setReturnedTaskLogs(response.data);
@@ -287,12 +295,16 @@ const durationTemplate = (rowData) => {
         setFlattenedLogs(logs);
       })
       .catch((error) => {
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
         }
-            });
+      });
   };
 
   // Truncate comments to 5 words
@@ -424,9 +436,8 @@ const durationTemplate = (rowData) => {
           config
         )
         .then((response) => {
-
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
 
           setTimeout(() => {
@@ -438,7 +449,7 @@ const durationTemplate = (rowData) => {
         })
         .catch((error) => {
           setPushLoading(false);
-        
+
           onError(error);
         });
     } else {
@@ -455,28 +466,68 @@ const durationTemplate = (rowData) => {
         <div className="flex space-x-0.5">
           <button
             onClick={() => setActiveView("My Tasks")}
-            className={`p-2 rounded-md ${
+            className={`p-2 rounded-md relative ${
               activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
             } transition-colors`}
           >
             My Tasks
+            {/* The circle element displaying the count */}
+            <div
+              style={{
+                position: "absolute",
+                top: "-10px",
+                right: "-10px",
+                backgroundColor: "black", // Change this to your preferred color
+                color: "white",
+                borderRadius: "50%",
+                width: "20px", // Adjust these values
+                height: "20px", // as needed
+                textAlign: "center",
+                lineHeight: "20px", // Should be equal to height for vertical centering
+                fontSize: "12px", // Adjust as needed
+              }}
+            >
+              {myTaskCount} {/* Replace 'count' with the actual count */}
+            </div>
           </button>
 
           {(hasViewAllTasks || hasTeamTasks) && (
             <button
+              style={{ marginLeft: "10px" }}
               onClick={() => {
                 setActiveView("Other Tasks");
                 fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
               }}
-              className={`p-2 rounded-md ${
+              className={`p-2 rounded-md relative ${
                 activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
               } transition-colors`}
             >
               Other Tasks
+              {viewOtherTaskCircle && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-10px",
+                    right: "-10px",
+                    backgroundColor: "black",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "20px", //
+                    height: "20px", //
+                    textAlign: "center",
+                    lineHeight: "20px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {otherTaskCount}
+                </div>
+              )}
+
             </button>
           )}
 
           <button
+            style={{ marginLeft: "10px" }}
             onClick={() => {
               setActiveView("Returned task history");
               fetchReturnedTaskLogs();
@@ -493,14 +544,16 @@ const durationTemplate = (rowData) => {
 
         {/* Sprint name on the right */}
         <p
-          className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
+          style={{ marginRight: "30px" }}
+
+          className="text-black-600 cursor-pointer hover:text-black-600 mr-8 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
         >
           <span className="font-semibold">Sprint name:</span>
           {_.startCase(tasksData.name)}
           {showSprintPopup && (
-            <div className="absolute bg-white p-3 border rounded-md shadow-lg mt-2">
+            <div className="absolute bg-white p-3 w-48  border rounded-md shadow-lg mt-2">
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{" "}
                 {_.startCase(tasksData.status)}

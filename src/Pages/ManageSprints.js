@@ -13,7 +13,6 @@ import {
 
 const ManageSprints = () => {
   const [activeComponent, setActiveComponent] = useState("ActiveSprint");
-  const [refreshKey, setRefreshKey] = useState(0);
 
 
   const menuItems = [
@@ -44,17 +43,23 @@ const ManageSprints = () => {
       case "CreateSprint":
         return <CreateSprint rerouting={routeToListing} />;
       case "ActiveSprint":
-        return <ActiveSprint rerouting={routeToListing} />;
+        return <ActiveSprint rerouting={routeToListing} routeToCompletedSprints={routeToCompletedSprints} />;
       case "InActiveSprint":
         return <InActiveSprint rerouting={routeToListing} />;
       case "CompletedSprints":
-        return <CompletedSprints rerouting={routeToListing} />;
+        return <CompletedSprints rerouting={routeToListing}  />;
       default:
         return <CreateSprint rerouting={routeToListing} />;
     }
   };
+
   const routeToListing = () => {
     setActiveComponent("ActiveSprint");
+  };
+
+
+  const routeToCompletedSprints = () => {
+    setActiveComponent("CompletedSprints");
   };
 
   return (

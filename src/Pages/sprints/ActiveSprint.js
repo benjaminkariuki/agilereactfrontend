@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Chart } from "primereact/chart";
-import { confirmDialog } from "primereact/confirmdialog";
+import {ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import Subtasks from "./Subtasks";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const ActiveSprint = ({ rerouting }) => {
+const ActiveSprint = ({ rerouting, routeToCompletedSprints  }) => {
   const [data, setData] = useState(null);
 
   const toast = useRef(null);
@@ -22,7 +22,8 @@ const ActiveSprint = ({ rerouting }) => {
   const [visible, setVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { userActivities } = useSelector((state) => state.user);
-  const [remount, setRemount] = useState(0);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
 
   const navigate = useNavigate();
 
@@ -87,7 +88,7 @@ const hasWritePermissionSprints = sprintsActivity
 
   const handleConfirmOpen = () => {
     setViewSummaryDialogue(true);
-    confirmClose();
+    setShowConfirmDialog(true);
   };
 
   const onSuccess = (success) => {
@@ -257,8 +258,8 @@ const hasWritePermissionSprints = sprintsActivity
       .then((response) => {
         setCloseLoading(false);
         setViewSummaryDialogue(false);
-        onSuccess("Sprint closed Successfully");
-        fetchActiveSprint();    
+        routeToCompletedSprints(); // Call the new function to navigate to "CompletedSprints"
+
       })
       .catch((error) => {
         setCloseLoading(false);
@@ -313,6 +314,15 @@ const hasWritePermissionSprints = sprintsActivity
               </button>
             )}
             
+            <ConfirmDialog
+            visible={showConfirmDialog}
+            onHide={() => setShowConfirmDialog(false)}
+            message="Are you sure you want to close this sprint?"
+            header="Close Confirmation"
+            icon="pi pi-exclamation-triangle"
+            accept={() => handleCloseSprint(data.id)}
+            reject={() => setShowConfirmDialog(false)}
+          />
             </div>
 
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2  gap-4">
@@ -338,7 +348,7 @@ const hasWritePermissionSprints = sprintsActivity
               component={"active"}
             />
           </div>
-          <Dialog
+          {/* <Dialog
             header="Add Summary before closing the sprint"
             visible={viewSummaryDialogue}
             onHide={() => setViewSummaryDialogue(false)}
@@ -367,7 +377,7 @@ const hasWritePermissionSprints = sprintsActivity
               required
               style={{ height: "320px" }}
             />
-          </Dialog>
+          </Dialog> */}
         </div>
       ) : (
         <div className="flex items-center justify-center pt-10">

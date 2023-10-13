@@ -52,17 +52,6 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     }
   };
 
-  const onError = (error) => {
-    if (error && toast.current) {
-      toast.current?.show({
-        severity: "danger",
-        summary: "Error Encountered",
-        detail: handleErrorMessage(error),
-        life: 3000,
-      });
-    }
-  };
-
   const handleErrorMessage = (error) => {
     if (
       error &&
@@ -72,18 +61,29 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     ) {
       // Extract error messages and join them into a single string
       return Object.values(error.response.data.errors).flat().join(" ");
+    } else if (error && error.response && error.response.data && error.response.data.message) {
+      // Server error with a `message` property
+      return error.response.data.message;
     } else if (error && error.message) {
       // Client-side error (e.g., no internet)
       return error.message;
     }
     // If no errors property is found, return the main message or a default error message
-    return error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-      ? error.response.data.message
-      : "An unexpected error occurred.";
+    return "An unexpected error occurred.";
   };
+  
+  const onError = (error) => {
+    if (error && toast.current) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: handleErrorMessage(error),
+        life: 3000,
+      });
+    }
+  };
+
+  
 
   const fetchProjects = () => {
     setIsLoading(true);
@@ -169,6 +169,8 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         {},
         config
       );
+
+      setIsSubmitting(false);
       // If archive was successful
       if (response.status === 401) {
         navigate('/');
@@ -177,33 +179,14 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       if (response.status === 200) {
         // Archive successful
         fetchProjects();
-      } else {
-        // Handle other status codes if needed
-        setDeleteStatus(response.data.message);
-      }
+      } 
     } catch (error) {
-     
-      
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        // Keep the delete status unchanged
-        setDeleteStatus(error.response.data.message);
-        // Also, set the error message
-        setErrorMessage(error.response.data.message);
-      } else {
-        // Keep the delete status unchanged
-        setDeleteStatus("Failed to archive project");
-        // Also, set the error message
-        setErrorMessage("Failed to archive project");
-      }
-    } finally {
-      // Reset the "isArchiving" state to false after the archiving process is done
-
       setIsSubmitting(false);
-    }
+     
+      onError(error)
+      fetchProjects();
+    
+    } 
   };
 
   const ProjectCard = ({ project }) => (

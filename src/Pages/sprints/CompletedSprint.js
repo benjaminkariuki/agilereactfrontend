@@ -5,6 +5,10 @@ import { Toast } from "primereact/toast";
 import { Chart } from "primereact/chart";
 import Subtasks from "./Subtasks";
 import { useNavigate } from "react-router-dom";
+import { Paginator } from "primereact/paginator";
+import { debounce } from 'lodash';
+
+
 
 
 const CompletedSprints = () => {
@@ -13,6 +17,13 @@ const CompletedSprints = () => {
   const toast = useRef(null);
   const [data, setData] = useState(null);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  const [page, setPage] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+
 
 
   const onSuccess = (success) => {
@@ -37,7 +48,7 @@ const CompletedSprints = () => {
 
   useEffect(() => {
     fetchClosedSprints();
-  }, []);
+  }, [page]);
 
   const fetchClosedSprints = async () => {
     try {
@@ -49,15 +60,18 @@ const CompletedSprints = () => {
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allClosedSprints",config
+        `https://agile-pm.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}`,config
       );
 
       if (response.status === 401) {
         navigate('/');
       }
       
-      const fetchedSprints = response.data.sprints;
+      const fetchedSprints = response.data.sprints.data;
+
       setCompleteSprints(fetchedSprints);
+      setTotalRecords(response.data.sprints.total);
+
     } catch (error) {
      
       onError("Failed to fetch inactive sprints");
@@ -167,6 +181,47 @@ const CompletedSprints = () => {
     },
   };
 
+  const handleSearch = () => {
+
+
+    if (searchTerm && searchTerm.trim() !== '') {
+
+
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
+      // Modify the endpoint to accommodate the searchTerm in the query string 
+      axios
+        .get(`https://agile-pm.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .then((response) => {
+
+          if (response.status === 401) {
+            navigate('/');
+          }
+          
+          const fetchedSprints = response.data.sprints.data;
+
+          setCompleteSprints(fetchedSprints);
+          setTotalRecords(response.data.sprints.total);
+        })
+        .catch((error) => {
+        
+          onError(error);
+       
+        });
+    } else {
+      // If there is no search term, just fetch users normally
+      fetchClosedSprints()
+    }
+  };
+
+  const debouncedHandleSearch = debounce(handleSearch, 1000);
+
+
   //display the total completed sprints
   const SprintCard = ({ sprint }) => {
     const startDate = new Date(sprint.start_date);
@@ -179,6 +234,7 @@ const CompletedSprints = () => {
         key={sprint.id}
         className="bg-white rounded-lg shadow p-4 h-64 flex flex-col justify-between relative"
       >
+        
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-semibold">{sprint.name}</h2>
           <p>
@@ -215,6 +271,28 @@ const CompletedSprints = () => {
   return (
     <div className="w-full">
       <Toast ref={toast} />
+      
+
+      <div className="mb-4 flex justify-end">
+
+        <input
+          type="text"
+          placeholder="Search Sprint"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            debouncedHandleSearch();
+
+
+          }}
+          
+          className="border rounded px-2 py-1 w-80 mr-2 my-3"
+        />
+        
+      </div>
+
+
+
       {viewMoreActive ? (
         <div className="p-4">
           <h1 className="text-2xl font-bold mb-4 text-center">
@@ -255,6 +333,20 @@ const CompletedSprints = () => {
           ))}
         </div>
       )}
+        <div className="mb-6">
+
+{completeSprints.length > 0 ? (<Paginator
+   first={page * 8}
+   rows={8}
+   totalRecords={totalRecords}
+   onPageChange={(e) => {
+     setPage(e.page);
+   }}
+   template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
+ />): ''
+}
+
+</div>
     </div>
   );
 };

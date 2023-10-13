@@ -11,6 +11,8 @@ import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+
 import { useNavigate } from "react-router-dom";
 
 const DevelopmentTasks = () => {
@@ -186,6 +188,65 @@ const DevelopmentTasks = () => {
       return <span>Project not started</span>;
     }
   };
+
+  const pushToApproval = () => {
+    const selectedIds = selectedTasks?.map((row) => row.id);
+    if (selectedIds.length > 0) {
+      setPushLoading(true);
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      axios
+        .post(
+          "https://agile-pm.agilebiz.co.ke/api/pushToApproval",
+          {
+            taskIds: selectedIds,
+          },
+          config
+        )
+        .then((response) => {
+          if (response.status === 401) {
+            navigate("/");
+          }
+
+          setTimeout(() => {
+            onSuccess(response.data.message);
+            fetchMyTasks(userEmail, userRole, userDepartment);
+            setPushLoading(false);
+          }, 1000);
+          setViewMore(false);
+        })
+        .catch((error) => {
+          setPushLoading(false);
+          onError(error);
+        });
+    } else {
+      onWarn("Select atleast one task");
+    }
+  };
+
+  const confirmClose = () => {
+    confirmDialog({
+      message: "Do you want to close this task(S)?",
+      header: "Close Confirmation",
+      icon: "pi pi-info-circle",
+      accept: pushToApproval,
+    });
+  };
+
+  const openConfirmDialog = () => {
+    if (selectedTasks.length === 1) confirmClose();
+    else if (selectedTasks.length > 1)
+      onWarn("Only one Micro-task should be selected");
+    else onWarn("Select atleast one Micro-task");
+  };
+
+
+
 
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
@@ -777,7 +838,8 @@ const DevelopmentTasks = () => {
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
           footer={
-            hasPushTesting && (
+            <>
+            {hasPushTesting && (
               <div>
                 <button
                   className="px-4 py-2 bg-green-500 text-white rounded-md"
@@ -794,7 +856,26 @@ const DevelopmentTasks = () => {
                   )}
                 </button>
               </div>
-            )
+            )}
+
+
+{hasCloseTasks && (
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded-md"
+                  onClick={openConfirmDialog}
+                  disabled={pushLoading} // Disable the button while loading
+                >
+                  {pushLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Close the task (s)"
+                  )}
+                </button>
+              )}
+            </>
           }
         >
           <DataTable

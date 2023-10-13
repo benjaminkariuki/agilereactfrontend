@@ -151,6 +151,7 @@ const Users = () => {
         }
         setUsers(response.data.users.data);
         setTotalRecords(response.data.users.total);
+        
         setIsLoading(false);
         
       })
@@ -303,7 +304,7 @@ const Users = () => {
           setIsLoading(false);
         })
         .catch((error) => {
-          setUpdateLoading(false);
+          setIsLoading(false);
         
           onError(error);
        

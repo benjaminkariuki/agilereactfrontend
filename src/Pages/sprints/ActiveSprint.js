@@ -348,36 +348,7 @@ const hasWritePermissionSprints = sprintsActivity
               component={"active"}
             />
           </div>
-          {/* <Dialog
-            header="Add Summary before closing the sprint"
-            visible={viewSummaryDialogue}
-            onHide={() => setViewSummaryDialogue(false)}
-            style={{ width: "70vw" }}
-            footer={
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                onClick={() => handleCloseSprint(data.id)}
-              >
-                {closeLoading ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                ) : (
-                  "Submit and Close Sprint"
-                )}
-              </button>
-            }
-          >
-            <textarea
-              name="summary"
-              id="sprint-summary"
-              className="border border-gray-300 px-3 py-2 mt-1 rounded-md w-full"
-              onChange={(e) => setSummary(e.target.value)}
-              required
-              style={{ height: "320px" }}
-            />
-          </Dialog> */}
+          
         </div>
       ) : (
         <div className="flex items-center justify-center pt-10">

@@ -102,16 +102,7 @@ const CreateUser = () => {
     }
   };
  
-  const onCreatingUserInfo = (error) => {
-    if (error) {
-      toast.current.show({
-        severity: "info",
-        summary: "Server Error",
-        detail: `${error}`,
-        life: 3000,
-      });
-    }
-  };
+
 
   useEffect(() => {
     fetchRoles();

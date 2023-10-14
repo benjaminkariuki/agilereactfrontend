@@ -51,12 +51,8 @@ const PManager = () => {
   const [activeSprint, setActiveSprint] = useState({});
 
   const [activeSprintLabels, setActiveSprintLabels] = useState([]);
-  const [activeSprintCountdata, setActiveSprintCountData] = useState(0);
-  const [activeSprintIncompleteCountdata, setActiveSprintIncompleteCountData] =
-    useState(0);
+ 
 
-  const [activeSprintcompleteCountdata, setActiveSprintcompleteCountData] =
-    useState(0);
 
   useEffect(() => {
     setIsLoading(true);

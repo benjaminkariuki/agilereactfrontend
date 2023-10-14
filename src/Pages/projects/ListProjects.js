@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   const [projects, setProjects] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deleteStatus, setDeleteStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -41,16 +40,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     fetchProjects();
   }, [page]);
 
-  const onSuccessUpdate = (success) => {
-    if (success) {
-      toast.current?.show({
-        severity: "success",
-        summary: "Successfully",
-        detail: `Name: ${success}`,
-        life: 3000,
-      });
-    }
-  };
+ 
 
   const handleErrorMessage = (error) => {
     if (

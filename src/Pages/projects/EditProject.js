@@ -390,60 +390,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     );
   };
   // Filter users for team leads
-  const filterWithTeamLead = () => {
-    return filterUsersByRoleAndDepartment(
-      "Team lead business central",
-      "Business Central Department"
-    )
-      .concat(
-        filterUsersByRoleAndDepartment(
-          "Team lead infrastructure",
-          "Infrastructure Department"
-        )
-      )
-      .concat(
-        filterUsersByRoleAndDepartment(
-          "Team lead business analyst",
-          "Business Analyst Department"
-        )
-      )
-      .concat(
-        filterUsersByRoleAndDepartment(
-          "Team lead Implementation",
-          "Implementation Department"
-        )
-      )
-      .concat(
-        filterUsersByRoleAndDepartment("Team lead web", "Web Department")
-      );
-  };
-
-  const filterWithDeveloper = () => {
-    return filterUsersByRoleAndDepartment(
-      "developer",
-      "Business Central Department"
-    ).concat(filterUsersByRoleAndDepartment("developer", "Web Department"));
-  };
-
-  // Filter users for project managers and senior project managers
-  const getProjectManagers = (department) => {
-    return filterUsersByRoleAndDepartment("Project manager", department);
-  };
-
-  // Filter users for business analysts
-  const getBusinessAnalysts = (department) => {
-    return filterUsersByRoleAndDepartment("business analyst", department);
-  };
-
-  // Filter users for infrastructure
-  const getSystemEngineers = (department) => {
-    return filterUsersByRoleAndDepartment("systems enginner", department);
-  };
-  // Filter users for developers
-  const getDevelopers = (department) => {
-    return filterUsersByRoleAndDepartment("developer", department);
-  };
-
+  
   return (
     <div className="bg-white rounded-lg  shadow p-4">
       <Toast ref={toast} />

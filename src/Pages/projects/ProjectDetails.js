@@ -53,15 +53,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
     }
   }, [projectId]);
 
-  // Function to show a success toast when roles are updated successfully
-  const onSuccess = (success) => {
-    toast.current?.show({
-      severity: "success",
-      summary: "Successfully",
-      detail: `${success}`,
-      life: 3000,
-    });
-  };
+
 
   // Function to show a warning toast when fetching activities fails
   const onError = (error) => {
@@ -139,10 +131,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
     routetoEdit(projectId);
   };
 
-  const sentenceCaseFormatter = (rowData, column) => {
-    return _.startCase(rowData[column.field]);
-  };
-
+  
   return (
     <div>
       <Toast ref={toast} />
@@ -255,17 +244,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                 </div>
               ))}
           </div>
-          {/* Modal
-            @projectId= takes the project ID
-            @activityId=takes the activity Id from the selected phase and activity
-            @phaseId=takes the phase Id from the selected phase
-            
-            @selectedIcon= pass the value of the icon clickec(either edit or upload)
-            @projectData.projectmanager =pass the projects projectmanagers to the modal where they are assigned micro tasks
-            @projectData.businessanalyst =pass the projects BAs to the modal where they are assigned micro tasks
-            @projectData.teamleads=pass the projects TeamLeads to the modal where they are assigned micro tasks
-            @projectData.developers=pass the projects Developers to the modal where they are assigned micro tasks
-         */}
+       
           {showMicroTasksModal && (
             <MicroTask
               projectId={projectId}

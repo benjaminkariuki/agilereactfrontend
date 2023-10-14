@@ -9,10 +9,9 @@ import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import DelegateTaskDialog from "./DelegateDialog";
-import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
-
 
 const TestingTasks = () => {
   const { userRole, userEmail, userActivities, userDepartment } = useSelector(
@@ -50,48 +49,38 @@ const TestingTasks = () => {
 
   const [otherTaskCount, setOtherTaskCount] = useState(0);
 
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
-  const [filters,setFilters] = useState({
-    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
-  })
-
-  
-   //getting the permission for projects
-   const taskActivity = userActivities.find(
+  //getting the permission for projects
+  const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
   const hasAssignPermissionTasks =
     taskActivity.pivot.permissions.includes("Assign-Tasks");
 
-  const hasCloseTasks =
-    taskActivity.pivot.permissions.includes("Close-tasks");
+  const hasCloseTasks = taskActivity.pivot.permissions.includes("Close-tasks");
 
-    const hasPushDevelopment =
+  const hasPushDevelopment =
     taskActivity.pivot.permissions.includes("Push-Development");
 
-    const hasPushTesting =
+  const hasPushTesting =
     taskActivity.pivot.permissions.includes("Push-Testing");
 
-    const hasPushReview =
-    taskActivity.pivot.permissions.includes("Push-Review");
+  const hasPushReview = taskActivity.pivot.permissions.includes("Push-Review");
 
-    const hasreturnTesting =
+  const hasreturnTesting =
     taskActivity.pivot.permissions.includes("Return-Testing");
 
-    
-    
-    const hasViewAllTasks =
+  const hasViewAllTasks =
     taskActivity.pivot.permissions.includes("View-All-Tasks");
 
-    const hasTeamTasks =
+  const hasTeamTasks =
     taskActivity.pivot.permissions.includes("View-Team-Tasks");
 
-    const hasReturnDevelpment =
+  const hasReturnDevelpment =
     taskActivity.pivot.permissions.includes("Return-Development");
-
-
-
- 
 
   const onSuccess = (success) => {
     if (success) {
@@ -116,7 +105,7 @@ const TestingTasks = () => {
   };
 
   const onWarn = (error) => {
-    if (error ) {
+    if (error) {
       toast.current?.show({
         severity: "warn",
         summary: "Please upload micro task(s)",
@@ -138,54 +127,71 @@ const TestingTasks = () => {
 
   const customHeader = (
     <div className="flex justify-between items-center">
-        <div>Subtask Details</div>
-        <InputText
-               style={{ width: "33.3333%", marginRight: "1rem" }}
-
-            placeholder="Search task by name, department, status or stage...."
-            onInput={(e) =>
-                setFilters({
-                    global: {
-                        value: e.target.value,
-                        matchMode: FilterMatchMode.CONTAINS,
-                    },
-                })
-            }
-        />
+      <div>Subtask Details</div>
+      <InputText
+        style={{ width: "33.3333%", marginRight: "1rem" }}
+        placeholder="Search task by name, department, status or stage...."
+        onInput={(e) =>
+          setFilters({
+            global: {
+              value: e.target.value,
+              matchMode: FilterMatchMode.CONTAINS,
+            },
+          })
+        }
+      />
     </div>
-);
-
-const durationTemplate = (rowData) => {
-  const currentDate = new Date();
-  const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
-  const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
-  const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
-
-  const daysUntilEnd = Math.floor(
-    (endDate - currentDate) / (1000 * 60 * 60 * 24)
   );
-  const totalDurationIfClosed = closeDate
-    ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
-    : null;
-  const daysOverdue = endDate < currentDate && rowData.status !== "complete"
-    ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
-    : null;
 
-  if (rowData.status === "complete" && closeDate) {
-    return <span>{totalDurationIfClosed} day(s) </span>;
-  } else if (daysUntilEnd >= 0) {
-    return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
-  } else if (daysOverdue) {
-    return (
-      <span style={{ color: "red" }}>
-        {daysOverdue} day(s) overdue
-      </span>
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(
+      Date.UTC(
+        new Date(rowData.start_date).getFullYear(),
+        new Date(rowData.start_date).getMonth(),
+        new Date(rowData.start_date).getDate()
+      )
     );
-  } else {
-    return <span>Project not started</span>;
-  }
-};
+    const endDate = new Date(
+      Date.UTC(
+        new Date(rowData.end_date).getFullYear(),
+        new Date(rowData.end_date).getMonth(),
+        new Date(rowData.end_date).getDate()
+      )
+    );
+    const closeDate = rowData.close_date
+      ? new Date(
+          Date.UTC(
+            new Date(rowData.close_date).getFullYear(),
+            new Date(rowData.close_date).getMonth(),
+            new Date(rowData.close_date).getDate()
+          )
+        )
+      : null;
 
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+    const daysOverdue =
+      endDate < currentDate && rowData.status !== "complete"
+        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) </span>;
+    } else if (daysUntilEnd >= 0) {
+      return (
+        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+      );
+    } else if (daysOverdue) {
+      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+      return <span>Project not started</span>;
+    }
+  };
 
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
@@ -209,9 +215,8 @@ const durationTemplate = (rowData) => {
         ...config, // spread the config object here
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setTasksData(response.data.activeSprint);
@@ -219,8 +224,11 @@ const durationTemplate = (rowData) => {
         setMyTaskCount(response.data.subtasksCount);
       })
       .catch((error) => {
-       
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -246,9 +254,8 @@ const durationTemplate = (rowData) => {
         ...config, // spread the config object here
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setOtherData(response.data.allSubtasks);
@@ -256,8 +263,11 @@ const durationTemplate = (rowData) => {
         setViewOtherTasksCircleButton(true);
       })
       .catch((error) => {
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -282,22 +292,24 @@ const durationTemplate = (rowData) => {
         ...config, // spread the config object here
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setReturnedTaskLogs(response.data);
-        const logs = response.data.user_tasks.flatMap((task) => task.task_logs);
+        const logs = response.data.user_tasks.flat();
         setFlattenedLogs(logs);
       })
       .catch((error) => {
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
         }
-            
       });
   };
 
@@ -321,8 +333,11 @@ const durationTemplate = (rowData) => {
 
   // Create a download link
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+
   const downloadLink = (rowData) => {
-    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+    const downloadUrl = rowData.task_logs?.image_path
+      ? `${baseUrl}${rowData.task_logs?.image_path}`
+      : "";
 
     const downloadFile = () => {
       if (downloadUrl) {
@@ -396,10 +411,10 @@ const durationTemplate = (rowData) => {
 
   function truncateAndFormatDescription(description) {
     // Truncate to 5 words
-    const words = description.split(" ");
+    const words = description?.split(" ");
     let truncatedDescription;
-    if (words.length > 5) {
-      truncatedDescription = words.slice(0, 5).join(" ") + "...";
+    if (words?.length > 5) {
+      truncatedDescription = words?.slice(0, 5).join(" ") + "...";
     } else {
       truncatedDescription = description;
     }
@@ -429,9 +444,8 @@ const durationTemplate = (rowData) => {
           config
         )
         .then((response) => {
-
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
 
           setTimeout(() => {
@@ -457,7 +471,6 @@ const durationTemplate = (rowData) => {
       onWarn("Only one Micro-task should be selected");
     else onWarn("Select atleast one Micro-task");
   };
- 
 
   const onFileUpload = (event) => {
     const file = event.target.files[0];
@@ -465,7 +478,6 @@ const durationTemplate = (rowData) => {
   };
 
   // Define a custom rendering function for the 'Start Date' column
- 
 
   // Define a custom rendering function for the 'End Date' column
 
@@ -500,9 +512,8 @@ const durationTemplate = (rowData) => {
         }
       )
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setTimeout(() => {
@@ -527,16 +538,15 @@ const durationTemplate = (rowData) => {
 
       <div className="flex justify-between p-4 space-x-0.5 items-center">
         <div className="flex space-x-0.5">
-        <button
-          onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md relative ${
-            activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
-          } transition-colors`}
-        >
-          My Tasks
-
-              {/* The circle element displaying the count */}
-              <div
+          <button
+            onClick={() => setActiveView("My Tasks")}
+            className={`p-2 rounded-md relative ${
+              activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
+            } transition-colors`}
+          >
+            My Tasks
+            {/* The circle element displaying the count */}
+            <div
               style={{
                 position: "absolute",
                 top: "-10px",
@@ -553,22 +563,21 @@ const durationTemplate = (rowData) => {
             >
               {myTaskCount} {/* Replace 'count' with the actual count */}
             </div>
-        </button>
+          </button>
 
-        {(hasViewAllTasks || hasTeamTasks) && (
-          <button
-          style={{ marginLeft: "10px" }}
-            onClick={() => {
-              setActiveView("Other Tasks");
-              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-            }}
-            className={`p-2 rounded-md relative ${
-              activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
-            } transition-colors`}
-          >
-            Other Tasks
-
-            {viewOtherTaskCircle && (
+          {(hasViewAllTasks || hasTeamTasks) && (
+            <button
+              style={{ marginLeft: "10px" }}
+              onClick={() => {
+                setActiveView("Other Tasks");
+                fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+              }}
+              className={`p-2 rounded-md relative ${
+                activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              } transition-colors`}
+            >
+              Other Tasks
+              {viewOtherTaskCircle && (
                 <div
                   style={{
                     position: "absolute",
@@ -587,32 +596,28 @@ const durationTemplate = (rowData) => {
                   {otherTaskCount}
                 </div>
               )}
+            </button>
+          )}
 
-
+          <button
+            style={{ marginLeft: "10px" }}
+            onClick={() => {
+              setActiveView("Returned task history");
+              fetchReturnedTaskLogs();
+            }}
+            className={`p-2 rounded-md ${
+              activeView === "Returned task history"
+                ? "bg-blue-500"
+                : "bg-gray-400"
+            } transition-colors`}
+          >
+            Returned task(s) history
           </button>
-        )}
+        </div>
 
-        <button
-        style={{ marginLeft: "10px" }}
-
-          onClick={() => {
-            setActiveView("Returned task history");
-            fetchReturnedTaskLogs();
-          }}
-          className={`p-2 rounded-md ${
-            activeView === "Returned task history"
-              ? "bg-blue-500"
-              : "bg-gray-400"
-          } transition-colors`}
-        >
-          Returned task(s) history
-        </button>
-      </div>
-
-       {/* Sprint name on the right */}
-       <p
-                 style={{ marginRight: "30px" }}
-
+        {/* Sprint name on the right */}
+        <p
+          style={{ marginRight: "30px" }}
           className="text-black-600 cursor-pointer hover:text-black-600 mr-18 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
@@ -637,7 +642,6 @@ const durationTemplate = (rowData) => {
           )}
         </p>
       </div>
-
 
       {/* My Tasks section */}
       {activeView === "My Tasks" && (
@@ -766,24 +770,26 @@ const durationTemplate = (rowData) => {
               header={customHeader}
               paginator
               rows={10}
-              rowsPerPageOptions={[10,20,30]}
+              rowsPerPageOptions={[10, 20, 30]}
               filters={filters}
               className="border rounded-md p-4 bg-white"
             >
               <Column
-                field="task"
+                field="task_logs.subTask.task"
                 header="Task"
                 body={(rowData, columnProps) => {
                   const task = sentenceCaseFormatter(rowData, columnProps);
                   return `${columnProps.rowIndex + 1}. ${task}`;
                 }}
               ></Column>
-             
+
               <Column
-                field="description"
+                field="task_logs.subTask.description"
                 header="Description"
                 body={(rowData) =>
-                  truncateAndFormatDescription(rowData.description)
+                  truncateAndFormatDescription(
+                    rowData.task_logs?.subTask?.description
+                  )
                 }
               ></Column>
 
@@ -799,14 +805,18 @@ const durationTemplate = (rowData) => {
               ></Column> */}
               <Column
                 header="Time Stamp"
-                body={(rowData) => `${rowData.date} ${rowData.time}`}
+                body={(rowData) =>
+                  `${rowData.task_logs?.date} ${rowData.task_logs?.time}`
+                }
               ></Column>
-              <Column field="count" header="Times Returned"></Column>
+
+              <Column field="task_logs.count" header="Times Returned"></Column>
+
               <Column
-                field="comment"
+                field="task_logs.comment"
                 header="Comments"
                 body={(rowData) =>
-                  truncateAndFormatDescription(rowData.comment)
+                  truncateAndFormatDescription(rowData.task_logs?.comment)
                 }
               ></Column>
 
@@ -815,7 +825,7 @@ const durationTemplate = (rowData) => {
               <Column
                 header="More Details"
                 body={(rowData) => (
-                  <div className="flex" key={rowData.id}>
+                  <div className="flex" key={rowData.task_logs?.id}>
                     <FaInfoCircle
                       className="bg-blue-500 text-white rounded cursor-pointer"
                       size={30}
@@ -825,6 +835,7 @@ const durationTemplate = (rowData) => {
                   </div>
                 )}
               ></Column>
+              
             </DataTable>
           ) : (
             <div className="flex items-center justify-center pt-10">
@@ -840,7 +851,7 @@ const durationTemplate = (rowData) => {
 
       <div>
         <Dialog
-            header={customHeader}
+          header={customHeader}
           visible={viewMore}
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
@@ -883,7 +894,7 @@ const durationTemplate = (rowData) => {
             filters={filters}
             paginator
             rows={10}
-            rowsPerPageOptions={[10,20,30]}
+            rowsPerPageOptions={[10, 20, 30]}
             selection={selectedTasks}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
@@ -900,26 +911,21 @@ const durationTemplate = (rowData) => {
                 return `${columnProps.rowIndex + 1}. ${task}`;
               }}
             ></Column>
-            {/* <Column
-              field="description"
-              header="Description"
-              body={sentenceCaseFormatter}
-            ></Column> */}
 
             <Column
               field="department"
               header="Department"
               body={sentenceCaseFormatter}
             ></Column>
-             <Column field="start_date" header="Start Date" />
+            <Column field="start_date" header="Start Date" />
             <Column field="end_date" header="End Date" />
             <Column
-                field="close_date"
-                header="Completion Date"
-                sortable
-              ></Column>
+              field="close_date"
+              header="Completion Date"
+              sortable
+            ></Column>
 
-              <Column header="Duration" body={durationTemplate}></Column>
+            <Column header="Duration" body={durationTemplate}></Column>
             <Column
               field="status"
               header="Status"
@@ -930,7 +936,7 @@ const durationTemplate = (rowData) => {
               field="stage"
               body={sentenceCaseFormatter}
             />
-          
+
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
             <Column
@@ -1127,23 +1133,23 @@ const durationTemplate = (rowData) => {
             <div className="mb-4">
               <p className="text-gray-600">
                 <span className="font-semibold">Task:</span>{" "}
-                {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
+                {_.startCase((moreDetailsData?.task_logs?.subTask?.task ?? "").toLowerCase())}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Description:</span>{" "}
                 {_.startCase(
-                  (moreDetailsData?.description ?? "").toLowerCase()
+                  (moreDetailsData?.task_logs?.subTask?.description ?? "").toLowerCase()
                 )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Department:</span>{" "}
-                {_.startCase((moreDetailsData?.department ?? "").toLowerCase())}
+                {_.startCase((moreDetailsData?.task_logs?.subTask?.department ?? "").toLowerCase())}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Assigned To:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-              {moreDetailsData.assigned_to?.map((item, index) => (
+                {moreDetailsData?.task_logs?.subTask?.assigned_to?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
@@ -1156,7 +1162,7 @@ const durationTemplate = (rowData) => {
                 <span className="font-semibold">Assigned BA:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-              {moreDetailsData.baassigned_to?.map((item, index) => (
+                {moreDetailsData?.task_logs?.subTask?.baassigned_to?.map((item, index) => (
                   <div
                     key={index}
                     className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
@@ -1168,26 +1174,30 @@ const durationTemplate = (rowData) => {
 
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
+                {_.startCase((moreDetailsData?.task_logs?.subTask?.status ?? "").toLowerCase())}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
-                {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
+                {_.startCase((moreDetailsData?.task_logs?.subTask?.stage ?? "").toLowerCase())}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Start Date:</span>
-                {moreDetailsData?.start_date}
+                {moreDetailsData?.task_logs?.subTask?.start_date}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">End Date:</span>
-                {moreDetailsData?.end_date}
+                {moreDetailsData?.task_logs?.subTask?.end_date}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Close Date:</span>
+                {moreDetailsData?.task_logs?.subTask?.close_date ?? ""}
               </p>
             </div>
             <textarea
               className="w-full h-32 p-2 border rounded-lg resize-none text-gray-600"
               readOnly
               value={_.startCase(
-                (moreDetailsData?.comment ?? "").toLowerCase()
+                (moreDetailsData?.task_logs?.comment ?? "").toLowerCase()
               )}
             ></textarea>
           </div>

@@ -87,7 +87,6 @@ const MicroTask = ({
 
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
-  const [projectUsers, setProjectUsers] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [preAssigned, setPreAssigned] = useState([]);
   const { userActivities } = useSelector((state) => state.user);
@@ -117,9 +116,7 @@ const MicroTask = ({
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;
 
-  const isSimilar = (str1, str2, threshold = 3) => {
-    return levenshtein.get(str1, str2) <= threshold;
-  };
+  
   // Move this effect to handle selectedIcon changes
   useEffect(() => {
     if (selectedIcon === "add") {
@@ -220,27 +217,7 @@ const MicroTask = ({
     }
   };
 
-  const onWarn = (error) => {
-    if (error) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Please upload micro task(s)",
-        detail: `${error}`,
-        life: 3000,
-      });
-    }
-  };
-
-  const onWarnF = (error) => {
-    if (error) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Please upload micro task(s)",
-        detail: handleErrorMessage(error),
-        life: 3000,
-      });
-    }
-  };
+ 
 
   const onInfo = (info) => {
     if (info) {
@@ -635,49 +612,7 @@ const MicroTask = ({
 
 
   //option based on team leads in the project
-  const assigningUser = (department) => {
-    const depNormalized = department.toLowerCase().replace(/\s+/g, ""); // Removing spaces and converting to lowercase
-    let sourceArray;
-
-    if (depNormalized.toLowerCase() === "projectmanagers") {
-      sourceArray = organization.filter((user) => {
-        const roleName = user.user?.role?.name?.toLowerCase();
-        return (
-          user.status === "active" && roleName.includes("portfolio manager")
-        );
-      });
-    } else if (depNormalized.toLowerCase() === "webandmobile") {
-      sourceArray = organization.filter((user) => {
-        const roleName = user.user?.role?.name?.toLowerCase();
-        return user.status === "active" && roleName.includes("team lead");
-      });
-    } else if (depNormalized.toLowerCase() === "businesscentral") {
-      sourceArray = organization.filter((user) => {
-        const roleName = user.user?.role?.name?.toLowerCase();
-        return user.status === "active" && roleName.includes("team lead");
-      });
-    } else {
-      // Handle other cases or just default to an empty array or another default value
-      sourceArray = [];
-    }
-
-    const filteredUser = sourceArray?.filter(
-      (user) =>
-        user.user?.department.toLowerCase() === department.toLowerCase() &&
-        user?.status === "active"
-    );
-
-    return filteredUser.map((user, index) => ({
-      key: index,
-      label:
-        user.user?.firstName +
-        " " +
-        user.user?.lastName +
-        "-" +
-        user.user?.role.name,
-      value: user?.user.email,
-    }));
-  };
+ 
 
   const durationTemplate = (rowData) => {
     const currentDate = new Date();

@@ -91,16 +91,7 @@ const hasWritePermissionSprints = sprintsActivity
     setShowConfirmDialog(true);
   };
 
-  const onSuccess = (success) => {
-    if (success) {
-      toast.current?.show({
-        severity: "success",
-        summary: "Successfully",
-        detail: `${success}`,
-        life: 3000,
-      });
-    }
-  };
+
 
   const onError = (error) => {
     if (error && toast.current) {
@@ -113,16 +104,7 @@ const hasWritePermissionSprints = sprintsActivity
     }
   };
 
-  const onWarn = (error) => {
-    if (error) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Please upload micro task(s)",
-        detail: `${error}`,
-        life: 3000,
-      });
-    }
-  };
+
 
   useEffect(() => {
     fetchActiveSprint();

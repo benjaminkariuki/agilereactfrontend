@@ -37,7 +37,6 @@ const Management = () => {
   const [chartDataSubtsaks, setChartDataSubtasks] = useState({});
   const [chartLineDataSubtsaks, setChartLineDataSubtasks] = useState({});
 
-  const [chartDatafromRolesApi, setChartDataFromRolesAPi] = useState([]);
   const [showDetails, setShowDetails] = useState(false);
 
   const [showDetailsImplementation, setShowDetailsImplementation] =
@@ -61,8 +60,7 @@ const Management = () => {
 
   const [showAllProjectsCount, setShowAllProjectsCount] = useState(false);
 
-  const [chartData, setChartData] = useState({});
-  const [chartDataRoles, setChartDataRoles] = useState({});
+  
   const [errorMessage, setErrorMessage] = useState("");
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -564,16 +562,7 @@ const Management = () => {
     </div>
   );
 
-  const titleTemplate = (
-    <h3 className="text-black-500">Implementation Projects</h3>
-  );
-  const titleTemplateSupport = (
-    <h3 className="text-black-500">Support Projects</h3>
-  );
-
-  const titleTemplateArchived = (
-    <h3 className="text-black-500">Archived Projects</h3>
-  );
+ 
 
   const showDetailsDialog = () => {
     setShowDetails(true);

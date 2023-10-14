@@ -53,7 +53,6 @@ const Users = () => {
 
   const [roles, setRoles] = useState([]);
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
-  const [filteredRoles, setfilteredroles] = useState([]);
   const toast = useRef(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [contact, setcontact] = useState();

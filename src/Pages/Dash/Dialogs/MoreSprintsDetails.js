@@ -109,9 +109,7 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
     }
   };
 
-  const sentenceCaseFormatter = (rowData, column) => {
-    return _.startCase(rowData[column.field]);
-  };
+  
 
   const handleInputChange = (e) => {
     const query = e.target.value;

@@ -110,17 +110,6 @@ const DevelopmentTasks = () => {
     }
   };
 
-  const onInfo = (info) => {
-    if (info) {
-      toast.current?.show({
-        severity: "info",
-        summary: "Successfull",
-        detail: `${info}`,
-        life: 3000,
-      });
-    }
-  };
-
   const customHeader = (
     <div className="flex justify-between items-center">
       <div>Subtask Details</div>
@@ -245,9 +234,6 @@ const DevelopmentTasks = () => {
     else onWarn("Select atleast one Micro-task");
   };
 
-
-
-
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userEmail, userRole]); // Empty dependency array ensures this effect runs once
@@ -352,11 +338,13 @@ const DevelopmentTasks = () => {
         }
 
         setReturnedTaskLogs(response.data);
-        const logs = response.data.user_tasks.flatMap((task) => task.task_logs);
+        const logs = response.data.user_tasks.flat();
+
         setFlattenedLogs(logs);
       })
       .catch((error) => {
         if (
+          
           error.response &&
           error.response.data &&
           error.response.data.error
@@ -386,13 +374,12 @@ const DevelopmentTasks = () => {
     return null; // It's generally a good idea to have a default return outside of conditions.
   };
 
-  // Create a download link
   function truncateAndFormatDescription(description) {
     // Truncate to 5 words
-    const words = description.split(" ");
+    const words = description?.split(" ");
     let truncatedDescription;
-    if (words.length > 5) {
-      truncatedDescription = words.slice(0, 5).join(" ") + "...";
+    if (words?.length > 5) {
+      truncatedDescription = words?.slice(0, 5).join(" ") + "...";
     } else {
       truncatedDescription = description;
     }
@@ -402,14 +389,16 @@ const DevelopmentTasks = () => {
   }
 
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+
   const downloadLink = (rowData) => {
-    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+    const downloadUrl = rowData.task_logs?.image_path
+      ? `${baseUrl}${rowData.task_logs?.image_path}`
+      : "";
 
     const downloadFile = () => {
       if (downloadUrl) {
         const a = document.createElement("a");
         a.href = downloadUrl;
-        // Open the link in a new tab.
         a.target = "_blank";
         a.download = "downloaded_file_name.extension"; // Set the desired file name here
         document.body.appendChild(a);
@@ -583,7 +572,6 @@ const DevelopmentTasks = () => {
                   {otherTaskCount}
                 </div>
               )}
-
             </button>
           )}
 
@@ -606,7 +594,6 @@ const DevelopmentTasks = () => {
         {/* Sprint name on the right */}
         <p
           style={{ marginRight: "30px" }}
-
           className="text-black-600 cursor-pointer hover:text-black-600 mr-8 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
@@ -764,7 +751,7 @@ const DevelopmentTasks = () => {
               className="border rounded-md p-4 bg-white"
             >
               <Column
-                field="task"
+                field="task_logs.subTask.task"
                 header="Task"
                 body={(rowData, columnProps) => {
                   const task = sentenceCaseFormatter(rowData, columnProps);
@@ -773,10 +760,12 @@ const DevelopmentTasks = () => {
               ></Column>
 
               <Column
-                field="description"
+                field="task_logs.subTask.description"
                 header="Description"
                 body={(rowData) =>
-                  truncateAndFormatDescription(rowData.description)
+                  truncateAndFormatDescription(
+                    rowData.task_logs?.subTask?.description
+                  )
                 }
               ></Column>
 
@@ -790,16 +779,21 @@ const DevelopmentTasks = () => {
                 header="Stage"
                 body={sentenceCaseFormatter}
               ></Column> */}
+
               <Column
                 header="Time Stamp"
-                body={(rowData) => `${rowData.date} ${rowData.time}`}
+                body={(rowData) =>
+                  `${rowData.task_logs?.date} ${rowData.task_logs?.time}`
+                }
               ></Column>
-              <Column field="count" header="Times Returned"></Column>
+
+              <Column field="task_logs.count" header="Times Returned"></Column>
+
               <Column
-                field="comment"
+                field="task_logs.comment"
                 header="Comments"
                 body={(rowData) =>
-                  truncateAndFormatDescription(rowData.comment)
+                  truncateAndFormatDescription(rowData.task_logs?.comment)
                 }
               ></Column>
 
@@ -808,7 +802,7 @@ const DevelopmentTasks = () => {
               <Column
                 header="More Details"
                 body={(rowData) => (
-                  <div className="flex" key={rowData.id}>
+                  <div className="flex" key={rowData.task_logs?.id}>
                     <FaInfoCircle
                       className="bg-blue-500 text-white rounded cursor-pointer"
                       size={30}
@@ -839,27 +833,26 @@ const DevelopmentTasks = () => {
           style={{ width: "98vw" }}
           footer={
             <>
-            {hasPushTesting && (
-              <div>
-                <button
-                  className="px-4 py-2 bg-green-500 text-white rounded-md"
-                  onClick={pushTodevelopment}
-                  disabled={pushLoading} // Disable the button while loading
-                >
-                  {pushLoading ? (
-                    <i
-                      className="pi pi-spin pi-spinner"
-                      style={{ fontSize: "1.4rem" }}
-                    ></i>
-                  ) : (
-                    "Push to Testing"
-                  )}
-                </button>
-              </div>
-            )}
+              {hasPushTesting && (
+                <div>
+                  <button
+                    className="px-4 py-2 bg-green-500 text-white rounded-md"
+                    onClick={pushTodevelopment}
+                    disabled={pushLoading} // Disable the button while loading
+                  >
+                    {pushLoading ? (
+                      <i
+                        className="pi pi-spin pi-spinner"
+                        style={{ fontSize: "1.4rem" }}
+                      ></i>
+                    ) : (
+                      "Push to Testing"
+                    )}
+                  </button>
+                </div>
+              )}
 
-
-{hasCloseTasks && (
+              {hasCloseTasks && (
                 <button
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
                   onClick={openConfirmDialog}
@@ -966,95 +959,95 @@ const DevelopmentTasks = () => {
             <div className="mb-4">
               <p className="text-gray-600">
                 <span className="font-semibold">Task:</span>{" "}
-                {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.task ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Description:</span>{" "}
                 {_.startCase(
-                  (moreDetailsData?.description ?? "").toLowerCase()
+                  (
+                    moreDetailsData?.task_logs?.subTask?.description ?? ""
+                  ).toLowerCase()
                 )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Department:</span>{" "}
-                {_.startCase((moreDetailsData?.department ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.department ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Assigned To:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.assignedto?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                    <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
-                      {_.startCase(
-                        (item?.custom_user?.lastName ?? "").toLowerCase()
-                      )}{" "}
-                      -{item?.custom_user?.email}
-                    </p>
-                  </div>
-                ))}
+                {moreDetailsData?.task_logs?.subTask?.assigned_to?.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                    >
+                      {item.email && <p key={index}>{item.email}</p>}
+                    </div>
+                  )
+                )}
               </div>
               <p className="text-gray-600">
                 <span className="font-semibold">Assigned BA:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData.baassignedto?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                    <p key={index}>
-                      {_.startCase(
-                        (item?.custom_user?.firstName ?? "").toLowerCase()
-                      )}{" "}
-                      {_.startCase(
-                        (item?.custom_user?.lastName ?? "").toLowerCase()
-                      )}{" "}
-                      -{item?.custom_user?.email}
-                    </p>
-                  </div>
-                ))}
+                {moreDetailsData?.task_logs?.subTask?.baassigned_to?.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                    >
+                      {item.email && <p key={index}>{item.email}</p>}
+                    </div>
+                  )
+                )}
               </div>
 
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.status ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
-                {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.stage ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Start Date:</span>
-                {moreDetailsData?.start_date}
+                {moreDetailsData?.task_logs?.subTask?.start_date}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">End Date:</span>
-                {moreDetailsData?.end_date}
+                {moreDetailsData?.task_logs?.subTask?.end_date}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Close Date:</span>
+                {moreDetailsData?.task_logs?.subTask?.close_date ?? ""}
               </p>
             </div>
             <textarea
               className="w-full h-32 p-2 border rounded-lg resize-none text-gray-600"
               readOnly
               value={_.startCase(
-                (moreDetailsData?.comment ?? "").toLowerCase()
+                (moreDetailsData?.task_logs?.comment ?? "").toLowerCase()
               )}
             ></textarea>
-
-            {/* Delegate/Apply Button */}
-            {hasAssignPermissionTasks && (
-              <button
-                className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
-                onClick={() => showDelegateDialog(moreDetailsData)}
-              >
-                Assign
-              </button>
-            )}
           </div>
         </Dialog>
       </div>

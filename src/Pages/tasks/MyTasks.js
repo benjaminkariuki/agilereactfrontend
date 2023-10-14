@@ -109,16 +109,7 @@ const MyTasks = () => {
     }
   };
 
-  const onInfo = (info) => {
-    if (info) {
-      toast.current?.show({
-        severity: "info",
-        summary: "Successfull",
-        detail: `${info}`,
-        life: 3000,
-      });
-    }
-  };
+  
 
   const customHeader = (
     <div className="flex justify-between items-center">
@@ -750,11 +741,7 @@ const MyTasks = () => {
               }}
             ></Column>
 
-            {/* <Column
-              field="description"
-              header="Description"
-              body={sentenceCaseFormatter}
-            ></Column> */}
+            {}
             <Column
               field="department"
               header="Department"

@@ -43,10 +43,7 @@ const Oversight = ({ onClose }) => {
   const [showDetailsImplementation, setShowDetailsImplementation] =
     useState(false);
 
-  const [
-    chartProjectSubtaskActiveIndividualDatafromApi,
-    setChartDataProjectIndividualFromAPi,
-  ] = useState([]);
+
 
   const [showDetailsSupport, setShowDetailsSupport] = useState(false);
 
@@ -56,8 +53,7 @@ const Oversight = ({ onClose }) => {
 
   const [showAllProjectsCount, setShowAllProjectsCount] = useState(false);
 
-  const [chartData, setChartData] = useState({});
-  const [chartDataRoles, setChartDataRoles] = useState({});
+  
   const [errorMessage, setErrorMessage] = useState("");
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -411,16 +407,7 @@ const Oversight = ({ onClose }) => {
     </div>
   );
 
-  const titleTemplate = (
-    <h3 className="text-black-500">Implementation Projects</h3>
-  );
-  const titleTemplateSupport = (
-    <h3 className="text-black-500">Support Projects</h3>
-  );
-
-  const titleTemplateArchived = (
-    <h3 className="text-black-500">Archived Projects</h3>
-  );
+ 
 
   const showDetailsDialog = () => {
     setShowDetails(true);

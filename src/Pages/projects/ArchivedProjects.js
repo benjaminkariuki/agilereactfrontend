@@ -43,16 +43,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
     }
   };
 
-  const onWarn = (error) => {
-    if (error) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Please upload micro task(s)",
-        detail: `${error}`,
-        life: 3000,
-      });
-    }
-  };
+ 
 
   const confirmDelete = (id) => {
     confirmDialog({

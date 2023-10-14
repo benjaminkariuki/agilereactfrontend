@@ -49,16 +49,7 @@ const EditProfile = () => {
   const [isConfirmPasswordMismatch, setIsConfirmPasswordMismatch] =
     useState(false);
 
-  const onSuccess = (success) => {
-    if (success) {
-      toast.current.show({
-        severity: "success",
-        summary: "Created successfully",
-        detail: `Name: ${success}`,
-        life: 3000,
-      });
-    }
-  };
+  
 
   const handleErrorMessage = (error) => {
     if (

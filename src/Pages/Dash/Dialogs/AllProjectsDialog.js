@@ -112,18 +112,7 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
     onError(errorMessage);
   };
 
-  // toast display functions
-  const onSuccessRequest = (success) => {
-    if (success) {
-      toast.current?.show({
-        severity: "success",
-        summary: "Successfully",
-        detail: `${success}`,
-        life: 1000,
-      });
-    }
-  };
-
+ 
   const onError = (error) => {
     if (error && toast.current) {
       toast.current?.show({
@@ -135,9 +124,6 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
     }
   };
 
-  const sentenceCaseFormatter = (rowData, column) => {
-    return _.startCase(rowData[column.field]);
-  };
 
 
   const resetStates = () => {

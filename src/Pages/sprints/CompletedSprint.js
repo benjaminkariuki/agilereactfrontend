@@ -17,7 +17,6 @@ const CompletedSprints = () => {
   const toast = useRef(null);
   const [data, setData] = useState(null);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
 
 
   const [page, setPage] = useState(0);
@@ -26,14 +25,7 @@ const CompletedSprints = () => {
 
 
 
-  const onSuccess = (success) => {
-    toast.current.show({
-      severity: "success",
-      summary: "Successful",
-      detail: `${success}`,
-      life: 1000,
-    });
-  };
+  
 
   const onError = (error) => {
     if(toast.current){

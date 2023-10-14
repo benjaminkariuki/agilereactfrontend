@@ -322,12 +322,7 @@ const Admin = () => {
     </div>
   );
 
-  const titleTemplate = <h3 className="text-white">Users</h3>;
-  const titleTemplateRoles = <h3 className="text-white">Roles</h3>;
 
-  const titleTemplateDepartments = (
-    <h3 className="text-white">Departments</h3>
-  );
 
   return !isLoading ? (
     <div className="flex flex-col p-5 md:space-y-8 space-y-4 h-full mb-12 overflow-auto">

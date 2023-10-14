@@ -35,28 +35,9 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
     return result;
 }
 
-  // toast display functions
-  const onSuccessRequest = (success) => {
-    if (success) {
-      toast.current?.show({
-        severity: "success",
-        summary: "Successfully",
-        detail: `${success}`,
-        life: 1000,
-      });
-    }
-  };
+ 
 
-  const onError = (error) => {
-    if (error && toast.current) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Error occurred",
-        detail: `${error}`,
-        life: 1000,
-      });
-    }
-  };
+ 
 
   const sentenceCaseFormatter = (rowData, column) => {
     return _.startCase(rowData[column.field]);

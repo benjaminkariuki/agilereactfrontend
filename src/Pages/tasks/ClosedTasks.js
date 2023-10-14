@@ -106,26 +106,7 @@ const ClosedTasks = () => {
     }
   };
 
-  const onWarn = (error) => {
-    if (error) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Please upload micro task(s)",
-        detail: `${error}`,
-        life: 3000,
-      });
-    }
-  };
-  const onInfo = (info) => {
-    if (info) {
-      toast.current?.show({
-        severity: "info",
-        summary: "Successfull",
-        detail: `${info}`,
-        life: 3000,
-      });
-    }
-  };
+  
 
   const customHeader = (
     <div className="flex justify-between items-center">
@@ -338,10 +319,7 @@ const durationTemplate = (rowData) => {
     setProjectInfo(data);
   };
 
-  const disableShowDelegateDialog = () => {
-    setShowDelegate(false);
-    setProjectInfo(null);
-  };
+ 
 
   const sentenceCaseFormatter = (rowData, column) => {
     return _.startCase(rowData[column.field]);

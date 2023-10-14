@@ -131,32 +131,7 @@ const CreateProject = ({ routeToListProjects }) => {
       });
   };
 
-  const handleRoleCheckboxChange = (role, userId, checked) => {
-    setProjectData((prevState) => {
-      const existingRoleData = prevState[role];
-
-      if (Array.isArray(existingRoleData)) {
-        if (checked) {
-          return {
-            ...prevState,
-            [role]: [...existingRoleData, userId],
-          };
-        } else {
-          return {
-            ...prevState,
-            [role]: existingRoleData.filter((id) => id !== userId),
-          };
-        }
-      } else {
-        // Convert single value to array
-        const updatedRoleData = checked ? [userId] : [];
-        return {
-          ...prevState,
-          [role]: updatedRoleData,
-        };
-      }
-    });
-  };
+  
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -302,13 +277,7 @@ const CreateProject = ({ routeToListProjects }) => {
     routeToListProjects();
   };
 
-  const normalizeString = (str) => {
-    return str
-      .toLowerCase()
-      .replace(/[\s-]+/g, " ")
-      .trim();
-  };
-
+ 
   
 
   const handleCheckboxChange = (user, isChecked) => {

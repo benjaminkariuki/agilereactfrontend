@@ -405,6 +405,7 @@ const PManager = () => {
       chartProjectSubtaskActiveIndividualDatafromApi.map(
         (c) => c.closedSubtaskCount
       );
+      
     const projects_count_name_in_sentence_case = projects.map((name) => {
       let newName = name.replace(/count/i, "").trim(); // Removes 'count' (case-insensitive) and trims any extra spaces
       return _.startCase(newName);

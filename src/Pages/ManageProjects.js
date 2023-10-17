@@ -15,6 +15,7 @@ const ManageProjects = () => {
   const [projectDetailsId, setProjectDetailsId] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
   const userActivities = useSelector((state) => state.user.userActivities);
+
   const projectsActivity = userActivities.find(
     (activity) => activity.name === "Projects"
   );
@@ -35,9 +36,11 @@ const ManageProjects = () => {
   const routeToListProjects = () => {
     setActiveComponent("list");
   };
+
   const routetoEdit = (id) => {
     handleEditProject(id);
   };
+  
   const routeToviewMore = (id) => {
     handleProjectDetails(id);
   };

@@ -115,6 +115,9 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         'Authorization': `Bearer ${token}`,
       },
     };
+
+    setPage(0); 
+
       axios
         .get(
           `https://agile-pm.agilebiz.co.ke/api/allProjects?page=${

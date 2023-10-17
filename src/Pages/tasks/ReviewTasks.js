@@ -10,10 +10,9 @@ import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DelegateTaskDialog from "./DelegateDialog";
-import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
-
 
 const ReviewTasks = () => {
   const { userRole, userEmail, userActivities, userDepartment } = useSelector(
@@ -35,7 +34,7 @@ const ReviewTasks = () => {
   const [projectSubtasks, setProjectSubtasks] = useState([]);
   const [projectInfo, setProjectInfo] = useState(null);
   const [refreshTasks, setRefreshTasks] = useState(false);
- const [activeView, setActiveView] = useState("My Tasks");
+  const [activeView, setActiveView] = useState("My Tasks");
   const [showDelegate, setShowDelegate] = useState(false);
   const [showSprintPopup, setShowSprintPopUp] = useState(false);
 
@@ -46,48 +45,43 @@ const ReviewTasks = () => {
 
   const navigate = useNavigate();
 
-  
-  const [filters,setFilters] = useState({
-    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
-  })
- 
-   //getting the permission for projects
-   const taskActivity = userActivities.find(
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  //getting the permission for projects
+  const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
   const hasAssignPermissionTasks =
     taskActivity.pivot.permissions.includes("Assign-Tasks");
 
-  const hasCloseTasks =
-    taskActivity.pivot.permissions.includes("Close-tasks");
+  const hasCloseTasks = taskActivity.pivot.permissions.includes("Close-tasks");
 
-    const hasPushDevelopment =
+  const hasPushDevelopment =
     taskActivity.pivot.permissions.includes("Push-Development");
 
-    const hasPushTesting =
+  const hasPushTesting =
     taskActivity.pivot.permissions.includes("Push-Testing");
 
-    const hasPushReview =
-    taskActivity.pivot.permissions.includes("Push-Review");
+  const hasPushReview = taskActivity.pivot.permissions.includes("Push-Review");
 
-    const hasreturnTesting =
+  const hasreturnTesting =
     taskActivity.pivot.permissions.includes("Return-Testing");
 
-    const hasreturnReview =
+  const hasreturnReview =
     taskActivity.pivot.permissions.includes("Return-Review");
-    
-    const hasViewAllTasks =
+
+  const hasViewAllTasks =
     taskActivity.pivot.permissions.includes("View-All-Tasks");
 
-    const hasTeamTasks =
+  const hasTeamTasks =
     taskActivity.pivot.permissions.includes("View-Team-Tasks");
 
-    const hasReturnDevelpment =
+  const hasReturnDevelpment =
     taskActivity.pivot.permissions.includes("Return-Development");
 
- 
   //getting permission for only pms to view other tasks in different projects
-
 
   const onSuccess = (success) => {
     if (success) {
@@ -135,53 +129,71 @@ const ReviewTasks = () => {
 
   const customHeader = (
     <div className="flex justify-between items-center">
-        <div>Subtask Details</div>
-        <InputText
-               style={{ width: "33.3333%", marginRight: "1rem" }}
-
-            placeholder="Search task by name, department, status or stage...."
-            onInput={(e) =>
-                setFilters({
-                    global: {
-                        value: e.target.value,
-                        matchMode: FilterMatchMode.CONTAINS,
-                    },
-                })
-            }
-        />
+      <div>Subtask Details</div>
+      <InputText
+        style={{ width: "33.3333%", marginRight: "1rem" }}
+        placeholder="Search task by name, department, status or stage...."
+        onInput={(e) =>
+          setFilters({
+            global: {
+              value: e.target.value,
+              matchMode: FilterMatchMode.CONTAINS,
+            },
+          })
+        }
+      />
     </div>
-);
-
-const durationTemplate = (rowData) => {
-  const currentDate = new Date();
-  const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
-  const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
-  const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
-
-  const daysUntilEnd = Math.floor(
-    (endDate - currentDate) / (1000 * 60 * 60 * 24)
   );
-  const totalDurationIfClosed = closeDate
-    ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
-    : null;
-  const daysOverdue = endDate < currentDate && rowData.status !== "complete"
-    ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
-    : null;
 
-  if (rowData.status === "complete" && closeDate) {
-    return <span>{totalDurationIfClosed} day(s) taken</span>;
-  } else if (daysUntilEnd >= 0) {
-    return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
-  } else if (daysOverdue) {
-    return (
-      <span style={{ color: "red" }}>
-        {daysOverdue} day(s) overdue
-      </span>
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(
+      Date.UTC(
+        new Date(rowData.start_date).getFullYear(),
+        new Date(rowData.start_date).getMonth(),
+        new Date(rowData.start_date).getDate()
+      )
     );
-  } else {
-    return <span>Project not started</span>;
-  }
-};
+    const endDate = new Date(
+      Date.UTC(
+        new Date(rowData.end_date).getFullYear(),
+        new Date(rowData.end_date).getMonth(),
+        new Date(rowData.end_date).getDate()
+      )
+    );
+    const closeDate = rowData.close_date
+      ? new Date(
+          Date.UTC(
+            new Date(rowData.close_date).getFullYear(),
+            new Date(rowData.close_date).getMonth(),
+            new Date(rowData.close_date).getDate()
+          )
+        )
+      : null;
+
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+    const daysOverdue =
+      endDate < currentDate && rowData.status !== "complete"
+        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) taken</span>;
+    } else if (daysUntilEnd >= 0) {
+      return (
+        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+      );
+    } else if (daysOverdue) {
+      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+      return <span>Project not started</span>;
+    }
+  };
 
   //confirm dialoge to close the task(s)
   const confirmClose = () => {
@@ -200,17 +212,17 @@ const durationTemplate = (rowData) => {
       onWarn("Only one Micro-task should be selected");
     else onWarn("Select atleast one Micro-task");
   };
-  
+
   useEffect(() => {
-    fetchMyTasks(userEmail, userRole,userDepartment); // Fetch data from the API when the component mounts
+    fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
-  const fetchMyTasks = (userEmail, userRole,userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  const fetchMyTasks = (userEmail, userRole, userDepartment) => {
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -220,22 +232,23 @@ const durationTemplate = (rowData) => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config,  // spread the config object here
+        ...config, // spread the config object here
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
         setTasksData(response.data.activeSprint);
-      
+
         setMicroTasksData(response.data.activeSprint.subtasks);
         setMyTaskCount(response.data.subtasksCount);
-
       })
       .catch((error) => {
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -244,11 +257,11 @@ const durationTemplate = (rowData) => {
   };
   // Truncate comments to 5 words
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -258,12 +271,11 @@ const durationTemplate = (rowData) => {
           roleName: userRole,
           department: userDepartment,
         },
-        ...config,  // spread the config object here
+        ...config, // spread the config object here
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setViewOtherTasksCircleButton(true);
@@ -272,8 +284,11 @@ const durationTemplate = (rowData) => {
         setOtherTaskCount(response.data.allSubtasksCount);
       })
       .catch((error) => {
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -281,23 +296,22 @@ const durationTemplate = (rowData) => {
       });
   };
 
+  const truncateComments = (rowData) => {
+    if (rowData.comment !== null) {
+      const words = rowData.comment.split(" ");
+      let finalComment;
 
- const truncateComments = (rowData) => {
-  if (rowData.comment !== null) {
-    const words = rowData.comment.split(" ");
-    let finalComment;
+      if (words.length > 5) {
+        const truncatedText = words.slice(0, 5).join(" ");
+        finalComment = `${truncatedText}...`;
+      } else {
+        finalComment = rowData.comment;
+      }
 
-    if (words.length > 5) {
-      const truncatedText = words.slice(0, 5).join(" ");
-      finalComment = `${truncatedText}...`;
-    } else {
-      finalComment = rowData.comment;
+      return _.startCase(finalComment.toLowerCase());
     }
-
-    return _.startCase(finalComment.toLowerCase());
-  }
-  return null; 
-};
+    return null;
+  };
 
   // Create a download link
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
@@ -373,28 +387,30 @@ const durationTemplate = (rowData) => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
       setPushLoading(true);
-      
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
       const config = {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       };
       axios
-        .post("https://agile-pm.agilebiz.co.ke/api/pushToApproval", {
-          taskIds: selectedIds,
-          
-        },config)
+        .post(
+          "https://agile-pm.agilebiz.co.ke/api/pushToApproval",
+          {
+            taskIds: selectedIds,
+          },
+          config
+        )
         .then((response) => {
-
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
 
           setTimeout(() => {
             onSuccess(response.data.message);
-            fetchMyTasks(userEmail, userRole,userDepartment);
+            fetchMyTasks(userEmail, userRole, userDepartment);
             setPushLoading(false);
           }, 1000);
           setViewMore(false);
@@ -436,30 +452,29 @@ const durationTemplate = (rowData) => {
     formData.append("taskId", selectedTasks[0].id);
     formData.append("imageUpload", selectedFile);
     formData.append("comment", comment);
-   
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
       .post("https://agile-pm.agilebiz.co.ke/api/returnToTesting", formData, {
         headers: {
           ...config.headers,
-          "Content-Type": "multipart/form-data"
+          "Content-Type": "multipart/form-data",
         },
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setTimeout(() => {
           onInfo(response.data.message);
-          fetchMyTasks(userEmail, userRole,userDepartment);
+          fetchMyTasks(userEmail, userRole, userDepartment);
           setPushLoadingTest(false);
         }, 1000);
         setShowSubmit(false);
@@ -479,15 +494,14 @@ const durationTemplate = (rowData) => {
 
       <div className="flex justify-between p-4 space-x-0.5 items-center">
         <div className="flex space-x-0.5">
-        <button
-          onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md relative ${
-            activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
-          } transition-colors`}
-        >
-          My Tasks
-
-          <div
+          <button
+            onClick={() => setActiveView("My Tasks")}
+            className={`p-2 rounded-md relative ${
+              activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
+            } transition-colors`}
+          >
+            My Tasks
+            <div
               style={{
                 position: "absolute",
                 top: "-10px",
@@ -504,25 +518,21 @@ const durationTemplate = (rowData) => {
             >
               {myTaskCount} {/* Replace 'count' with the actual count */}
             </div>
-            
-        </button>
+          </button>
 
-        {(hasViewAllTasks || hasTeamTasks) && (
-          <button
-          style={{ marginLeft: "10px" }}
-
-            onClick={() => {
-              setActiveView("Other Tasks");
-              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-
-            }}
-            className={`p-2 rounded-md relative ${
-              activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
-            } transition-colors`}
-          >
-            Other Tasks
-
-            {viewOtherTaskCircle && (
+          {(hasViewAllTasks || hasTeamTasks) && (
+            <button
+              style={{ marginLeft: "10px" }}
+              onClick={() => {
+                setActiveView("Other Tasks");
+                fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+              }}
+              className={`p-2 rounded-md relative ${
+                activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              } transition-colors`}
+            >
+              Other Tasks
+              {viewOtherTaskCircle && (
                 <div
                   style={{
                     position: "absolute",
@@ -541,16 +551,13 @@ const durationTemplate = (rowData) => {
                   {otherTaskCount}
                 </div>
               )}
+            </button>
+          )}
+        </div>
 
-          </button>
-        )}
-      </div>
-
-
- {/* Sprint name on the right */}
- <p
-                  style={{ marginRight: "30px" }}
-
+        {/* Sprint name on the right */}
+        <p
+          style={{ marginRight: "30px" }}
           className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
@@ -575,8 +582,6 @@ const durationTemplate = (rowData) => {
           )}
         </p>
       </div>
-
-
 
       {/* My Tasks section */}
       {activeView === "My Tasks" && (
@@ -699,10 +704,8 @@ const durationTemplate = (rowData) => {
 
       <div>
         <Dialog
-        
           visible={viewMore}
           header={customHeader}
-
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
           footer={
@@ -744,7 +747,7 @@ const durationTemplate = (rowData) => {
             filters={filters}
             paginator
             rows={10}
-            rowsPerPageOptions={[10,20,30]}
+            rowsPerPageOptions={[10, 20, 30]}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
           >
@@ -766,26 +769,34 @@ const durationTemplate = (rowData) => {
               header="Department"
               body={sentenceCaseFormatter}
             ></Column>
-             <Column field="start_date" header="Start Date" />
+            <Column field="start_date" header="Start Date" />
             <Column field="end_date" header="End Date" />
             <Column
-                field="close_date"
-                header="Completion Date"
-                sortable
-              ></Column>
-
-              <Column header="Duration" body={durationTemplate}></Column>
-            <Column
-              field="status"
-              header="Status"
-              body={sentenceCaseFormatter}
+              field="close_date"
+              header="Completion Date"
+              sortable
             ></Column>
+
+            <Column header="Duration" body={durationTemplate}></Column>
+
+            <Column
+              field="subtask_sprints[0].status"
+              header="Status"
+              body={(rowData, columnProps) => {
+                const status = rowData.subtask_sprints[0].status;
+                return sentenceCaseFormatter(
+                  { [columnProps.field]: status },
+                  columnProps
+                );
+              }}
+            />
+
             <Column
               header="stages"
               field="stage"
               body={sentenceCaseFormatter}
             />
-            
+
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
             <Column
@@ -855,6 +866,7 @@ const durationTemplate = (rowData) => {
           </div>
         </Dialog>
       </div>
+
       <div>
         <Dialog
           header={moreDetailsData.task}
@@ -925,9 +937,16 @@ const durationTemplate = (rowData) => {
               </div>
 
               <p className="text-gray-600">
-                <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
-              </p>
+  <span className="font-semibold">Status:</span>
+  {moreDetailsData.subtask_sprints ? (
+    _.startCase(
+      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
+    )
+  ) : (
+    "" 
+  )}
+</p>
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}

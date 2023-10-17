@@ -48,6 +48,7 @@ const CreateProject = ({ routeToListProjects }) => {
     { label: "ICT Infrastructure", value: "ict infrastructure" },
   
   ];
+
   const toast = useRef(null);
 
   const onSuccess = (success) => {
@@ -179,6 +180,7 @@ const CreateProject = ({ routeToListProjects }) => {
         }
 
         onSuccess(response.data.message);
+
         setProjectData({
           title: "",
           overview: "",
@@ -194,6 +196,8 @@ const CreateProject = ({ routeToListProjects }) => {
         setcontact();
         setisloading(false);
         setSelectedUsers([]);
+        routeToListProjects();
+
       })
       .catch((error) => {
         setisloading(false);
@@ -206,8 +210,11 @@ const CreateProject = ({ routeToListProjects }) => {
           const errorMessages = Object.values(
             error.response.data.errors
           ).flat();
+          
+        
           onError(errorMessages.join(" "));
         } else {
+        
           onError("An unknown error occurred."); // generic error
         }
 
@@ -377,6 +384,7 @@ const CreateProject = ({ routeToListProjects }) => {
                 onChange={handleInputChange}
                 placeholder="Select Category"
                 className="w-full"
+                
               />
             </div>
             {/* System */}
@@ -392,6 +400,7 @@ const CreateProject = ({ routeToListProjects }) => {
                 onChange={handleInputChange}
                 placeholder="Select System"
                 className="w-full"
+                
               />
             </div>
             {/* Date inputs */}

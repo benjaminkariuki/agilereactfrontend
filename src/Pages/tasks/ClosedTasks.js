@@ -8,11 +8,9 @@ import { Dialog } from "primereact/dialog";
 import { FaInfoCircle } from "react-icons/fa";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
-import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
-
-
 
 const ClosedTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -41,47 +39,38 @@ const ClosedTasks = () => {
 
   const [otherTaskCount, setOtherTaskCount] = useState(0);
 
-
-  
-  const [filters,setFilters] = useState({
-    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
-  })
-
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
   const Role = userRole; // Replace this with how you get the user's role
   const normalizedRole = Role.toLowerCase(); // Convert the role to lowercase for case-insensitive checking
 
-   //getting the permission for projects
-   const taskActivity = userActivities.find(
+  //getting the permission for projects
+  const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
   );
   const hasAssignPermissionTasks =
     taskActivity.pivot.permissions.includes("Assign-Tasks");
 
-  const hasCloseTasks =
-    taskActivity.pivot.permissions.includes("Close-tasks");
+  const hasCloseTasks = taskActivity.pivot.permissions.includes("Close-tasks");
 
-    const hasPushDevelopment =
+  const hasPushDevelopment =
     taskActivity.pivot.permissions.includes("Push-Development");
 
-    const hasPushTesting =
+  const hasPushTesting =
     taskActivity.pivot.permissions.includes("Push-Testing");
 
-    const hasPushReview =
-    taskActivity.pivot.permissions.includes("Push-Review");
+  const hasPushReview = taskActivity.pivot.permissions.includes("Push-Review");
 
-    const hasreturnTesting =
+  const hasreturnTesting =
     taskActivity.pivot.permissions.includes("Return-Testing");
 
-    
-    const hasViewAllTasks =
+  const hasViewAllTasks =
     taskActivity.pivot.permissions.includes("View-All-Tasks");
 
-    const hasTeamTasks =
+  const hasTeamTasks =
     taskActivity.pivot.permissions.includes("View-Team-Tasks");
-
-
-
 
   //toast display functions
   const onSuccess = (success) => {
@@ -106,68 +95,84 @@ const ClosedTasks = () => {
     }
   };
 
-  
-
   const customHeader = (
     <div className="flex justify-between items-center">
-        <div>Subtask Details</div>
-        <InputText
-               style={{ width: "33.3333%", marginRight: "1rem" }}
-
-            placeholder="Search task by name, department, status or stage...."
-            onInput={(e) =>
-                setFilters({
-                    global: {
-                        value: e.target.value,
-                        matchMode: FilterMatchMode.CONTAINS,
-                    },
-                })
-            }
-        />
+      <div>Subtask Details</div>
+      <InputText
+        style={{ width: "33.3333%", marginRight: "1rem" }}
+        placeholder="Search task by name, department, status or stage...."
+        onInput={(e) =>
+          setFilters({
+            global: {
+              value: e.target.value,
+              matchMode: FilterMatchMode.CONTAINS,
+            },
+          })
+        }
+      />
     </div>
-);
-
-const durationTemplate = (rowData) => {
-  const currentDate = new Date();
-  const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
-  const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
-  const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
-
-  const daysUntilEnd = Math.floor(
-    (endDate - currentDate) / (1000 * 60 * 60 * 24)
   );
-  const totalDurationIfClosed = closeDate
-    ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
-    : null;
-  const daysOverdue = endDate < currentDate && rowData.status !== "complete"
-    ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
-    : null;
 
-  if (rowData.status === "complete" && closeDate) {
-    return <span>{totalDurationIfClosed} day(s) taken</span>;
-  } else if (daysUntilEnd >= 0) {
-    return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
-  } else if (daysOverdue) {
-    return (
-      <span style={{ color: "red" }}>
-        {daysOverdue} day(s) overdue
-      </span>
+  const durationTemplate = (rowData) => {
+    const currentDate = new Date();
+    const startDate = new Date(
+      Date.UTC(
+        new Date(rowData.start_date).getFullYear(),
+        new Date(rowData.start_date).getMonth(),
+        new Date(rowData.start_date).getDate()
+      )
     );
-  } else {
-    return <span>Project not started</span>;
-  }
-};
+    const endDate = new Date(
+      Date.UTC(
+        new Date(rowData.end_date).getFullYear(),
+        new Date(rowData.end_date).getMonth(),
+        new Date(rowData.end_date).getDate()
+      )
+    );
+    const closeDate = rowData.close_date
+      ? new Date(
+          Date.UTC(
+            new Date(rowData.close_date).getFullYear(),
+            new Date(rowData.close_date).getMonth(),
+            new Date(rowData.close_date).getDate()
+          )
+        )
+      : null;
+
+    const daysUntilEnd = Math.floor(
+      (endDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
+    const totalDurationIfClosed = closeDate
+      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+      : null;
+    const daysOverdue =
+      endDate < currentDate && rowData.status !== "complete"
+        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+
+    if (rowData.status === "complete" && closeDate) {
+      return <span>{totalDurationIfClosed} day(s) taken</span>;
+    } else if (daysUntilEnd >= 0) {
+      return (
+        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+      );
+    } else if (daysOverdue) {
+      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+      return <span>Project not started</span>;
+    }
+  };
 
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -178,24 +183,24 @@ const durationTemplate = (rowData) => {
           department: userDepartment,
         },
         headers: {
-          ...config.headers
-        }
+          ...config.headers,
+        },
       })
       .then((response) => {
-
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setTasksData(response.data.activeSprint);
         setMicroTasksData(response.data.activeSprint.subtasks);
         setMyTaskCount(response.data.subtasksCount);
-
       })
       .catch((error) => {
-       
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error.response.data.error);
         } else {
           onError("An unknown error occurred.");
@@ -204,11 +209,11 @@ const durationTemplate = (rowData) => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
@@ -219,31 +224,31 @@ const durationTemplate = (rowData) => {
           department: userDepartment,
         },
         headers: {
-          ...config.headers
-        }
+          ...config.headers,
+        },
       })
       .then((response) => {
-        
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
-      
+
         setOtherData(response.data.allSubtasks);
         setOtherData(response.data.allSubtasks);
         setOtherTaskCount(response.data.allSubtasksCount);
         setViewOtherTasksCircleButton(true);
       })
       .catch((error) => {
-
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           onError(error);
         } else {
           onError("An unknown error occurred.");
         }
-            
       });
   };
-
 
   // Truncate comments to 5 words
   const truncateComments = (rowData) => {
@@ -319,8 +324,6 @@ const durationTemplate = (rowData) => {
     setProjectInfo(data);
   };
 
- 
-
   const sentenceCaseFormatter = (rowData, column) => {
     return _.startCase(rowData[column.field]);
   };
@@ -330,17 +333,16 @@ const durationTemplate = (rowData) => {
       <Toast ref={toast} />
       <h1> Closed task(s)</h1>
 
-      
       <div className="flex justify-between p-4 space-x-0.5 items-center">
         <div className="flex space-x-0.5">
-        <button
-          onClick={() => setActiveView("My Tasks")}
-          className={`p-2 rounded-md relative ${
-            activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
-          } transition-colors`}
-        >
-          My Tasks
-          <div
+          <button
+            onClick={() => setActiveView("My Tasks")}
+            className={`p-2 rounded-md relative ${
+              activeView === "My Tasks" ? "bg-blue-500" : "bg-gray-400"
+            } transition-colors`}
+          >
+            My Tasks
+            <div
               style={{
                 position: "absolute",
                 top: "-10px",
@@ -357,26 +359,21 @@ const durationTemplate = (rowData) => {
             >
               {myTaskCount} {/* Replace 'count' with the actual count */}
             </div>
-        </button>
+          </button>
 
-
-        {(hasViewAllTasks || hasTeamTasks) && (
-          <button
-          style={{ marginLeft: "10px" }}
-
-            onClick={() => {
-              setActiveView("Other Tasks");
-              fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
-
-            }}
-            className={`p-2 rounded-md relative ${
-
-            activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
-            } transition-colors`}
-          >
-            Other Tasks
-
-            {viewOtherTaskCircle && (
+          {(hasViewAllTasks || hasTeamTasks) && (
+            <button
+              style={{ marginLeft: "10px" }}
+              onClick={() => {
+                setActiveView("Other Tasks");
+                fetchOtherTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
+              }}
+              className={`p-2 rounded-md relative ${
+                activeView === "Other Tasks" ? "bg-blue-500" : "bg-gray-400"
+              } transition-colors`}
+            >
+              Other Tasks
+              {viewOtherTaskCircle && (
                 <div
                   style={{
                     position: "absolute",
@@ -395,15 +392,13 @@ const durationTemplate = (rowData) => {
                   {otherTaskCount}
                 </div>
               )}
+            </button>
+          )}
+        </div>
 
-          </button>
-        )}
-      </div>
-
-     {/* Sprint name on the right */}
- <p
-                   style={{ marginRight: "30px" }}
-
+        {/* Sprint name on the right */}
+        <p
+          style={{ marginRight: "30px" }}
           className="text-black-600 cursor-pointer hover:text-black-600 mr-4 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
@@ -550,8 +545,7 @@ const durationTemplate = (rowData) => {
 
       <div>
         <Dialog
-                    header={customHeader}
-
+          header={customHeader}
           visible={viewMore}
           onHide={() => disableShowSubtaskMore()}
           style={{ width: "98vw" }}
@@ -565,7 +559,7 @@ const durationTemplate = (rowData) => {
             filters={filters}
             paginator
             rows={10}
-            rowsPerPageOptions={[10,20,30]}
+            rowsPerPageOptions={[10, 20, 30]}
             onSelectionChange={(e) => setSelectedTasks(e.value)}
             dataKey="id"
           >
@@ -591,26 +585,34 @@ const durationTemplate = (rowData) => {
               header="Department"
               body={sentenceCaseFormatter}
             ></Column>
-             <Column field="start_date" header="Start Date" />
+            <Column field="start_date" header="Start Date" />
             <Column field="end_date" header="End Date" />
             <Column
-                field="close_date"
-                header="Completion Date"
-                sortable
-              ></Column>
-
-              <Column header="Duration" body={durationTemplate}></Column>
-            <Column
-              field="status"
-              header="Status"
-              body={sentenceCaseFormatter}
+              field="close_date"
+              header="Completion Date"
+              sortable
             ></Column>
+
+            <Column header="Duration" body={durationTemplate}></Column>
+
+            <Column
+              field="subtask_sprints[0].status"
+              header="Status"
+              body={(rowData, columnProps) => {
+                const status = rowData.subtask_sprints[0].status;
+                return sentenceCaseFormatter(
+                  { [columnProps.field]: status },
+                  columnProps
+                );
+              }}
+            />
+
             <Column
               header="stages"
               field="stage"
               body={sentenceCaseFormatter}
             />
-            
+
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
             <Column
@@ -700,9 +702,16 @@ const durationTemplate = (rowData) => {
               </div>
 
               <p className="text-gray-600">
-                <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
-              </p>
+  <span className="font-semibold">Status:</span>
+  {moreDetailsData.subtask_sprints ? (
+    _.startCase(
+      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
+    )
+  ) : (
+    "" 
+  )}
+</p>
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}

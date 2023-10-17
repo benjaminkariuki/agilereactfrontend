@@ -404,6 +404,8 @@ const MicroTask = ({
           Authorization: `Bearer ${token}`,
         },
       };
+
+      setPage(0); 
       axios
         .get(
           `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${

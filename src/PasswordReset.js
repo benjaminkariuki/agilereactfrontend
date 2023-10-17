@@ -90,15 +90,17 @@ const PasswordReset = () => {
             className="logo"
           />
         </div>
+
         <div className="Loginform">
           <div className="top_Loginform">
             <h5 className="title_Login">Create New Password</h5>
             <p className="info_Login">Enter your new password</p>
 
             {successMessage && (
-              <p className="success-message">{successMessage}</p>
+              <p className="text-green-500">{successMessage}</p>
             )}
-            {errorMessage && <p className="Cant_connect">{errorMessage}</p>}
+
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
           </div>
 
           <form className="the_form" onSubmit={handleSubmit}>
@@ -113,19 +115,19 @@ const PasswordReset = () => {
                   value={password}
                   onChange={handlePasswordChange}
                   required
-                  className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                  className={`form-control ${errors.password ? "is-invalid" : ""}`}
                   id="username"
                 />
+
                 {errors.password && (
-                  <div className="invalid-feedback">{errors.password}</div>
+                  <div className="text-red-500">{errors.password}</div>
                 )}
               </div>
             </div>
             <div className="form-group">
               <label
-                htmlFor="confrimYourPassw
-          ord"
-                className="form_lable"
+                htmlFor="confrimYourPassword"
+                className="form_label"
               >
                 Confirm Password
               </label>
@@ -142,7 +144,7 @@ const PasswordReset = () => {
                   required
                 />
                 {errors.confirm && (
-                  <div className="invalid-feedback">{errors.confirm}</div>
+                  <div className="text-red-500">{errors.confirm}</div>
                 )}
               </div>
             </div>

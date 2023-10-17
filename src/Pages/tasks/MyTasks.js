@@ -48,7 +48,6 @@ const MyTasks = () => {
 
   // Replace this with how you get the user's role
 
-
   //getting the permission for projects
   const taskActivity = userActivities.find(
     (activity) => activity.name === "Tasks"
@@ -108,8 +107,6 @@ const MyTasks = () => {
       });
     }
   };
-
-  
 
   const customHeader = (
     <div className="flex justify-between items-center">
@@ -477,7 +474,6 @@ const MyTasks = () => {
             >
               {myTaskCount} {/* Replace 'count' with the actual count */}
             </div>
-
           </button>
 
           {(hasViewAllTasks || hasTeamTasks) && (
@@ -511,7 +507,6 @@ const MyTasks = () => {
                   {otherTaskCount}
                 </div>
               )}
-              
             </button>
           )}
         </div>
@@ -519,7 +514,6 @@ const MyTasks = () => {
         {/* Sprint name on the right */}
         <p
           style={{ marginRight: "30px" }}
-
           className="text-black-600  cursor-pointer hover:text-black-600 mr-8 mb-auto z-20"
           onMouseEnter={() => setShowSprintPopUp(true)}
           onMouseLeave={() => setShowSprintPopUp(false)}
@@ -527,10 +521,7 @@ const MyTasks = () => {
           <span className="font-semibold">Sprint name:</span>
           {_.startCase(tasksData.name)}
           {showSprintPopup && (
-            <div
-
-              className="absolute bg-white p-3 border w-48  rounded-md shadow-lg mt-2"
-            >
+            <div className="absolute bg-white p-3 border w-48  rounded-md shadow-lg mt-2">
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{" "}
                 {_.startCase(tasksData.status)}
@@ -756,11 +747,19 @@ const MyTasks = () => {
             ></Column>
 
             <Column header="Duration" body={durationTemplate}></Column>
+
             <Column
-              field="status"
+              field="subtask_sprints[0].status"
               header="Status"
-              body={sentenceCaseFormatter}
-            ></Column>
+              body={(rowData, columnProps) => {
+                const status = rowData.subtask_sprints[0].status;
+                return sentenceCaseFormatter(
+                  { [columnProps.field]: status },
+                  columnProps
+                );
+              }}
+            />
+
             <Column
               header="stages"
               field="stage"
@@ -872,8 +871,14 @@ const MyTasks = () => {
 
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
+                {moreDetailsData.subtask_sprints
+                  ? _.startCase(
+                      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ??
+                        ""
+                    )
+                  : ""}
               </p>
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}

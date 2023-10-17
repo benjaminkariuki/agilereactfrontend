@@ -2,7 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./css/index.css";
 import { Provider } from "react-redux";
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+
 import store from "./store/store";
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -112,3 +115,5 @@ root.render(
     </Provider>
   </React.StrictMode>
 );
+
+serviceWorkerRegistration.unregister();

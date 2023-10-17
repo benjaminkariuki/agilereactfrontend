@@ -141,6 +141,9 @@ const Archive = ({ onRestoreProject,viewMode }) => {
         'Authorization': `Bearer ${token}`,
       },
     };
+
+    setPage(0); 
+
       axios
         .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {

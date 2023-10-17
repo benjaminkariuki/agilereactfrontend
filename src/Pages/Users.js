@@ -286,11 +286,15 @@ const Users = () => {
 
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
+
     const config = {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     };
+
+     // Reset the page state to 0 whenever a search is performed
+     setPage(0); 
       // Modify the endpoint to accommodate the searchTerm in the query string 
       axios
         .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,config)

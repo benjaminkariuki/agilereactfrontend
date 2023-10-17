@@ -835,7 +835,6 @@ const TestingTasks = () => {
                   </div>
                 )}
               ></Column>
-              
             </DataTable>
           ) : (
             <div className="flex items-center justify-center pt-10">
@@ -926,15 +925,17 @@ const TestingTasks = () => {
             ></Column>
 
             <Column header="Duration" body={durationTemplate}></Column>
+
             <Column
-              field="status"
+              field="subtask_sprints[0].status"
               header="Status"
-              body={sentenceCaseFormatter}
-            ></Column>
-            <Column
-              header="stages"
-              field="stage"
-              body={sentenceCaseFormatter}
+              body={(rowData, columnProps) => {
+                const status = rowData.subtask_sprints[0].status;
+                return sentenceCaseFormatter(
+                  { [columnProps.field]: status },
+                  columnProps
+                );
+              }}
             />
 
             <Column header="Comments" body={truncateComments}></Column>
@@ -1083,9 +1084,16 @@ const TestingTasks = () => {
               </div>
 
               <p className="text-gray-600">
-                <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
-              </p>
+  <span className="font-semibold">Status:</span>
+  {moreDetailsData.subtask_sprints ? (
+    _.startCase(
+      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
+    )
+  ) : (
+    "" 
+  )}
+</p>
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
@@ -1133,52 +1141,74 @@ const TestingTasks = () => {
             <div className="mb-4">
               <p className="text-gray-600">
                 <span className="font-semibold">Task:</span>{" "}
-                {_.startCase((moreDetailsData?.task_logs?.subTask?.task ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.task ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Description:</span>{" "}
                 {_.startCase(
-                  (moreDetailsData?.task_logs?.subTask?.description ?? "").toLowerCase()
+                  (
+                    moreDetailsData?.task_logs?.subTask?.description ?? ""
+                  ).toLowerCase()
                 )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Department:</span>{" "}
-                {_.startCase((moreDetailsData?.task_logs?.subTask?.department ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.department ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Assigned To:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData?.task_logs?.subTask?.assigned_to?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                    {item.email && <p key={index}>{item.email}</p>}
-                  </div>
-                ))}
+                {moreDetailsData?.task_logs?.subTask?.assigned_to?.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                    >
+                      {item.email && <p key={index}>{item.email}</p>}
+                    </div>
+                  )
+                )}
               </div>
               <p className="text-gray-600">
                 <span className="font-semibold">Assigned BA:</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {moreDetailsData?.task_logs?.subTask?.baassigned_to?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                    {item.email && <p key={index}>{item.email}</p>}
-                  </div>
-                ))}
+                {moreDetailsData?.task_logs?.subTask?.baassigned_to?.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                    >
+                      {item.email && <p key={index}>{item.email}</p>}
+                    </div>
+                  )
+                )}
               </div>
 
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.task_logs?.subTask?.status ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.status ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
-                {_.startCase((moreDetailsData?.task_logs?.subTask?.stage ?? "").toLowerCase())}
+                {_.startCase(
+                  (
+                    moreDetailsData?.task_logs?.subTask?.stage ?? ""
+                  ).toLowerCase()
+                )}
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Start Date:</span>

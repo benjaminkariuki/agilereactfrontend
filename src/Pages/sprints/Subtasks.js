@@ -6,13 +6,11 @@ import _ from "lodash";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import { FaInfoCircle } from "react-icons/fa";
-import {  confirmDialog } from "primereact/confirmdialog";
-import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { confirmDialog } from "primereact/confirmdialog";
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
-
 
 const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [visible, setVisible] = useState(false);
@@ -24,22 +22,21 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const toast = useRef(null);
   const navigate = useNavigate();
 
-
   const { userActivities } = useSelector((state) => state.user);
 
-  const [filters,setFilters] = useState({
-    global:{value:null, matchMode:FilterMatchMode.CONTAINS},
-  })
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
   const sprintsActivity = userActivities.find(
     (activity) => activity.name === "Sprints"
   );
-  
+
   //read permission
   const hasReadPermissionSprints = sprintsActivity
     ? sprintsActivity.pivot.permissions.includes("read")
     : false;
-  
+
   //write permissions
   const hasWritePermissionSprints = sprintsActivity
     ? sprintsActivity.pivot.permissions.includes("write")
@@ -87,57 +84,71 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
 
   const durationTemplate = (rowData) => {
     const currentDate = new Date();
-    const startDate = new Date(Date.UTC(new Date(rowData.start_date).getFullYear(), new Date(rowData.start_date).getMonth(), new Date(rowData.start_date).getDate()));
-    const endDate = new Date(Date.UTC(new Date(rowData.end_date).getFullYear(), new Date(rowData.end_date).getMonth(), new Date(rowData.end_date).getDate()));
-    const closeDate = rowData.close_date ? new Date(Date.UTC(new Date(rowData.close_date).getFullYear(), new Date(rowData.close_date).getMonth(), new Date(rowData.close_date).getDate())) : null;
-  
+    const startDate = new Date(
+      Date.UTC(
+        new Date(rowData.start_date).getFullYear(),
+        new Date(rowData.start_date).getMonth(),
+        new Date(rowData.start_date).getDate()
+      )
+    );
+    const endDate = new Date(
+      Date.UTC(
+        new Date(rowData.end_date).getFullYear(),
+        new Date(rowData.end_date).getMonth(),
+        new Date(rowData.end_date).getDate()
+      )
+    );
+    const closeDate = rowData.close_date
+      ? new Date(
+          Date.UTC(
+            new Date(rowData.close_date).getFullYear(),
+            new Date(rowData.close_date).getMonth(),
+            new Date(rowData.close_date).getDate()
+          )
+        )
+      : null;
+
     const daysUntilEnd = Math.floor(
       (endDate - currentDate) / (1000 * 60 * 60 * 24)
     );
     const totalDurationIfClosed = closeDate
       ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
       : null;
-    const daysOverdue = endDate < currentDate && rowData.status !== "complete"
-      ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
-      : null;
-  
+    const daysOverdue =
+      endDate < currentDate && rowData.status !== "complete"
+        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+
     if (rowData.status === "complete" && closeDate) {
       return <span>{totalDurationIfClosed} day(s) </span>;
     } else if (daysUntilEnd >= 0) {
-      return <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>;
-    } else if (daysOverdue) {
       return (
-        <span style={{ color: "red" }}>
-          {daysOverdue} day(s) overdue
-        </span>
+        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
       );
+    } else if (daysOverdue) {
+      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
     } else {
       return <span>Project not started</span>;
     }
   };
-  
-
-
 
   const customHeader = (
     <div className="flex justify-between items-center">
-        <div>Subtask Details</div>
-        <InputText
-               style={{ width: "33.3333%", marginRight: "1rem" }}
-
-            placeholder="Search task by name, department, status or stage...."
-            onInput={(e) =>
-                setFilters({
-                    global: {
-                        value: e.target.value,
-                        matchMode: FilterMatchMode.CONTAINS,
-                    },
-                })
-            }
-        />
+      <div>Subtask Details</div>
+      <InputText
+        style={{ width: "33.3333%", marginRight: "1rem" }}
+        placeholder="Search task by name, department, status or stage...."
+        onInput={(e) =>
+          setFilters({
+            global: {
+              value: e.target.value,
+              matchMode: FilterMatchMode.CONTAINS,
+            },
+          })
+        }
+      />
     </div>
-);
-
+  );
 
   const openDialog = (projectTitle) => {
     const projectSubtasks = subtasks.filter(
@@ -181,20 +192,18 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
           config
         )
         .then((response) => {
-
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
 
           setremoveLoading(false);
           onSuccess(response.data.message);
           setVisible(false);
           reloadData();
-          
         })
         .catch((error) => {
           setremoveLoading(false);
-         
+
           onError(error);
         });
     } else {
@@ -250,21 +259,22 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
         footer={
           component === "active" && (
             <div className="flex justify-end">
-            
-           {hasWritePermissionSprints && (   <button
-                className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
-                onClick={() => confirmRemove(sprintId)}
-                disabled={removeLoading}
-              >
-                {removeLoading ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                ) : (
-                  "Remove from current sprint"
-                )}
-              </button>)}
+              {hasWritePermissionSprints && (
+                <button
+                  className="mr-2 px-4 py-2 bg-red-500 text-white rounded-md"
+                  onClick={() => confirmRemove(sprintId)}
+                  disabled={removeLoading}
+                >
+                  {removeLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Remove from current sprint"
+                  )}
+                </button>
+              )}
             </div>
           )
         }
@@ -278,7 +288,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               filters={filters}
               paginator
               rows={10}
-              rowsPerPageOptions={[10,20]}
+              rowsPerPageOptions={[10, 20]}
               onSelectionChange={(e) => setSelectedTask(e.value)}
               dataKey="id"
             >
@@ -314,10 +324,17 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
                 body={sentenceCaseFormatter}
               />
               <Column
-                field="status"
+                field="subtask_sprints[0].status"
                 header="Status"
-                body={sentenceCaseFormatter}
+                body={(rowData, columnProps) => {
+                  const status = rowData.subtask_sprints[0].status;
+                  return sentenceCaseFormatter(
+                    { [columnProps.field]: status },
+                    columnProps
+                  );
+                }}
               />
+
               <Column
                 header="stage"
                 field="stage"
@@ -422,17 +439,14 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
 
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
-                {/* {moreDetailsData.subtask_sprints?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                   {_.startCase((item?.status ?? "").toLowerCase())}
-
-                  </div>
-                ))} */}
+                {moreDetailsData.subtask_sprints
+                  ? _.startCase(
+                      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ??
+                        ""
+                    )
+                  : ""}
               </p>
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}

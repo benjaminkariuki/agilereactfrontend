@@ -187,6 +187,7 @@ const CompletedSprints = () => {
       },
     };
       // Modify the endpoint to accommodate the searchTerm in the query string 
+      setPage(0); 
       axios
         .get(`https://agile-pm.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {

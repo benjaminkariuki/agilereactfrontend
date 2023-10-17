@@ -915,11 +915,19 @@ const DevelopmentTasks = () => {
             ></Column>
 
             <Column header="Duration" body={durationTemplate}></Column>
+           
             <Column
-              field="status"
+              field="subtask_sprints[0].status"
               header="Status"
-              body={sentenceCaseFormatter}
-            ></Column>
+              body={(rowData, columnProps) => {
+                const status = rowData.subtask_sprints[0].status;
+                return sentenceCaseFormatter(
+                  { [columnProps.field]: status },
+                  columnProps
+                );
+              }}
+            />
+
             <Column
               header="stages"
               field="stage"
@@ -928,6 +936,7 @@ const DevelopmentTasks = () => {
 
             <Column header="Comments" body={truncateComments}></Column>
             <Column header="Download Data" body={downloadLink}></Column>
+
             <Column
               header="More Details"
               body={(rowData) => (
@@ -1013,13 +1022,17 @@ const DevelopmentTasks = () => {
               </div>
 
               <p className="text-gray-600">
-                <span className="font-semibold">Status:</span>
-                {_.startCase(
-                  (
-                    moreDetailsData?.task_logs?.subTask?.status ?? ""
-                  ).toLowerCase()
-                )}
-              </p>
+  <span className="font-semibold">Status:</span>
+  {moreDetailsData.subtask_sprints ? (
+    _.startCase(
+      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
+    )
+  ) : (
+    "" 
+  )}
+</p>
+
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase(
@@ -1109,6 +1122,7 @@ const DevelopmentTasks = () => {
                 <span className="font-semibold">Status:</span>
                 {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
               </p>
+
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}

@@ -152,6 +152,10 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
           </p>
           <p className="text-gray-600">Start Date: {projectData.start_date}</p>
           <p className="text-gray-600">End Date: {projectData.end_date}</p>
+
+          <p className="text-gray-600">Category: {_.startCase(projectData.category)}</p>
+          <p className="text-gray-600">Type of System: {_.startCase(projectData.system_type)}</p>
+
         </div>
         <div className="mb-8 ">
           <h2 className="text-2xl font-bold mb-4 text-center">Phases</h2>

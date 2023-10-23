@@ -27,9 +27,9 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     (activity) => activity.name === "Projects"
   );
   // Check if the user has "read" and "write" permissions for the "Projects" activity
-  const hasReadPermission = projectsActivity.pivot.permissions.includes("read");
+  const hasReadPermission = projectsActivity && projectsActivity.pivot.permissions.includes("read");
 
-  const hasWritePermission =
+  const hasWritePermission = projectsActivity &&
     projectsActivity.pivot.permissions.includes("write");
 
   useEffect(() => {
@@ -225,6 +225,8 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
         >
           View More
         </button>
+
+
         {hasReadPermission && hasWritePermission && (
           <button
             onClick={() => handleArchiveProject(project.id)}

@@ -45,7 +45,7 @@ const ManageSprints = () => {
       case "ActiveSprint":
         return <ActiveSprint rerouting={routeToListing} routeToCompletedSprints={routeToCompletedSprints} />;
       case "InActiveSprint":
-        return <InActiveSprint rerouting={routeToListing} />;
+        return <InActiveSprint rerouting={routeToListing} routeToInactiveSprints={routeToInactiveSprints} />;
       case "CompletedSprints":
         return <CompletedSprints rerouting={routeToListing}  />;
       default:
@@ -60,6 +60,11 @@ const ManageSprints = () => {
 
   const routeToCompletedSprints = () => {
     setActiveComponent("CompletedSprints");
+  };
+
+
+  const routeToInactiveSprints = () => {
+    setActiveComponent("InActiveSprint");
   };
 
   return (

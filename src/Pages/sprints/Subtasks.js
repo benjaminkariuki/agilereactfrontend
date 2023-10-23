@@ -120,15 +120,20 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
         : null;
 
     if (rowData.status === "complete" && closeDate) {
-      return <span>{totalDurationIfClosed} day(s) </span>;
+      return <span>{totalDurationIfClosed} day(s) taken</span>;
     } else if (daysUntilEnd >= 0) {
       return (
         <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
       );
     } else if (daysOverdue) {
       return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } else {
-      return <span>Project not started</span>;
+    } 
+    
+    else {
+      return <span>  
+        <i className="pi pi-bell" />  
+      <i className="pi pi-bell" />
+      </span>;
     }
   };
 
@@ -450,6 +455,10 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">ClosedBy: {moreDetailsData?.closedBy ?? ""}</span>
+                
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Start Date:</span>

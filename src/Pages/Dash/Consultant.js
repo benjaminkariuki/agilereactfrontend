@@ -323,11 +323,13 @@ const Consultant = () => {
       return _.startCase(newName);
     });
 
-    const datasets = dataKeys.map((key, index) => {
+    const datasets = labels.map((label, index) => {
+      const extraData = new Array(labels.length).fill(0);
+      extraData[index] = dataValues[index];
       return {
-        label: labels[index], // use the transformed key as the label
-        backgroundColor: colorMap[key] || "#000000", // Use the color from the map, or default to black if the key isn't found (this shouldn't happen but just in case)
-        data: [dataValues[index]], // wrap the value in an array, as the data property expects an array
+        label: label,
+        backgroundColor: colorMap[dataKeys[index]] || "#000000",
+        data: extraData,
       };
     });
 
@@ -371,11 +373,13 @@ const Consultant = () => {
       return _.startCase(newName);
     });
 
-    const datasets = dataKeys.map((key, index) => {
+    const datasets = labels.map((label, index) => {
+      const extraData = new Array(labels.length).fill(0);
+      extraData[index] = dataValues[index];
       return {
-        label: labels[index], // use the transformed key as the label
-        backgroundColor: colorMapActive[key] || "#000000", // Use the color from the map, or default to black if the key isn't found (this shouldn't happen but just in case)
-        data: [dataValues[index]], // wrap the value in an array, as the data property expects an array
+        label: label,
+        backgroundColor: colorMapActive[dataKeys[index]] || "#000000",
+        data: extraData,
       };
     });
 
@@ -408,10 +412,14 @@ const Consultant = () => {
       chartProjectSubtaskActiveIndividualDatafromApi.map(
         (c) => c.closedSubtaskCount
       );
+      
     const projects_count_name_in_sentence_case = projects.map((name) => {
       let newName = name.replace(/count/i, "").trim(); // Removes 'count' (case-insensitive) and trims any extra spaces
       return _.startCase(newName);
     });
+
+  
+ 
 
     setChartDataProjectsIndividualSubtasks({
       labels: projects_count_name_in_sentence_case,

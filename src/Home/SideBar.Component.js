@@ -73,7 +73,7 @@ function SideBar({ isOpen }) {
     <div
       className={clsx([
         "bg-white transition-all duration-500 ease-in",
-        isOpen ? "w-40" : "w-10",
+        isOpen ? "w-30" : "w-10",
       ])}
     >
       <ul className="flex flex-col items-strecth">
@@ -85,7 +85,7 @@ function SideBar({ isOpen }) {
             >
               <span
                 key={activity.id}
-                className={`text-2xl mr-2 ${isOpen ? "" : "text-blue-800"}`}
+                className={`text-xl mr-2 ${isOpen ? "" : "text-blue-800"}`}
               >
                 {isOpen
                   ? getSolidIcon(activity.iconClosed)

@@ -158,7 +158,12 @@ const ClosedTasks = () => {
       );
     } else if (daysOverdue) {
       return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } else {
+    } 
+    else if (daysUntilEnd === 0) {
+      return <span style={{ color: "green" }}>Task ends today</span>;
+    }
+    
+    else {
       return <span>Project not started</span>;
     }
   };
@@ -271,6 +276,7 @@ const ClosedTasks = () => {
   // Create a download link
   // Create a download link
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
 
@@ -278,6 +284,7 @@ const ClosedTasks = () => {
       if (downloadUrl) {
         const a = document.createElement("a");
         a.href = downloadUrl;
+        a.target = "_blank";
         a.download = "downloaded_file_name.extension"; // Set the desired file name here
         document.body.appendChild(a);
         a.click();
@@ -702,19 +709,22 @@ const ClosedTasks = () => {
               </div>
 
               <p className="text-gray-600">
-  <span className="font-semibold">Status:</span>
-  {moreDetailsData.subtask_sprints ? (
-    _.startCase(
-      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
-    )
-  ) : (
-    "" 
-  )}
-</p>
+                <span className="font-semibold">Status:</span>
+                {moreDetailsData.subtask_sprints
+                  ? _.startCase(
+                      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ??
+                        ""
+                    )
+                  : ""}
+              </p>
 
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
                 {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">ClosedBy: {moreDetailsData?.closedBy ?? ""}</span>
+                
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Start Date:</span>

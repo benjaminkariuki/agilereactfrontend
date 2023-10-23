@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Toast } from "primereact/toast";
 import axios from "axios";
-import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
-
 
 const CreateUser = () => {
   const [firstName, setFirstName] = useState("");
@@ -14,7 +12,6 @@ const CreateUser = () => {
   const [email, setEmail] = useState("");
   const [contact, setcontact] = useState();
   const navigate = useNavigate();
-
 
   const [role_id, setRole] = useState("");
   const [selelctedDepartment, setSelelctedDepartment] = useState(""); // New department state
@@ -27,24 +24,12 @@ const CreateUser = () => {
     (activity) => activity.name === "Create-User"
   );
   const hasReadPermissionCreateUser =
-  createActivity.pivot.permissions.includes("read");
+    createActivity.pivot.permissions.includes("read");
 
   const hasWritePermissionCreateUser =
-  createActivity.pivot.permissions.includes("write");
+    createActivity.pivot.permissions.includes("write");
 
-  const [departments] = useState([
-    "Management",
-    "Administration",
-    "Web And Mobile",
-    "Project Managers",
-    "Business Central",
-    "Infrastructure",
-    "Implementation",
-    "Finance",
-    "Human Resource",
-    "Sales and Marketing",
-    "Sales",
-  ]);
+  const [departments, setDepartments] = useState([]);
 
   const handleErrorMessage = (error) => {
     if (
@@ -67,7 +52,6 @@ const CreateUser = () => {
       ? error.response.data.message
       : "An unexpected error occurred.";
   };
-
 
   const onSuccessCreate = (success) => {
     if (success) {
@@ -94,77 +78,108 @@ const CreateUser = () => {
   const onFetchingRoles = (error) => {
     if (error && toast.current) {
       toast.current.show({
-        severity: "warn",
+        severity: "error",
         summary: "Error fetching roles",
         detail: `${error}`,
         life: 3000,
       });
     }
   };
- 
-
 
   useEffect(() => {
     fetchRoles();
+    fetchDepartments();
   }, []);
 
   const fetchRoles = async () => {
     try {
-
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
       const config = {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles",{
-          method: 'GET',
-          headers: config.headers 
+        "https://agile-pm.agilebiz.co.ke/api/allRoles",
+        {
+          method: "GET",
+          headers: config.headers,
         }
       );
 
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
 
       const data = await response.json();
       setRoles(data.roles);
     } catch (error) {
-      
       onFetchingRoles("Can't fetch roles, contact the admin");
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await fetch(
+        "https://agile-pm.agilebiz.co.ke/api/getDepartments",
+        {
+          method: "GET",
+          headers: config.headers,
+        }
+      );
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+
+      const data = await response.json();
+      setDepartments(data.departments);
+    } catch (error) {
+      onFetchingRoles("Error  fetching departments");
     }
   };
 
   const createUser = async () => {
     setLoading(true);
 
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/register", {
-        firstName,
-        lastName,
-        email,
-        contact,
-        department: selelctedDepartment,
-        role_id,
-      },config)
+      .post(
+        "https://agile-pm.agilebiz.co.ke/api/register",
+        {
+          firstName,
+          lastName,
+          email,
+          contact,
+          department: selelctedDepartment,
+          role_id,
+        },
+        config
+      )
       .then((response) => {
         if (response.status === 200) {
           onSuccessCreate(response.data.message);
         }
 
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
 
         setLoading(false);
@@ -177,10 +192,8 @@ const CreateUser = () => {
       })
       .catch((error) => {
         setLoading(false);
-        
+
         onCreatingUser(error);
-       
-       
       });
   };
 
@@ -193,7 +206,7 @@ const CreateUser = () => {
     <div>
       <Toast ref={toast} />
       <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
-        Create an AgilePM user account
+        Create User Account
       </h2>
       <div
         className="w-full"
@@ -290,8 +303,8 @@ const CreateUser = () => {
                 Select a department
               </option>
               {departments.map((department, index) => (
-                <option key={index} value={department}>
-                  {department}
+                <option key={index} value={department.name}>
+                  {department.name}
                 </option>
               ))}
             </select>
@@ -322,22 +335,22 @@ const CreateUser = () => {
           </div>
 
           <div className="flex items-center justify-center">
-           
-           {hasWritePermissionCreateUser && ( <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="submit"
-              disabled={loading} // Disable button while loading
-            >
-              {loading ? (
-                <i
-                  className="pi pi-spin pi-spinner"
-                  style={{ fontSize: "2rem" }}
-                ></i>
-              ) : (
-                "Create Account"
-              )}
-            </button>)}
-
+            {hasWritePermissionCreateUser && (
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="submit"
+                disabled={loading} // Disable button while loading
+              >
+                {loading ? (
+                  <i
+                    className="pi pi-spin pi-spinner"
+                    style={{ fontSize: "2rem" }}
+                  ></i>
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            )}
           </div>
         </form>
       </div>

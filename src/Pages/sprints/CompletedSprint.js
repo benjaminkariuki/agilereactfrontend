@@ -6,7 +6,6 @@ import { Chart } from "primereact/chart";
 import Subtasks from "./Subtasks";
 import { useNavigate } from "react-router-dom";
 import { Paginator } from "primereact/paginator";
-import { debounce } from 'lodash';
 
 
 
@@ -212,7 +211,6 @@ const CompletedSprints = () => {
     }
   };
 
-  const debouncedHandleSearch = debounce(handleSearch, 1000);
 
 
   //display the total completed sprints
@@ -274,9 +272,7 @@ const CompletedSprints = () => {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            debouncedHandleSearch();
-
-
+            handleSearch();
           }}
           
           className="border rounded px-2 py-1 w-80 mr-2 my-3"

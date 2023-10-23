@@ -206,6 +206,7 @@ const AddRoles = () => {
       }
     } else if (activityName.toLowerCase() === 'tasks') {
       const tasks = [
+        'Default',
         'Assign-Tasks',
         'Close-tasks',
         'Push-Development',
@@ -325,6 +326,7 @@ const AddRoles = () => {
       ) : activity.name.toLowerCase() === "tasks" ? (
         <div className="ml-7 grid grid-cols-2 gap-2">
           {[
+            'Default',
             "Assign-Tasks",
             "Close-tasks",
             "Push-Development",

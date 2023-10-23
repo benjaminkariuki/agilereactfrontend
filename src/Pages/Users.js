@@ -26,19 +26,7 @@ const Users = () => {
   const { userActivities } = useSelector((state) => state.user);
 
 
-  const [departments] = useState([
-    "Management",
-    "Administration",
-    "Web And Mobile",
-    "Project Managers",
-    "Business Central",
-    "Infrastructure",
-    "Implementation",
-    "Finance",
-    "Human Resource",
-    "Sales and Marketing",
-    "Sales",
-  ]);
+  const [departments,setDepartments] = useState([]);
 
   //getting the permission for projects
   const UsersActivity = userActivities.find(
@@ -126,6 +114,7 @@ const Users = () => {
   useEffect(() => {
     fetchUsers();
     fetchRoles();
+    fetchDepartments();
   }, []);
 
   useEffect(() => {
@@ -188,6 +177,37 @@ const Users = () => {
         onError(error);
       });
   };
+
+  const fetchDepartments = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await fetch(
+        "https://agile-pm.agilebiz.co.ke/api/getDepartments",
+        {
+          method: "GET",
+          headers: config.headers,
+        }
+      );
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+
+      const data = await response.json();
+      setDepartments(data.departments);
+    } catch (error) {
+      onError(error);
+    }
+  };
+  
+  
 
   const handleDeleteUser = (userId) => {
 
@@ -342,9 +362,10 @@ const Users = () => {
   };
 
   const departmentOprions = departments.map((department) => ({
-    label: department,
-    value: department,
+    label: department.name,
+    value: department.name,
   }));
+
   const roleOptions = roles.map((role) => ({
     label: role.name,
     value: role.id,

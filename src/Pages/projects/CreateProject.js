@@ -33,21 +33,10 @@ const CreateProject = ({ routeToListProjects }) => {
   const navigate = useNavigate();
 
   
-  const categoryOptions = [
-    { label: "Implementation", value: "implementation" },
-    { label: "Support", value: "support" },
-  ];
+  const [categoryOptions, setCategory] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const systemOptions = [
-    { label: "Business Applications", value: "business applications" },
-    { label: "CRM Solutions", value: "CRM solutions" },
-    { label: "Analytics", value: "analytics" },
-    { label: "EDMs", value: "EDMs" },
-    { label: "Cloud Solutions", value: "cloud solutions" },
-    { label: "ICT Infrastructure", value: "ict infrastructure" },
-  
-  ];
+  const [systemOptions, setSystemOptions] = useState([]);
 
   const toast = useRef(null);
 
@@ -107,6 +96,8 @@ const CreateProject = ({ routeToListProjects }) => {
 
   useEffect(() => {
     fetchUsers();
+    fetchCategories();
+    fetchSystemTypes();
   }, []);
 
   const fetchUsers = () => {
@@ -132,6 +123,66 @@ const CreateProject = ({ routeToListProjects }) => {
       });
   };
 
+  const fetchCategories = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await fetch(
+        "https://agile-pm.agilebiz.co.ke/api/getCategoriesProject",
+        {
+          method: "GET",
+          headers: config.headers,
+        }
+      );
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+
+      const data = await response.json();
+      setCategory(data.categories.map(category => ({ label: category.name, value: category.name })));
+
+    } catch (error) {
+      onError(error);
+    }
+  };
+  
+
+  const fetchSystemTypes = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await fetch(
+        "https://agile-pm.agilebiz.co.ke/api/getSystemTypeProject",
+        {
+          method: "GET",
+          headers: config.headers,
+        }
+      );
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+
+      const data = await response.json();
+      setSystemOptions(data.systype.map(sys => ({ label: sys.name, value: sys.name })));
+
+    } catch (error) {
+      onError(error);
+    }
+  };
   
 
   const handleSubmit = (event) => {

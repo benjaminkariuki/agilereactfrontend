@@ -166,18 +166,23 @@ const DevelopmentTasks = () => {
         : null;
 
     if (rowData.status === "complete" && closeDate) {
-      return <span>{totalDurationIfClosed} day(s) </span>;
+      return <span>{totalDurationIfClosed} day(s) taken</span>;
     } else if (daysUntilEnd >= 0) {
       return (
         <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
       );
     } else if (daysOverdue) {
       return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } else {
-      return <span>Project not started</span>;
+    } 
+    
+    else {
+      return <span>  
+        <i className="pi pi-bell" />  
+      <i className="pi pi-bell" />
+      </span>;
     }
   };
-
+ 
   const pushToApproval = () => {
     const selectedIds = selectedTasks?.map((row) => row.id);
     if (selectedIds.length > 0) {
@@ -344,7 +349,6 @@ const DevelopmentTasks = () => {
       })
       .catch((error) => {
         if (
-          
           error.response &&
           error.response.data &&
           error.response.data.error
@@ -390,6 +394,42 @@ const DevelopmentTasks = () => {
 
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
 
+  const downloadLink2 = (rowData) => {
+    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+
+    const downloadFile = () => {
+      
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.target = "_blank";
+
+        a.download = "downloaded_file_name.extension"; // Set the desired file name here
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
+    return (
+      <div>
+        {rowData.path !== null ? (
+          <Button
+            onClick={downloadFile}
+            severity="success"
+            className="w-24 h-10"
+          >
+            Download File
+          </Button>
+        ) : (
+          <Button disabled severity="warning" className="w-24 h-9">
+            File Not Available
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.task_logs?.image_path
       ? `${baseUrl}${rowData.task_logs?.image_path}`
@@ -409,7 +449,7 @@ const DevelopmentTasks = () => {
 
     return (
       <div>
-        {rowData.path !== null ? (
+        {downloadUrl !== "" ? (
           <Button
             onClick={downloadFile}
             severity="success"
@@ -834,7 +874,7 @@ const DevelopmentTasks = () => {
           footer={
             <>
               {hasPushTesting && (
-                <div>
+                <div className="justify-between flex">
                   <button
                     className="px-4 py-2 bg-green-500 text-white rounded-md"
                     onClick={pushTodevelopment}
@@ -852,7 +892,7 @@ const DevelopmentTasks = () => {
                 </div>
               )}
 
-              {hasCloseTasks && (
+              {/* {hasCloseTasks && (
                 <button
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
                   onClick={openConfirmDialog}
@@ -867,7 +907,7 @@ const DevelopmentTasks = () => {
                     "Close the task (s)"
                   )}
                 </button>
-              )}
+              )} */}
             </>
           }
         >
@@ -915,7 +955,7 @@ const DevelopmentTasks = () => {
             ></Column>
 
             <Column header="Duration" body={durationTemplate}></Column>
-           
+
             <Column
               field="subtask_sprints[0].status"
               header="Status"
@@ -935,7 +975,7 @@ const DevelopmentTasks = () => {
             />
 
             <Column header="Comments" body={truncateComments}></Column>
-            <Column header="Download Data" body={downloadLink}></Column>
+            <Column header="Download Data" body={downloadLink2}></Column>
 
             <Column
               header="More Details"
@@ -955,13 +995,141 @@ const DevelopmentTasks = () => {
       </div>
 
       <div>
-        <Dialog
+      <Dialog
           header={"Subtask Details"}
           visible={showDetails}
           onHide={() => setShowDetails(false)}
           style={{ width: "50vw" }}
         >
           <div className="bg-white p-4 rounded-lg">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Subtask Details
+            </h3>
+            <div className="mb-4">
+              <p className="text-gray-600">
+                <span className="font-semibold">Task:</span>{" "}
+                {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
+              </p>
+
+              {moreDetailsData && moreDetailsData.phase && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase.name)}
+                </p>
+              )}
+
+              {moreDetailsData && moreDetailsData.phase_activity && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase_activity.name)}
+                </p>
+              )}
+
+              <p className="text-gray-600">
+                <span className="font-semibold">Description:</span>{" "}
+                {_.startCase(
+                  (moreDetailsData?.description ?? "").toLowerCase()
+                )}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Department:</span>{" "}
+                {_.startCase((moreDetailsData?.department ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Assigned To:</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {moreDetailsData.assignedto?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                  >
+                    <p key={index}>
+                      {_.startCase(
+                        (item?.custom_user?.firstName ?? "").toLowerCase()
+                      )}{" "}
+                      {_.startCase(
+                        (item?.custom_user?.lastName ?? "").toLowerCase()
+                      )}{" "}
+                      -{item?.custom_user?.email}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-gray-600">
+                <span className="font-semibold">Assigned BA:</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {moreDetailsData.baassignedto?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
+                  >
+                    <p key={index}>
+                      {_.startCase(
+                        (item?.custom_user?.firstName ?? "").toLowerCase()
+                      )}{" "}
+                      {_.startCase(
+                        (item?.custom_user?.lastName ?? "").toLowerCase()
+                      )}{" "}
+                      -{item?.custom_user?.email}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-gray-600">
+                <span className="font-semibold">Status:</span>
+                {moreDetailsData.subtask_sprints
+                  ? _.startCase(
+                      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ??
+                        ""
+                    )
+                  : ""}
+              </p>
+
+              <p className="text-gray-600">
+                <span className="font-semibold">Stage:</span>
+                {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Start Date:</span>
+                {moreDetailsData?.start_date}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">End Date:</span>
+                {moreDetailsData?.end_date}
+              </p>
+            </div>
+            <textarea
+              className="w-full h-32 p-2 border rounded-lg resize-none text-gray-600"
+              readOnly
+              value={_.startCase(
+                (moreDetailsData?.comment ?? "").toLowerCase()
+              )}
+            ></textarea>
+
+            {/* Delegate/Apply Button */}
+            {hasAssignPermissionTasks && (
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4"
+                onClick={() => showDelegateDialog(moreDetailsData)}
+              >
+                Assign
+              </button>
+            )}
+          </div>
+        </Dialog>
+      </div>
+
+      <div>
+        <Dialog
+          header={"Subtask Logs Details"}
+          visible={showDetailslog}
+          onHide={() => setShowDetailsLogs(false)}
+          style={{ width: "50vw" }}
+        >
+         <div className="bg-white p-4 rounded-lg">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Subtask Details
             </h3>
@@ -1022,16 +1190,14 @@ const DevelopmentTasks = () => {
               </div>
 
               <p className="text-gray-600">
-  <span className="font-semibold">Status:</span>
-  {moreDetailsData.subtask_sprints ? (
-    _.startCase(
-      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
-    )
-  ) : (
-    "" 
-  )}
-</p>
-
+                <span className="font-semibold">Status:</span>
+                {moreDetailsData.subtask_sprints
+                  ? _.startCase(
+                      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ??
+                        ""
+                    )
+                  : ""}
+              </p>
 
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>
@@ -1059,88 +1225,6 @@ const DevelopmentTasks = () => {
               readOnly
               value={_.startCase(
                 (moreDetailsData?.task_logs?.comment ?? "").toLowerCase()
-              )}
-            ></textarea>
-          </div>
-        </Dialog>
-      </div>
-
-      <div>
-        <Dialog
-          header={"Subtask Logs Details"}
-          visible={showDetailslog}
-          onHide={() => setShowDetailsLogs(false)}
-          style={{ width: "50vw" }}
-        >
-          <div className="bg-white p-4 rounded-lg">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Subtask Details
-            </h3>
-            <div className="mb-4">
-              <p className="text-gray-600">
-                <span className="font-semibold">Task:</span>{" "}
-                {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-semibold">Description:</span>{" "}
-                {_.startCase(
-                  (moreDetailsData?.description ?? "").toLowerCase()
-                )}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-semibold">Department:</span>{" "}
-                {_.startCase((moreDetailsData?.department ?? "").toLowerCase())}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-semibold">Assigned To:</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {moreDetailsData.assigned_to?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                    {item.email && <p key={index}>{item.email}</p>}
-                  </div>
-                ))}
-              </div>
-              <p className="text-gray-600">
-                <span className="font-semibold">Assigned BA:</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {moreDetailsData.baassigned_to?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold"
-                  >
-                    {item.email && <p key={index}>{item.email}</p>}
-                  </div>
-                ))}
-              </div>
-
-              <p className="text-gray-600">
-                <span className="font-semibold">Status:</span>
-                {_.startCase((moreDetailsData?.status ?? "").toLowerCase())}
-              </p>
-
-              <p className="text-gray-600">
-                <span className="font-semibold">Stage:</span>
-                {_.startCase((moreDetailsData?.stage ?? "").toLowerCase())}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-semibold">Start Date:</span>
-                {moreDetailsData?.start_date}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-semibold">End Date:</span>
-                {moreDetailsData?.end_date}
-              </p>
-            </div>
-            <textarea
-              className="w-full h-32 p-2 border rounded-lg resize-none text-gray-600"
-              readOnly
-              value={_.startCase(
-                (moreDetailsData?.comment ?? "").toLowerCase()
               )}
             ></textarea>
           </div>

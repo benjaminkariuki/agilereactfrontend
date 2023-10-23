@@ -334,6 +334,7 @@ const UpdateRoles = () => {
       }
     } else if (activityName.toLowerCase() === 'tasks') {
       const tasks = [
+        "Default",
         'Assign-Tasks',
         'Close-tasks',
         'Push-Development',
@@ -379,14 +380,14 @@ const UpdateRoles = () => {
       <Toast ref={toast} />
       <div className="w-full max-w-md">
         <div className="bg-white p-8 rounded shadow">
-          <h2 className="text-2xl font-bold mb-4 text-center">Update Role</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">Update Role And Permissions</h2>
           <form>
             <div className="mb-4">
               <label
                 htmlFor="roleSelect"
                 className="block text-gray-700 font-bold mb-2"
               >
-                Select Role
+                Select A Role To Update
               </label>
               <select
                 name="role"
@@ -405,7 +406,7 @@ const UpdateRoles = () => {
             {selectedRole && (
               <div className="mb-4">
                 <label className="block text-gray-700 font-bold mb-2">
-                  Activities
+                  Permissions
                 </label>
                 <ol className="list-decimal pl-4">
                   {selectedActivities.map((activity, index) => (
@@ -430,7 +431,7 @@ const UpdateRoles = () => {
                     onClick={openEditActivities}
                     type="button"
                   >
-                    Edit Activities
+                    Manage Permissions
                   </button>
                 )}
               </div>
@@ -444,7 +445,7 @@ const UpdateRoles = () => {
               style={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
             >
               <h2 className="text-2xl font-bold mb-4 text-center">
-                Edit Activities
+              Manage Permissions
               </h2>
 
               <form className="" onSubmit={handleModalSubmit}>
@@ -469,7 +470,7 @@ const UpdateRoles = () => {
                     htmlFor="activities"
                     className="block text-gray-700 font-bold mb-2"
                   >
-                    Activities
+                    Permissions
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     {allActivities.map((activity) => (
@@ -531,6 +532,7 @@ const UpdateRoles = () => {
                           ) : activity.name.toLowerCase() === "tasks" ? (
                             <div className="ml-7 grid grid-cols-2 gap-2">
                               {[
+                                "Default",
                                 "Assign-Tasks",
                                 "Close-tasks",
                                 "Push-Development",

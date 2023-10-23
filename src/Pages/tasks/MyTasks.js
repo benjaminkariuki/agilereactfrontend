@@ -126,6 +126,7 @@ const MyTasks = () => {
     </div>
   );
 
+
   const durationTemplate = (rowData) => {
     const currentDate = new Date();
     const startDate = new Date(
@@ -171,10 +172,17 @@ const MyTasks = () => {
       );
     } else if (daysOverdue) {
       return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } else {
-      return <span>Project not started</span>;
+    } 
+    
+    else {
+      return <span>  
+        <i className="pi pi-bell" />  
+      <i className="pi pi-bell" />
+      </span>;
     }
   };
+
+
 
   useEffect(() => {
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
@@ -282,9 +290,12 @@ const MyTasks = () => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
 
     const downloadFile = () => {
+
       if (downloadUrl) {
         const a = document.createElement("a");
         a.href = downloadUrl;
+       a.target = "_blank";
+
         a.download = "downloaded_file_name.extension"; // Set the desired file name here
         document.body.appendChild(a);
         a.click();
@@ -327,6 +338,7 @@ const MyTasks = () => {
           "https://agile-pm.agilebiz.co.ke/api/pushToApproval",
           {
             taskIds: selectedIds,
+            email:userEmail,
           },
           config
         )

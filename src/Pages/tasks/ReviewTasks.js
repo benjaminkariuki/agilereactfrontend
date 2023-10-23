@@ -190,8 +190,13 @@ const ReviewTasks = () => {
       );
     } else if (daysOverdue) {
       return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } else {
-      return <span>Project not started</span>;
+    } 
+    
+    else {
+      return <span>  
+        <i className="pi pi-bell" />  
+      <i className="pi pi-bell" />
+      </span>;
     }
   };
 
@@ -322,6 +327,7 @@ const ReviewTasks = () => {
       if (downloadUrl) {
         const a = document.createElement("a");
         a.href = downloadUrl;
+        a.target = "_blank";
         a.download = "downloaded_file_name.extension"; // Set the desired file name here
         document.body.appendChild(a);
         a.click();
@@ -400,6 +406,7 @@ const ReviewTasks = () => {
           "https://agile-pm.agilebiz.co.ke/api/pushToApproval",
           {
             taskIds: selectedIds,
+            email:userEmail,
           },
           config
         )

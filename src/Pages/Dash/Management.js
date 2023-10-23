@@ -13,7 +13,6 @@ import MoreSprintsDetails from "./Dialogs/MoreSprintsDetails.js";
 import AllProjectsDialog from "./Dialogs/AllProjectsDialog.js";
 import { useNavigate } from "react-router-dom";
 
-
 import DetailsSupportDialog from "./Dialogs/DetailsSupportDialog.js";
 
 const Management = () => {
@@ -23,8 +22,7 @@ const Management = () => {
   const [isLoadingProjectsCount, setIsLoadingProjectsCount] = useState(false);
   const [isLoadingAllProjectsCount, setIsLoadingAllProjectsCount] =
     useState(false);
-    const navigate = useNavigate();
-
+  const navigate = useNavigate();
 
   const [projectImplementationCount, setImplementationProjectsCount] =
     useState(0);
@@ -60,7 +58,6 @@ const Management = () => {
 
   const [showAllProjectsCount, setShowAllProjectsCount] = useState(false);
 
-  
   const [errorMessage, setErrorMessage] = useState("");
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -131,14 +128,14 @@ const Management = () => {
       error.response.data.message
       ? error.response.data.message
       : "An unexpected error occurred.";
-};
+  };
 
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
       toast.current.show({
         severity: "warn",
         summary: "Error",
-        detail:handleErrorMessage(error),
+        detail: handleErrorMessage(error),
         life: 3000,
       });
     }
@@ -159,7 +156,7 @@ const Management = () => {
       );
 
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
 
       const fetchedimplementation = response.data.supportProjectsCount;
@@ -169,7 +166,6 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
-      
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -191,7 +187,7 @@ const Management = () => {
       );
 
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
       const fetchedsupportcount = response.data.supportProjectsCount;
       setProjectsSupportCount(fetchedsupportcount);
@@ -200,7 +196,6 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
-     
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -221,7 +216,7 @@ const Management = () => {
       );
 
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
 
       const fetchedProjectsArchivedcount = response.data.archivedProjectsCount;
@@ -231,7 +226,6 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
-   
       setErrorMessage("Failed to get projects count");
       onFetchingRoles(error);
     }
@@ -255,7 +249,7 @@ const Management = () => {
       );
 
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
 
       const fetchedProjectTaskCountPerUser = response.data;
@@ -267,7 +261,7 @@ const Management = () => {
       }
     } catch (error) {
       setIsLoadingAllProjectsCount(false);
-      
+
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -288,9 +282,8 @@ const Management = () => {
         config
       );
 
-
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
 
       const fetchedActiveSprint = response.data[0];
@@ -307,7 +300,6 @@ const Management = () => {
         setErrorMessage("");
       }
     } catch (error) {
-     
       setErrorMessage("Failed to get active sprint details");
       onFetchingRoles(error);
     }
@@ -341,7 +333,7 @@ const Management = () => {
       );
 
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
 
       const fetchedProjectTaskCountPerConsultant = response.data;
@@ -355,7 +347,7 @@ const Management = () => {
       }
     } catch (error) {
       setIsLoadingProjectsCount(false);
-      
+
       setErrorMessage("Failed to get subtasks");
       onFetchingRoles(error);
     }
@@ -562,36 +554,28 @@ const Management = () => {
     </div>
   );
 
- 
-
   const showDetailsDialog = () => {
     setShowDetails(true);
-
   };
 
   const showDetailsDialogImplementation = () => {
     setShowDetailsImplementation(true);
-
   };
 
   const showDetailsDialogSupport = () => {
     setShowDetailsSupport(true);
-
   };
 
   const showDetailsArchiveSupport = () => {
     setShowDetailsArchived(true);
-
   };
 
   const showDetailsSprint = () => {
     setShowDetailsActiveSprint(true);
-
   };
 
   const showSubtaskCountAllProjects = () => {
     setShowAllProjectsCount(true);
-
   };
 
   const disableShowDetailsDialog = () => {
@@ -756,7 +740,7 @@ const Management = () => {
         </div>
       )}
 
-<div className="flex-1 p-4 ">
+      <div className="flex-1 p-4 ">
         {activeSprint &&
           activeSprint.name &&
           activeSprint.startDate &&

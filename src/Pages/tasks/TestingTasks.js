@@ -143,7 +143,7 @@ const TestingTasks = () => {
     </div>
   );
 
-  const durationTemplate = (rowData) => {
+   const durationTemplate = (rowData) => {
     const currentDate = new Date();
     const startDate = new Date(
       Date.UTC(
@@ -181,15 +181,20 @@ const TestingTasks = () => {
         : null;
 
     if (rowData.status === "complete" && closeDate) {
-      return <span>{totalDurationIfClosed} day(s) </span>;
+      return <span>{totalDurationIfClosed} day(s) taken</span>;
     } else if (daysUntilEnd >= 0) {
       return (
         <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
       );
     } else if (daysOverdue) {
       return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } else {
-      return <span>Project not started</span>;
+    } 
+    
+    else {
+      return <span>  
+        <i className="pi pi-bell" />  
+      <i className="pi pi-bell" />
+      </span>;
     }
   };
 
@@ -334,6 +339,42 @@ const TestingTasks = () => {
   // Create a download link
   const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
 
+  const downloadLink2 = (rowData) => {
+    const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
+
+    const downloadFile = () => {
+      
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.target = "_blank";
+
+        a.download = "downloaded_file_name.extension"; // Set the desired file name here
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
+    return (
+      <div>
+        {rowData.path !== null ? (
+          <Button
+            onClick={downloadFile}
+            severity="success"
+            className="w-24 h-10"
+          >
+            Download File
+          </Button>
+        ) : (
+          <Button disabled severity="warning" className="w-24 h-9">
+            File Not Available
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.task_logs?.image_path
       ? `${baseUrl}${rowData.task_logs?.image_path}`
@@ -353,7 +394,7 @@ const TestingTasks = () => {
 
     return (
       <div>
-        {rowData.path !== null ? (
+        {downloadUrl !== "" ? (
           <Button
             onClick={downloadFile}
             severity="success"
@@ -939,7 +980,7 @@ const TestingTasks = () => {
             />
 
             <Column header="Comments" body={truncateComments}></Column>
-            <Column header="Download Data" body={downloadLink}></Column>
+            <Column header="Download Data" body={downloadLink2}></Column>
             <Column
               header="More Details"
               body={(rowData) => (
@@ -1030,6 +1071,21 @@ const TestingTasks = () => {
                 <span className="font-semibold">Task:</span>{" "}
                 {_.startCase((moreDetailsData?.task ?? "").toLowerCase())}
               </p>
+
+              {moreDetailsData && moreDetailsData.phase && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase.name)}
+                </p>
+              )}
+
+              {moreDetailsData && moreDetailsData.phase_activity && (
+                <p className="text-gray-600">
+                  <span className="font-semibold">Phase:</span>{" "}
+                  {_.startCase(moreDetailsData.phase_activity.name)}
+                </p>
+              )}
+
               <p className="text-gray-600">
                 <span className="font-semibold">Description:</span>{" "}
                 {_.startCase(
@@ -1084,15 +1140,14 @@ const TestingTasks = () => {
               </div>
 
               <p className="text-gray-600">
-  <span className="font-semibold">Status:</span>
-  {moreDetailsData.subtask_sprints ? (
-    _.startCase(
-      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ?? ""
-    )
-  ) : (
-    "" 
-  )}
-</p>
+                <span className="font-semibold">Status:</span>
+                {moreDetailsData.subtask_sprints
+                  ? _.startCase(
+                      moreDetailsData.subtask_sprints[0]?.status?.toLowerCase() ??
+                        ""
+                    )
+                  : ""}
+              </p>
 
               <p className="text-gray-600">
                 <span className="font-semibold">Stage:</span>

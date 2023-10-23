@@ -101,6 +101,7 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
                   field="project_title"
                   header="Project Title"
                   body={sentenceCaseFormatter}
+                  sortable
                 ></Column>
                 <Column
                   field="phase_name"

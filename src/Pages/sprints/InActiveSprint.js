@@ -6,14 +6,21 @@ import {  confirmDialog } from "primereact/confirmdialog";
 import { useSelector } from "react-redux";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
-
-
-
+import EditSprintsDialog from "./EditSprintsDialog";
 
 const InActiveSprint = ({ rerouting }) => {
   const [inactiveSprints, setInactiveSprints] = useState([]);
   const { userActivities } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const [showDelegate, setShowDelegate] = useState(false);
+  const [sprintEditId, setShowSprintEditId] = useState('');
+
+  
+
+
+
+
+
 
 
   const toast = useRef(null);
@@ -55,6 +62,17 @@ const hasWritePermissionSprints = sprintsActivity
   useEffect(() => {
     fetchInactiveSprints();
   }, []);
+
+  const showDelegateDialog = (id) => {
+  
+    setShowSprintEditId(id);
+    setShowDelegate(true);
+
+  };
+
+  const disableShowDelegateDialog = () => {
+    setShowDelegate(false);
+  };
 
   const fetchInactiveSprints = async () => {
     try {
@@ -118,6 +136,8 @@ const hasWritePermissionSprints = sprintsActivity
     }
   };
 
+ 
+
   const handleDeleteSprint = async (id) => {
     try {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
@@ -157,7 +177,7 @@ const hasWritePermissionSprints = sprintsActivity
 
     const confirmActivate = (id) => {
       confirmDialog({
-        message: "Do you want to activate this sprint?",
+        message: "Do you want to activate this sprint? Please note that once created the sprint cannot be edited!",
         header: "Activate Confirmation",
         icon: "pi pi-check-circle",
         acceptClassName: "p-button-success",
@@ -217,6 +237,15 @@ const hasWritePermissionSprints = sprintsActivity
           </button>)}
 
 
+          {hasWritePermissionSprints && ( <button
+                onClick={() => showDelegateDialog(sprint.id)}
+
+             className={"text-white px-2 py-1  rounded-md font-semibold bg-yellow-500 hover:bg-yellow-600  mt-2"}
+          >
+           Edit Sprint
+          </button>)}
+
+
        { hasWritePermissionSprints && ( <button
             onClick={() => confirmDelete(sprint.id)}
             className={`${
@@ -233,6 +262,7 @@ const hasWritePermissionSprints = sprintsActivity
 
 
         </div>
+
       </div>
     );
   };
@@ -247,6 +277,16 @@ const hasWritePermissionSprints = sprintsActivity
           </div>
         ))}
       </div>
+
+      <EditSprintsDialog
+        sprintEditId={sprintEditId}
+        showDelegate={showDelegate}
+        rerouting={rerouting}
+        disableShowDelegateDialog={disableShowDelegateDialog}
+       
+      />
+
+
     </div>
   );
 };

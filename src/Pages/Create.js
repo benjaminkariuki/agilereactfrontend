@@ -102,7 +102,7 @@ const CreateUser = () => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles",
+        "https://agilepmtest.agilebiz.co.ke/api/allRoles",
         {
           method: "GET",
           headers: config.headers,
@@ -131,7 +131,7 @@ const CreateUser = () => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getDepartments",
+        "https://agilepmtest.agilebiz.co.ke/api/getDepartments",
         {
           method: "GET",
           headers: config.headers,
@@ -162,7 +162,7 @@ const CreateUser = () => {
 
     axios
       .post(
-        "https://agile-pm.agilebiz.co.ke/api/register",
+        "https://agilepmtest.agilebiz.co.ke/api/register",
         {
           firstName,
           lastName,
@@ -206,7 +206,7 @@ const CreateUser = () => {
     <div>
       <Toast ref={toast} />
       <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
-        Create User Account
+        Create User
       </h2>
       <div
         className="w-full"

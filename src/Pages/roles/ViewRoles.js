@@ -77,7 +77,9 @@ const ViewRoles = () => {
   };
 
   useEffect(() => {
+    fetchName();
     fetchRoles();
+    
   }, [errorMessage]);
 
   const fetchRoles = async () => {
@@ -86,19 +88,22 @@ const ViewRoles = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
-      const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles",config
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/allRoles",config
       );
 
       if (response.status === 401) {
         navigate('/');
       }
 
-      const fetchedRoles = response.data.roles;
+      const data = await response.json(); // Parse response data
+
+      const fetchedRoles = data.roles;
       setRoles(fetchedRoles);
+      
       if (response.status === 200) {
         setErrorMessage("");
       }
@@ -109,7 +114,32 @@ const ViewRoles = () => {
     }
   };
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
+
   const handleDeleteRole = async (roleId) => {
+    fetchName();
     setLoadingStates((prevStates) => ({
       ...prevStates,
       [roleId]: true,
@@ -120,11 +150,11 @@ const ViewRoles = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.delete(
-        `https://agile-pm.agilebiz.co.ke/api/deleteRoles/${roleId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/deleteRoles/${roleId}`,
         config
       );
 

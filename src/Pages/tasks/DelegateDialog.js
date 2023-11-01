@@ -79,18 +79,19 @@ const handleErrorMessage = (error) => {
   };
 
   useEffect(() => {
+    fetchName();
     if (showDelegate) {
       setIsLoading(true);
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/allProjectsCrewWithId/${projectInfomation.projectId}`,
+          `https://agilepmtest.agilebiz.co.ke/api/allProjectsCrewWithId/${projectInfomation.projectId}`,
           config
         )
         .then((response) => {
@@ -111,7 +112,31 @@ const handleErrorMessage = (error) => {
     }
   }, [showDelegate]);
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
   const submitDelegatedUser = async (email) => {
+    fetchName();
     setIsSubmitting(true);
     try {
       // Define the data you want to send in the request body
@@ -146,11 +171,11 @@ const handleErrorMessage = (error) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.post(
-        "https://agile-pm.agilebiz.co.ke/api/delegateTask",
+        "https://agilepmtest.agilebiz.co.ke/api/delegateTask",
         data,
         config
       );

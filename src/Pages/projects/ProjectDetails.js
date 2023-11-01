@@ -14,6 +14,7 @@ import { Dialog } from "primereact/dialog";
 const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const [projectData, setProjectData] = useState([]);
   const [showMicroTasksModal, setShowMicroTasksModal] = useState(false);
+
   const [selectedActivty, setSelectedActivitiy] = useState(null);
   const [selectedPhase, setSelectedPhase] = useState(null);
   const [selectedIcon, setSelectedIcon] = useState("");
@@ -21,7 +22,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const { userActivities, userEmail, userDepartment } = useSelector(
     (state) => state.user
   );
-  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
   const navigate = useNavigate();
 
   const [showCloseModal, setShowCloseModal] = useState(false);
@@ -86,6 +87,28 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
     return "An unexpected error occurred.";
   };
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
   // Function to show a warning toast when fetching activities fails
   const onError = (error) => {
     if (toast.current && error) {
@@ -116,7 +139,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
     };
     axios
       .get(
-        `https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
         config
       )
       .then((response) => {
@@ -153,6 +176,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   };
 
   const handleCloseConfirm = () => {
+    fetchName();
     // Close the phase activity
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -173,7 +197,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
 
     axios
       .post(
-        `https://agile-pm.agilebiz.co.ke/api/closePhaseActivity`,
+        `https://agilepmtest.agilebiz.co.ke/api/closePhaseActivity`,
         dataPass,
         config
       )
@@ -182,7 +206,6 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
           navigate("/");
         }
 
-        console.log(response.data);
         setPhaseActivityClosed(true);
       })
       .catch((error) => {
@@ -275,7 +298,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                       header="Activity Name"
                       sortable
                     ></Column>
-                    
+
                     <Column
                       header="Micro Tasks"
                       body={(rowData) => (
@@ -296,24 +319,21 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                             style={{ marginRight: 4 }}
                           />
 
-                          
-{rowData.closed === 0 && hasWritePermissionProject && (
-  <PiMicrosoftExcelLogoFill
-    className="bg-blue-500 text-white rounded"
-    size={18}
-    onClick={() =>
-      handleMicroTasksModal(
-        projectId,
-        rowData.id,
-        phase.id,
-        "add"
-      )
-    }
-  />
-)}
-
-
-
+                          {rowData.closed === 0 &&
+                            hasWritePermissionProject && (
+                              <PiMicrosoftExcelLogoFill
+                                className="bg-blue-500 text-white rounded"
+                                size={18}
+                                onClick={() =>
+                                  handleMicroTasksModal(
+                                    projectId,
+                                    rowData.id,
+                                    phase.id,
+                                    "add"
+                                  )
+                                }
+                              />
+                            )}
                         </div>
                       )}
                     />

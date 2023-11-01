@@ -107,8 +107,34 @@ const hasWritePermissionSprints = sprintsActivity
 
 
   useEffect(() => {
+    fetchName();
     fetchActiveSprint();
   }, []);
+
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
 
   const fetchActiveSprint = () => {
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
@@ -119,7 +145,7 @@ const hasWritePermissionSprints = sprintsActivity
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/activeSprint", config)
+      .get("https://agilepmtest.agilebiz.co.ke/api/activeSprint", config)
       .then((response) => {
         setData(response.data);
       })
@@ -221,6 +247,7 @@ const hasWritePermissionSprints = sprintsActivity
   };
   //function to close sprint
   const handleCloseSprint = (id) => {
+    fetchName();
     setCloseLoading(true);
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -231,7 +258,7 @@ const hasWritePermissionSprints = sprintsActivity
     };
     axios
       .post(
-        `https://agile-pm.agilebiz.co.ke/api/closeSprint/${id}`,
+        `https://agilepmtest.agilebiz.co.ke/api/closeSprint/${id}`,
         {
           summary,
         },

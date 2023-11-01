@@ -27,9 +27,12 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+
     setIsLoading(true);
+    
 
     Promise.all([
+      fetchName(),
       fetchUsersCount(),
       fetchRolesCount(),
       fetchDepartmentCount(),
@@ -78,6 +81,30 @@ const Admin = () => {
       : "An unexpected error occurred.";
 };
 
+
+const fetchName = async () => {
+  try {
+    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+
+    const response = await fetch(
+      "https://agilepmtest.agilebiz.co.ke/api/appName",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 401) {
+      navigate('/');
+    }
+
+    // Rest of your code...
+  } catch (error) {
+    // Error handling code...
+  }
+};
+
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
       toast.current.show({
@@ -98,11 +125,11 @@ const Admin = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allUsersCount",
+        "https://agilepmtest.agilebiz.co.ke/api/allUsersCount",
         config
       );
       if (response.status === 401) {
@@ -128,11 +155,11 @@ const Admin = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRolesCount",
+        "https://agilepmtest.agilebiz.co.ke/api/allRolesCount",
         config
       );
 
@@ -159,11 +186,11 @@ const Admin = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCount",
+        "https://agilepmtest.agilebiz.co.ke/api/allDepartmentsCount",
         config
       );
       if (response.status === 401) {
@@ -189,11 +216,11 @@ const Admin = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allDepartmentsCountPerUser",
+        "https://agilepmtest.agilebiz.co.ke/api/allDepartmentsCountPerUser",
         config
       );
 
@@ -221,12 +248,12 @@ const Admin = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRolesCountPerUser",
+        "https://agilepmtest.agilebiz.co.ke/api/allRolesCountPerUser",
         config
       );
 

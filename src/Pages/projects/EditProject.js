@@ -142,9 +142,34 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   }, [projectId]);
 
   useEffect(() => {
+    fetchName();
     fetchCategories();
+   
     fetchSystemTypes();
   }, []);
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const fetchUsers = () => {
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
@@ -155,7 +180,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData", config)
+      .get("https://agilepmtest.agilebiz.co.ke/api/allUsersData", config)
       .then((response) => {
 
         if (response.status === 401) {
@@ -181,7 +206,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getCategoriesProject",
+        "https://agilepmtest.agilebiz.co.ke/api/getCategoriesProject",
         {
           method: "GET",
           headers: config.headers,
@@ -210,7 +235,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getSystemTypeProject",
+        "https://agilepmtest.agilebiz.co.ke/api/getSystemTypeProject",
         {
           method: "GET",
           headers: config.headers,
@@ -239,7 +264,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     };
     axios
       .get(
-        `https://agile-pm.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
         config
       )
       .then((response) => {
@@ -288,6 +313,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
   };
 
   const handleSubmit = (event) => {
+    fetchName();
     event.preventDefault();
 
     setIsLoading(true);
@@ -339,9 +365,14 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     if (projectData.editedcategory && projectData.editedcategory.trim !== "") {
       formData.append("category", projectData.editedcategory);
     }
+
     if (projectData.editedsystem && projectData.editedsystem.trim !== "") {
       formData.append("system_type", projectData.editedsystem);
     }
+
+    if (projectData.excel_file !== null) {
+      formData.append("excel_file", projectData.excel_file);
+  }
 
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -352,7 +383,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     };
     axios
       .post(
-        `https://agile-pm.agilebiz.co.ke/api/edit_projects/${projectId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/edit_projects/${projectId}`,
         formData,
         {
           headers: {
@@ -384,6 +415,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
 
   //HANDLING DOWNLOADING THE EXCEL TEMPLATE
   const downloadExcelFile = async () => {
+    fetchName();
     try {
       const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -393,7 +425,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         },
       };
       const response = await axios.get(
-        `https://agile-pm.agilebiz.co.ke/api/download-excel-edit/${projectId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/download-excel-edit/${projectId}`,
         {
           ...config,
           responseType: "blob",
@@ -437,13 +469,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     );
   }
 
-  // Filter users based on department and role
-  const filterUsersByRoleAndDepartment = (roleName, department) => {
-    return usersData.filter(
-      (user) => user.department === department && user.role.name === roleName
-    );
-  };
-  // Filter users for team leads
+  
   
   return (
     <div className="bg-white rounded-lg  shadow p-4">

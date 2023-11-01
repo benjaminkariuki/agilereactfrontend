@@ -22,6 +22,13 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
     []
   );
 
+
+  useEffect(() => {
+    
+    fetchName();
+
+}, []);
+  
   useEffect(() => {
     
         setIsLoading2(true);
@@ -32,6 +39,8 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
             });
     
 }, []);
+
+
 
 
   useEffect(() => {
@@ -87,6 +96,30 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
 
  
   }, [chartProjectSubtaskAllDatafromApi]);
+
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
 
   const handleAxiosError = (error) => {
@@ -172,11 +205,11 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/getAllProjectAndSubtasksCount",
+        "https://agilepmtest.agilebiz.co.ke/api/getAllProjectAndSubtasksCount",
         config
       );
       if (response.status === 401) {

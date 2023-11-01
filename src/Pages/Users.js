@@ -40,7 +40,7 @@ const Users = () => {
 
 
   const [roles, setRoles] = useState([]);
-  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
   const toast = useRef(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [contact, setcontact] = useState();
@@ -112,6 +112,7 @@ const Users = () => {
   };
 
   useEffect(() => {
+    fetchName();
     fetchUsers();
     fetchRoles();
     fetchDepartments();
@@ -121,18 +122,42 @@ const Users = () => {
     fetchUsers();
   }, [page]);
 
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
   const fetchUsers = () => {
     setIsLoading(true);
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}`, config)
+      .get(`https://agilepmtest.agilebiz.co.ke/api/allUsers?page=${page + 1}`, config)
       .then((response) => {
         if (response.status === 401) {
           navigate('/');
@@ -158,12 +183,12 @@ const Users = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allRoles",config)
+      .get("https://agilepmtest.agilebiz.co.ke/api/allRoles",config)
       .then((response) => {
         if (response.status === 401) {
           navigate('/');
@@ -189,7 +214,7 @@ const Users = () => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getDepartments",
+        "https://agilepmtest.agilebiz.co.ke/api/getDepartments",
         {
           method: "GET",
           headers: config.headers,
@@ -210,17 +235,18 @@ const Users = () => {
   
 
   const handleDeleteUser = (userId) => {
+    fetchName();
 
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteUsers/${userId}`,config)
+      .delete(`https://agilepmtest.agilebiz.co.ke/api/deleteUsers/${userId}`,config)
       .then((response) => {
         if (response.status === 401) {
           navigate('/');
@@ -241,7 +267,7 @@ const Users = () => {
   };
 
   const handleUpdateUser = () => {
-  
+  fetchName();
     setUpdateLoading(true);
     const formData = new FormData();
     formData.append("contacts", contact);
@@ -252,13 +278,13 @@ const Users = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
       .post(
-        `https://agile-pm.agilebiz.co.ke/api/updateUserDetails/${selectedUser.id}`,
+        `https://agilepmtest.agilebiz.co.ke/api/updateUserDetails/${selectedUser.id}`,
         formData,
         config
       )
@@ -309,7 +335,7 @@ const Users = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -317,7 +343,7 @@ const Users = () => {
      setPage(0); 
       // Modify the endpoint to accommodate the searchTerm in the query string 
       axios
-        .get(`https://agile-pm.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .get(`https://agilepmtest.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
           if (response.status === 401) {
             navigate('/');

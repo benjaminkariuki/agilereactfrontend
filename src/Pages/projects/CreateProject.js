@@ -95,21 +95,46 @@ const CreateProject = ({ routeToListProjects }) => {
   };
 
   useEffect(() => {
+    fetchName();
     fetchUsers();
     fetchCategories();
     fetchSystemTypes();
   }, []);
+
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const fetchUsers = () => {
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/allUsersData",config)
+      .get("https://agilepmtest.agilebiz.co.ke/api/allUsersData",config)
       .then((response) => {
 
         if (response.status === 401) {
@@ -134,7 +159,7 @@ const CreateProject = ({ routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getCategoriesProject",
+        "https://agilepmtest.agilebiz.co.ke/api/getCategoriesProject",
         {
           method: "GET",
           headers: config.headers,
@@ -165,7 +190,7 @@ const CreateProject = ({ routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getSystemTypeProject",
+        "https://agilepmtest.agilebiz.co.ke/api/getSystemTypeProject",
         {
           method: "GET",
           headers: config.headers,
@@ -186,6 +211,7 @@ const CreateProject = ({ routeToListProjects }) => {
   
 
   const handleSubmit = (event) => {
+    fetchName();
     event.preventDefault();
     const selectedUserIds = selectedUsers.map(user => user.id);
 
@@ -213,11 +239,11 @@ const CreateProject = ({ routeToListProjects }) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/create_projects", formData, {
+      .post("https://agilepmtest.agilebiz.co.ke/api/create_projects", formData, {
         ...config,
         headers: {
             ...config.headers,
@@ -275,16 +301,17 @@ const CreateProject = ({ routeToListProjects }) => {
 
   //HANDLING DOWNLOADING THE EXCEL TEMPLATE
   const downloadExcelFile = async () => {
+    fetchName();
     try {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/download-excel",
+        "https://agilepmtest.agilebiz.co.ke/api/download-excel",
         {
           
           ...config, // Spread the contents of the config object

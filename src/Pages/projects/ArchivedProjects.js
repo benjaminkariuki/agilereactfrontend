@@ -71,6 +71,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
   };
 
   useEffect(() => {
+    fetchName();
     fetchProjects();
   }, []);
 
@@ -78,6 +79,29 @@ const Archive = ({ onRestoreProject,viewMode }) => {
     fetchProjects();
   }, [page]);
 
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
   
   const handleErrorMessage = (error) => {
     if (
@@ -107,11 +131,11 @@ const Archive = ({ onRestoreProject,viewMode }) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .get( `https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}`,config)
+      .get( `https://agilepmtest.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}`,config)
       .then((response) => {
 
         if (response.status === 401) {
@@ -138,14 +162,14 @@ const Archive = ({ onRestoreProject,viewMode }) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     setPage(0); 
 
       axios
-        .get(`https://agile-pm.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .get(`https://agilepmtest.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
 
           if (response.status === 401) {
@@ -170,17 +194,18 @@ const Archive = ({ onRestoreProject,viewMode }) => {
 
 
   const handleRestoreProject = async (id) => {
+    fetchName();
     setIsRestoring(true);
     try {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.post(
-        `https://agile-pm.agilebiz.co.ke/api/restore/${id}`, {},  
+        `https://agilepmtest.agilebiz.co.ke/api/restore/${id}`, {},  
         config
       );
 
@@ -210,17 +235,18 @@ const Archive = ({ onRestoreProject,viewMode }) => {
   };
 
   const handleDeleteProject = async (id) => {
+    fetchName();
     setIsDeleting(true);
     try {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.delete(
-        `https://agile-pm.agilebiz.co.ke/api/deletePermanently/${id}`,config
+        `https://agilepmtest.agilebiz.co.ke/api/deletePermanently/${id}`,config
       );
 
       if (response.status === 401) {

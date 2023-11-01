@@ -185,7 +185,28 @@ const MicroTask = ({
     return "An unexpected error occurred.";
   };
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const onError = (error) => {
     if (error && toast.current) {
@@ -248,6 +269,7 @@ const MicroTask = ({
       onError("Please select a file to upload.");
       return;
     }
+    fetchName();
     setIsLoading(true);
     const formData = new FormData();
     formData.append("excel_file", selectedFile);
@@ -259,7 +281,7 @@ const MicroTask = ({
       },
     };
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/create_tasks", formData, {
+      .post("https://agilepmtest.agilebiz.co.ke/api/create_tasks", formData, {
         params: {
           projectId: projectId,
           phaseId: phaseId,
@@ -287,6 +309,7 @@ const MicroTask = ({
   };
 
   const handleDownloadTemplate = () => {
+    fetchName();
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
@@ -295,7 +318,7 @@ const MicroTask = ({
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/download-excel-tasks", {
+      .get("https://agilepmtest.agilebiz.co.ke/api/download-excel-tasks", {
         responseType: "blob",
         ...config,
       })
@@ -352,6 +375,7 @@ const MicroTask = ({
   };
 
   const handleMicroTaskDelete = (id) => {
+    fetchName();
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
@@ -360,7 +384,7 @@ const MicroTask = ({
       },
     };
     axios
-      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteSubtask/${id}`, {
+      .delete(`https://agilepmtest.agilebiz.co.ke/api/deleteSubtask/${id}`, {
         params: {
           projectId: projectId,
           phaseId: phaseId,
@@ -400,7 +424,7 @@ const MicroTask = ({
       setPage(0); 
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
+          `https://agilepmtest.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
             page + 1
           }&searchTerm=${searchTerm}`,
           config
@@ -426,6 +450,7 @@ const MicroTask = ({
   };
   // effect to fetch subtasks
   const fetchSubtasks = (projectId, phaseId, activityId) => {
+    fetchName();
     set_IsLoading(true);
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -436,7 +461,7 @@ const MicroTask = ({
     };
     axios
       .get(
-        `https://agile-pm.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
+        `https://agilepmtest.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
           page + 1
         }`,
         config
@@ -470,7 +495,7 @@ const MicroTask = ({
       };
 
       const response = await fetch(
-        "https://agile-pm.agilebiz.co.ke/api/getDepartments",
+        "https://agilepmtest.agilebiz.co.ke/api/getDepartments",
         {
           method: "GET",
           headers: config.headers,
@@ -490,6 +515,7 @@ const MicroTask = ({
   
   //function for [pushing to sprint
   const handlePushtoSprint = () => {
+    fetchName();
     setPushLoading(true);
     const selectedIds = selectedRows.map((row) => row.id);
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
@@ -501,7 +527,7 @@ const MicroTask = ({
     };
     axios
       .post(
-        "https://agile-pm.agilebiz.co.ke/api/pushToSprint",
+        "https://agilepmtest.agilebiz.co.ke/api/pushToSprint",
         {
           taskIds: selectedIds,
         },
@@ -534,6 +560,7 @@ const MicroTask = ({
   };
   // New function to handle form submission
   const handleCreateTask = () => {
+    fetchName();
     setTaskCreate(true);
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -545,7 +572,7 @@ const MicroTask = ({
 
     axios
       .post(
-        "https://agile-pm.agilebiz.co.ke/api/create_tasks_ui",
+        "https://agilepmtest.agilebiz.co.ke/api/create_tasks_ui",
         {
           projectId,
           phaseId,
@@ -645,61 +672,70 @@ const MicroTask = ({
   //option based on team leads in the project
   const durationTemplate = (rowData) => {
     const currentDate = new Date();
-    const startDate = new Date(
-      Date.UTC(
-        new Date(rowData.start_date).getFullYear(),
-        new Date(rowData.start_date).getMonth(),
-        new Date(rowData.start_date).getDate()
-      )
-    );
-    const endDate = new Date(
-      Date.UTC(
-        new Date(rowData.end_date).getFullYear(),
-        new Date(rowData.end_date).getMonth(),
-        new Date(rowData.end_date).getDate()
-      )
-    );
-    const closeDate = rowData.close_date
-      ? new Date(
-          Date.UTC(
-            new Date(rowData.close_date).getFullYear(),
-            new Date(rowData.close_date).getMonth(),
-            new Date(rowData.close_date).getDate()
-          )
+    const startDate = rowData.start_date
+        ? new Date(
+            Date.UTC(
+                new Date(rowData.start_date).getFullYear(),
+                new Date(rowData.start_date).getMonth(),
+                new Date(rowData.start_date).getDate()
+            )
         )
-      : null;
-
-    const daysUntilEnd = Math.floor(
-      (endDate - currentDate) / (1000 * 60 * 60 * 24)
-    );
-    const totalDurationIfClosed = closeDate
-      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
-      : null;
-    const daysOverdue =
-      endDate < currentDate && rowData.status !== "complete"
-        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+    const endDate = rowData.end_date
+        ? new Date(
+            Date.UTC(
+                new Date(rowData.end_date).getFullYear(),
+                new Date(rowData.end_date).getMonth(),
+                new Date(rowData.end_date).getDate()
+            )
+        )
+        : null;
+    const closeDate = rowData.close_date
+        ? new Date(
+            Date.UTC(
+                new Date(rowData.close_date).getFullYear(),
+                new Date(rowData.close_date).getMonth(),
+                new Date(rowData.close_date).getDate()
+            )
+        )
         : null;
 
+    const daysUntilEnd = endDate
+        ? Math.floor((endDate - currentDate) / (1000 * 60 * 60 * 24))
+        : null;
+    const totalDurationIfClosed = closeDate && startDate
+        ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+        : null;
+    const daysOverdue =
+        endDate && currentDate > endDate && rowData.status !== "complete"
+            ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+            : null;
+
     if (rowData.status === "complete" && closeDate) {
-      return <span>{totalDurationIfClosed} day(s) taken</span>;
-    } else if (daysUntilEnd >= 0) {
-      return (
-        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
-      );
+        if (!startDate && !endDate) {
+            return <span>Task closed on {closeDate.toLocaleDateString()}</span>;
+        } else {
+            return <span>{totalDurationIfClosed} day(s) taken</span>;
+        }
+    } else if (daysUntilEnd !== null) {
+        return (
+            <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+        );
     } else if (daysOverdue) {
-      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } 
-    
-    else {
-      return <span>  
-        <i className="pi pi-bell" />  
-      <i className="pi pi-bell" />
-      </span>;
+        return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+        return (
+            <span>
+                <i className="pi pi-bell" />
+                <i className="pi pi-bell" />
+            </span>
+        );
     }
-  };
+};
 
   //updtaing the task details
   const handleEditTaskSave = () => {
+    fetchName();
     setEditLoading(true);
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
@@ -710,7 +746,7 @@ const MicroTask = ({
     };
     axios
       .put(
-        `https://agile-pm.agilebiz.co.ke/api/updateSubtask/${editingTask.id}`,
+        `https://agilepmtest.agilebiz.co.ke/api/updateSubtask/${editingTask.id}`,
         {
           projectId,
           phaseId,

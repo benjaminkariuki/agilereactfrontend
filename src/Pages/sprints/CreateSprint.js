@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Calendar } from "primereact/calendar";
 import axios from "axios";
 import { Toast } from "primereact/toast";
@@ -19,6 +19,9 @@ const CreateSprint = ({ rerouting }) => {
   const { userActivities } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetchName();
+  }, []);
 
 
   //getting the permission for Sprints
@@ -56,6 +59,29 @@ const hasWritePermissionSprints = sprintsActivity
       life: 3000,
     });
   }
+  };
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
   };
 
   const handleChange = (event) => {
@@ -109,18 +135,19 @@ const hasWritePermissionSprints = sprintsActivity
 
 
   const handleSubmit = async (event) => {
+    fetchName();
     event.preventDefault();
     setCreating(true);
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     try {
       const response = await axios.post(
-        "https://agile-pm.agilebiz.co.ke/api/create_sprint",
+        "https://agilepmtest.agilebiz.co.ke/api/create_sprint",
         {
           name: sprintData.name,
           start_date: formatDate(sprintData.start_date),

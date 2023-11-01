@@ -76,6 +76,7 @@ const EditSprintsDialog = ({
   };
 
   useEffect(() => {
+      fetchName();
     if (showDelegate) {
       setIsLoading(true);
 
@@ -88,7 +89,7 @@ const EditSprintsDialog = ({
       };
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/sprintById/${sprintEditId}`,
+          `https://agilepmtest.agilebiz.co.ke/api/sprintById/${sprintEditId}`,
           config
         )
         .then((response) => {
@@ -115,11 +116,34 @@ const EditSprintsDialog = ({
     }
   }, [showDelegate]);
 
-  // Import axios at the beginning of your file
 
-  // ...
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
+  
 
   const handleSubmit = (e) => {
+    fetchName();
     e.preventDefault(); // Prevent the default form submission
 
     // Create an object to store the data that should be sent to the backend
@@ -158,7 +182,7 @@ const EditSprintsDialog = ({
     setCreating(true);
     axios
       .patch(
-        `https://agile-pm.agilebiz.co.ke/api/updateSprint/${sprintEditId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/updateSprint/${sprintEditId}`,
         editedData, // Send the edited data in the request body
         config
       )

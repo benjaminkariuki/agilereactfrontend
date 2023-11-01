@@ -44,18 +44,19 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
   };
 
   useEffect(() => {
+    fetchName();
     if (showDetailsMore) {
       setIsLoading(true);
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/allProjectPhasesPhaseActivityActive`,config
+          `https://agilepmtest.agilebiz.co.ke/api/allProjectPhasesPhaseActivityActive`,config
         )
         .then((response) => {
           // Handle the response data
@@ -74,6 +75,29 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
         });
     }
   }, [showDetailsMore]);
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   return (
     <div>

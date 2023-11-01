@@ -36,12 +36,12 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/search_sprint", {
+      .get("https://agilepmtest.agilebiz.co.ke/api/search_sprint", {
         ...config, 
         params: {
           q: query,
@@ -159,12 +159,12 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
       .get(
-        `https://agile-pm.agilebiz.co.ke/api/infoSprintsAnalysis/${sprintId}`,config
+        `https://agilepmtest.agilebiz.co.ke/api/infoSprintsAnalysis/${sprintId}`,config
       )
       .then((response) => {
 

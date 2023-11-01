@@ -58,6 +58,10 @@ const AddRoles = () => {
   const hasWritePermissionUsersRoles =
     UsersRoles.pivot.permissions.includes("write");
 
+    useEffect(() => {
+   fetchName();   
+    }, []);
+
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -70,11 +74,12 @@ const AddRoles = () => {
       },
     };
         const response = await axios.get(
-          "https://agile-pm.agilebiz.co.ke/api/activitiesAll",config
+          "https://agilepmtest.agilebiz.co.ke/api/activitiesAll",config
         );
 
         if (response.status === 401) {
           navigate('/');
+          
         }
 
         const fetchedActivities = response.data.activities;
@@ -90,7 +95,31 @@ const AddRoles = () => {
     fetchActivities();
   }, []);
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
   const handleSubmit = async (event) => {
+    fetchName();
     event.preventDefault();
     setIsLoading(true);
 
@@ -146,7 +175,7 @@ const AddRoles = () => {
       },
     };
       const response = await axios.post(
-        "https://agile-pm.agilebiz.co.ke/api/create_role",
+        "https://agilepmtest.agilebiz.co.ke/api/create_role",
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,
@@ -156,6 +185,7 @@ const AddRoles = () => {
 
       if (response.status === 401) {
         navigate('/');
+
       }
 
       const success = response.data.message;

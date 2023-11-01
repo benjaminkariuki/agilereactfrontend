@@ -68,8 +68,37 @@ const Leads = () => {
   }, []);
 
   useEffect(() => {
+    fetchName();
+  }, []);
+
+  useEffect(() => {
     fetchProjectsTasksCountPerConsultant(email, role, department);
   }, []); // The empty dependency array ensures the effect runs once after the component mounts.
+
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
 
   const handleErrorMessage = (error) => {
     if (
@@ -141,12 +170,12 @@ const Leads = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/activeSprintMinimal",
+        "https://agilepmtest.agilebiz.co.ke/api/activeSprintMinimal",
         config
       );
 
@@ -180,12 +209,12 @@ const Leads = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountOverall",
+        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountOverall",
         {
           params: {
             email: email,
@@ -227,12 +256,12 @@ const Leads = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountStage",
+        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountStage",
         {
           params: {
             email: email,
@@ -276,12 +305,12 @@ const Leads = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
+        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
         {
           params: {
             email: email,

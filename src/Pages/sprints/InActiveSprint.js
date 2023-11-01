@@ -60,6 +60,7 @@ const hasWritePermissionSprints = sprintsActivity
   };
 
   useEffect(() => {
+    fetchName();
     fetchInactiveSprints();
   }, []);
 
@@ -74,17 +75,40 @@ const hasWritePermissionSprints = sprintsActivity
     setShowDelegate(false);
   };
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
   const fetchInactiveSprints = async () => {
     try {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allInactiveSprints",
+        "https://agilepmtest.agilebiz.co.ke/api/allInactiveSprints",
         config
       );
 
@@ -104,18 +128,19 @@ const hasWritePermissionSprints = sprintsActivity
   const [loadingStates, setLoadingStates] = useState({});
 
   const handleActivateSprint = async (id) => {
+    fetchName();
     try {
       setLoadingStates((prev) => ({ ...prev, [id]: "activating" }));
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       const response = await axios.post(
-        `https://agile-pm.agilebiz.co.ke/api/activateSprint/${id}`,
+        `https://agilepmtest.agilebiz.co.ke/api/activateSprint/${id}`,
         {},
         config
       );
@@ -139,17 +164,18 @@ const hasWritePermissionSprints = sprintsActivity
  
 
   const handleDeleteSprint = async (id) => {
+    fetchName();
     try {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       setLoadingStates((prev) => ({ ...prev, [id]: "deleting" }));
       const response = await axios.delete(
-        `https://agile-pm.agilebiz.co.ke/api/deleteSprint/${id}`,
+        `https://agilepmtest.agilebiz.co.ke/api/deleteSprint/${id}`,
         config
       );
 

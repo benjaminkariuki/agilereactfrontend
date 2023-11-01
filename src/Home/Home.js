@@ -37,7 +37,7 @@ const Home = () => {
       accept: () => handleLogout(),
     });
   };
-  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
   // Use useEffect to check login status on component mount
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -62,14 +62,14 @@ const Home = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     dispatch(logout());
     // Redirect to the login page or any other desired page
     navigate("/");
-    await axios.post("https://agile-pm.agilebiz.co.ke/api/logout", {}, config);
+    await axios.post("https://agilepmtest.agilebiz.co.ke/api/logout", {}, config);
 
   };
   const toggleDropdown = () => {

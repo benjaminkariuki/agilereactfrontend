@@ -38,8 +38,33 @@ const CompletedSprints = () => {
   };
 
   useEffect(() => {
+    fetchName();
     fetchClosedSprints();
   }, [page]);
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
 
   const fetchClosedSprints = async () => {
     try {
@@ -47,11 +72,11 @@ const CompletedSprints = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        `https://agile-pm.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}`,config
+        `https://agilepmtest.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}`,config
       );
 
       if (response.status === 401) {
@@ -70,15 +95,16 @@ const CompletedSprints = () => {
   };
   //View the particular sprint details
   const handleViewMoreApi = (id) => {
+    fetchName();
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     axios
-      .get(`https://agile-pm.agilebiz.co.ke/api/closedSprintById/${id}`,config)
+      .get(`https://agilepmtest.agilebiz.co.ke/api/closedSprintById/${id}`,config)
       .then((response) => {
         if (response.status === 401) {
           navigate('/');
@@ -182,13 +208,13 @@ const CompletedSprints = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       // Modify the endpoint to accommodate the searchTerm in the query string 
       setPage(0); 
       axios
-        .get(`https://agile-pm.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .get(`https://agilepmtest.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
 
           if (response.status === 401) {

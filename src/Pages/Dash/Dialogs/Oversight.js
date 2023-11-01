@@ -71,6 +71,7 @@ const Oversight = ({ onClose }) => {
     setIsLoading(true);
 
     Promise.all([
+      fetchName(),
       fetchProjectsImplementationCount(),
       fetchSupportProjectsCount(),
       fetchArchivedProjectsCount(),
@@ -83,6 +84,29 @@ const Oversight = ({ onClose }) => {
   useEffect(() => {
     fetchProjectsTasksCountPerSubtask();
   }, []);
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
@@ -105,7 +129,7 @@ const Oversight = ({ onClose }) => {
         },
       };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectImplementation",
+        "https://agilepmtest.agilebiz.co.ke/api/allProjectImplementation",
         config
       );
 
@@ -137,7 +161,7 @@ const Oversight = ({ onClose }) => {
       };
 
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectSupport",
+        "https://agilepmtest.agilebiz.co.ke/api/allProjectSupport",
         config
       );
 
@@ -168,7 +192,7 @@ const Oversight = ({ onClose }) => {
         },
       };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectsArchivedCount",
+        "https://agilepmtest.agilebiz.co.ke/api/allProjectsArchivedCount",
         config
       );
 
@@ -200,7 +224,7 @@ const Oversight = ({ onClose }) => {
       };
       setIsLoadingAllProjectsCount(true);
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allProjectAndSubtasksActive",
+        "https://agilepmtest.agilebiz.co.ke/api/allProjectAndSubtasksActive",
         config
       );
 
@@ -233,7 +257,7 @@ const Oversight = ({ onClose }) => {
         },
       };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/fetchActiveSprint",
+        "https://agilepmtest.agilebiz.co.ke/api/fetchActiveSprint",
         config
       );
 

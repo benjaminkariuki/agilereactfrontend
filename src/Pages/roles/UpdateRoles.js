@@ -81,11 +81,34 @@ const UpdateRoles = () => {
     UsersRoles.pivot.permissions.includes("write");
 
   useEffect(() => {
+    fetchName();
     fetchAllActivities();
     fetchRoles();
   }, [savedActivities]);
 
   // Effect hook to fetch roles on component mount
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const fetchRoles = async () => {
     try {
@@ -97,7 +120,7 @@ const UpdateRoles = () => {
         },
       };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/allRoles",
+        "https://agilepmtest.agilebiz.co.ke/api/allRoles",
         config
       );
 
@@ -124,7 +147,7 @@ const UpdateRoles = () => {
         },
       };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/activitiesAll",
+        "https://agilepmtest.agilebiz.co.ke/api/activitiesAll",
         config
       );
 
@@ -151,7 +174,7 @@ const UpdateRoles = () => {
         },
       };
       const roleResponse = await axios.get(
-        `https://agile-pm.agilebiz.co.ke/api/allRolesWithId/${roleId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/allRolesWithId/${roleId}`,
         config
       );
 
@@ -205,6 +228,7 @@ const UpdateRoles = () => {
 
   // Event handler for submitting the edit activities modal
   const handleModalSubmit = async (event) => {
+    fetchName();
     event.preventDefault();
     setIsLoading(true);
 
@@ -262,7 +286,7 @@ const UpdateRoles = () => {
         },
       };
       const response = await axios.put(
-        `https://agile-pm.agilebiz.co.ke/api/updateRoles/${selectedRole}`,
+        `https://agilepmtest.agilebiz.co.ke/api/updateRoles/${selectedRole}`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,

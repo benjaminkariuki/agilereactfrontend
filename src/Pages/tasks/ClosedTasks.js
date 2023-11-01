@@ -115,64 +115,97 @@ const ClosedTasks = () => {
 
   const durationTemplate = (rowData) => {
     const currentDate = new Date();
-    const startDate = new Date(
-      Date.UTC(
-        new Date(rowData.start_date).getFullYear(),
-        new Date(rowData.start_date).getMonth(),
-        new Date(rowData.start_date).getDate()
-      )
-    );
-    const endDate = new Date(
-      Date.UTC(
-        new Date(rowData.end_date).getFullYear(),
-        new Date(rowData.end_date).getMonth(),
-        new Date(rowData.end_date).getDate()
-      )
-    );
-    const closeDate = rowData.close_date
-      ? new Date(
-          Date.UTC(
-            new Date(rowData.close_date).getFullYear(),
-            new Date(rowData.close_date).getMonth(),
-            new Date(rowData.close_date).getDate()
-          )
+    const startDate = rowData.start_date
+        ? new Date(
+            Date.UTC(
+                new Date(rowData.start_date).getFullYear(),
+                new Date(rowData.start_date).getMonth(),
+                new Date(rowData.start_date).getDate()
+            )
         )
-      : null;
-
-    const daysUntilEnd = Math.floor(
-      (endDate - currentDate) / (1000 * 60 * 60 * 24)
-    );
-    const totalDurationIfClosed = closeDate
-      ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
-      : null;
-    const daysOverdue =
-      endDate < currentDate && rowData.status !== "complete"
-        ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+        : null;
+    const endDate = rowData.end_date
+        ? new Date(
+            Date.UTC(
+                new Date(rowData.end_date).getFullYear(),
+                new Date(rowData.end_date).getMonth(),
+                new Date(rowData.end_date).getDate()
+            )
+        )
+        : null;
+    const closeDate = rowData.close_date
+        ? new Date(
+            Date.UTC(
+                new Date(rowData.close_date).getFullYear(),
+                new Date(rowData.close_date).getMonth(),
+                new Date(rowData.close_date).getDate()
+            )
+        )
         : null;
 
-    if (rowData.status === "complete" && closeDate) {
-      return <span>{totalDurationIfClosed} day(s) taken</span>;
-    } else if (daysUntilEnd >= 0) {
-      return (
-        <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
-      );
-    } else if (daysOverdue) {
-      return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
-    } 
-    else if (daysUntilEnd === 0) {
-      return <span style={{ color: "green" }}>Task ends today</span>;
-    }
-    
-    else {
-      return <span>Project not started</span>;
-    }
-  };
+    const daysUntilEnd = endDate
+        ? Math.floor((endDate - currentDate) / (1000 * 60 * 60 * 24))
+        : null;
+    const totalDurationIfClosed = closeDate && startDate
+        ? Math.floor((closeDate - startDate) / (1000 * 60 * 60 * 24))
+        : null;
+    const daysOverdue =
+        endDate && currentDate > endDate && rowData.status !== "complete"
+            ? Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24))
+            : null;
 
+    if (rowData.status === "complete" && closeDate) {
+        if (!startDate && !endDate) {
+            return <span>Task closed on {closeDate.toLocaleDateString()}</span>;
+        } else {
+            return <span>{totalDurationIfClosed} day(s) taken</span>;
+        }
+    } else if (daysUntilEnd !== null) {
+        return (
+            <span style={{ color: "green" }}>{daysUntilEnd} day(s) remaining</span>
+        );
+    } else if (daysOverdue) {
+        return <span style={{ color: "red" }}>{daysOverdue} day(s) overdue</span>;
+    } else {
+        return (
+            <span>
+                <i className="pi pi-bell" />
+                <i className="pi pi-bell" />
+            </span>
+        );
+    }
+};
   useEffect(() => {
+    fetchName();
     fetchMyTasks(userEmail, userRole, userDepartment); // Fetch data from the API when the component mounts
   }, [userRole, userEmail]); // Empty dependency array ensures this effect runs once
 
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
   const fetchMyTasks = (userEmail, userRole, userDepartment) => {
+    fetchName();
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
@@ -181,7 +214,7 @@ const ClosedTasks = () => {
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/myTasksApproved", {
+      .get("https://agilepmtest.agilebiz.co.ke/api/myTasksApproved", {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -214,6 +247,7 @@ const ClosedTasks = () => {
   };
 
   const fetchOtherTasks = (userEmail, userRole, userDepartment) => {
+    fetchName();
     const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
@@ -222,7 +256,7 @@ const ClosedTasks = () => {
       },
     };
     axios
-      .get("https://agile-pm.agilebiz.co.ke/api/OtherTasksApproved", {
+      .get("https://agilepmtest.agilebiz.co.ke/api/OtherTasksApproved", {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -275,7 +309,7 @@ const ClosedTasks = () => {
 
   // Create a download link
   // Create a download link
-  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
 
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";

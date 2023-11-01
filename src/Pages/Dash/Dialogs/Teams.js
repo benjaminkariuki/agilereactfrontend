@@ -46,10 +46,34 @@ const Teams = ({ onClose, labels }) => {
   ] = useState({});
 
   useEffect(() => {
+    fetchName();
     fetchProjectsTasksCountPerDepartment(department);
 
     fetchProjectsTasksCountPerUser(department);
   }, []);
+
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const onFetchingRoles = (error) => {
     if (toast.current && error) {
@@ -197,11 +221,11 @@ const Teams = ({ onClose, labels }) => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/teamsProjectsSubtasksPerCount",
+        "https://agilepmtest.agilebiz.co.ke/api/teamsProjectsSubtasksPerCount",
         {
           ...config, 
           params: {
@@ -240,11 +264,11 @@ setErrorMessage("Failed to get subtasks");
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
       const response = await axios.get(
-        "https://agile-pm.agilebiz.co.ke/api/teamsProjectsPerMemberCount",
+        "https://agilepmtest.agilebiz.co.ke/api/teamsProjectsPerMemberCount",
         {
           ...config, 
           params: {

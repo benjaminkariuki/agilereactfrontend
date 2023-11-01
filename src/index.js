@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import "./css/index.css";
 import { Provider } from "react-redux";
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import axios from "axios";
+
 
 import store from "./store/store";
 
@@ -29,14 +31,27 @@ import { useSelector } from "react-redux";
 import "primereact/resources/themes/lara-light-indigo/theme.css"; // theme
 import "primereact/resources/primereact.css"; // core css
 import "primeicons/primeicons.css"; // icons
-import setupAxiosInterceptors from './axiosConfig';
 
-// Set up Axios interceptor
-setupAxiosInterceptors(() => {
-  // Since this isn't a component, we can't use hooks directly.
-  // So, we use the traditional way to navigate:
-  window.location.href = "/";
-});
+
+
+  axios.interceptors.response.use(
+    function (response) {
+      // If the response was successful, just return it
+      return response;
+    },
+    function (error) {
+      // If the response had a status of 401, redirect to the login page
+      if (error.response && error.response.status === 401) {
+        window.location.href = "/";
+
+      }
+  
+      // If the response had any other status, reject the promise with the error
+      return Promise.reject(error);
+    }
+  );
+
+
 
 
 const ProtectedRoute = ({ element, redirectPath }) => {

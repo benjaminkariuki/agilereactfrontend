@@ -30,7 +30,7 @@ const EditProfile = () => {
 
 
 
-  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setNewPassword] = useState("");
@@ -50,6 +50,34 @@ const EditProfile = () => {
     useState(false);
 
   
+    useEffect(() => {
+      fetchName();
+    }, []);
+
+    const fetchName = async () => {
+      try {
+        const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    
+        const response = await fetch(
+          "https://agilepmtest.agilebiz.co.ke/api/appName",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+    
+        if (response.status === 401) {
+          navigate('/');
+        }
+    
+        // Rest of your code...
+      } catch (error) {
+        // Error handling code...
+      }
+    };
+  
+
 
   const handleErrorMessage = (error) => {
     if (
@@ -123,6 +151,7 @@ const EditProfile = () => {
   };
 
   const handleSubmit = (event) => {
+    fetchName();
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
@@ -136,13 +165,13 @@ const EditProfile = () => {
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
       .post(
-        `https://agile-pm.agilebiz.co.ke/api/updateUsers/${userId}`,
+        `https://agilepmtest.agilebiz.co.ke/api/updateUsers/${userId}`,
         formData,
         {
           headers: {
@@ -198,21 +227,23 @@ const EditProfile = () => {
   const handlePasswordSave = (e) => {
     e.preventDefault(); // Prevent default form submission
 
+
     if (password === confirmPassword) {
       setError(null);
       setIsLoading(true);
       // Save the new password
+      fetchName();
 
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       axios
-        .post(`https://agile-pm.agilebiz.co.ke/api/changepassword/${userId}`, {
+        .post(`https://agilepmtest.agilebiz.co.ke/api/changepassword/${userId}`, {
           password: password,
           previousPass:Oldpassword,
         },config)
@@ -248,17 +279,17 @@ const EditProfile = () => {
   //DELETING THE PROFILE pHOTO
   const handleDeletePhoto = () => {
     // Delete the photo
-
+fetchName();
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
     axios
-      .delete(`https://agile-pm.agilebiz.co.ke/api/deleteImage/${userId}`,config)
+      .delete(`https://agilepmtest.agilebiz.co.ke/api/deleteImage/${userId}`,config)
       .then((response) => {
         const { user } = response.data;
         if (response.status === 401) {

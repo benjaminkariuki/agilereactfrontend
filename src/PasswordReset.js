@@ -33,7 +33,7 @@ const PasswordReset = () => {
     // Send the password and token in the POST request to the backend API
     setIsPending(true);
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/reset_password", {
+      .post("https://agilepmtest.agilebiz.co.ke/api/reset_password", {
         password,
         token,
       })

@@ -45,7 +45,7 @@ const ForgotPass = () => {
     setIsSubmitting(true);
 
     axios
-      .post("https://agile-pm.agilebiz.co.ke/api/pass_reset", {
+      .post("https://agilepmtest.agilebiz.co.ke/api/pass_reset", {
         email,
       })
       .then((response) => {

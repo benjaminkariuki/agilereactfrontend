@@ -26,9 +26,13 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
     return _.startCase(rowData[column.field]);
   };
 
-  
+
+ 
+
+
 
   useEffect(() => {
+   fetchName();
     if (showDetailsArchived) {
       setIsLoading(true);
 
@@ -36,13 +40,13 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
 
       axios
         .get(
-          `https://agile-pm.agilebiz.co.ke/api/allProject_Support_Archived?page=${page + 1}`,config
+          `https://agilepmtest.agilebiz.co.ke/api/allProject_Support_Archived?page=${page + 1}`,config
         )
         .then((response) => {
           // Handle the response data
@@ -64,6 +68,29 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
     }
   }, [showDetailsArchived,page]);
 
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+  
+      const response = await fetch(
+        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 401) {
+        navigate('/');
+      }
+  
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
+
   const renderFooter = () => {
     return (
       <div>
@@ -75,6 +102,7 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
             onPageChange={(e) => {
               setPage(e.page);
             }}
+
             template={{
               layout: "PrevPageLink CurrentPageReport NextPageLink",
             }}

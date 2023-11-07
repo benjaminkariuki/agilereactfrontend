@@ -880,6 +880,7 @@ const TestingTasks = () => {
                 header="Stage"
                 body={sentenceCaseFormatter}
               ></Column> */}
+
               <Column
                 header="Time Stamp"
                 body={(rowData) =>
@@ -986,6 +987,11 @@ const TestingTasks = () => {
                 const task = sentenceCaseFormatter(rowData, columnProps);
                 return `${columnProps.rowIndex + 1}. ${task}`;
               }}
+            ></Column>
+              <Column
+              field="description"
+              header="Description"
+              body={sentenceCaseFormatter}
             ></Column>
 
             <Column

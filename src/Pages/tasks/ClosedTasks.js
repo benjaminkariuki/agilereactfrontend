@@ -616,11 +616,11 @@ const ClosedTasks = () => {
                 return `${columnProps.rowIndex + 1}. ${task}`;
               }}
             ></Column>
-            {/* <Column
+            <Column
               field="description"
               header="Description"
               body={sentenceCaseFormatter}
-            ></Column> */}
+            ></Column>
             <Column
               field="department"
               header="Department"

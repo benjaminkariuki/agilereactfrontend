@@ -343,8 +343,9 @@ const MicroTask = ({
   };
 
   const handleTaskSelection = (rowData) => {
-    const sDate = new Date(rowData.start_date);
-    const eDate = new Date(rowData.end_date);
+   
+    const sDate = rowData.start_date ? new Date(rowData.start_date) : null;
+    const eDate = rowData.end_date ? new Date(rowData.end_date) : null;
 
     setEditingTask({
       id: rowData.id,
@@ -934,7 +935,6 @@ const MicroTask = ({
 
               <DataTable
                 value={subtasks}
-              
                 stripedRows
                 emptyMessage="No subtasks found."
                 className="p-datatable-gridlines"
@@ -960,7 +960,7 @@ const MicroTask = ({
                     `${subtasks.indexOf(rowData) + 1}. ${rowData.task}`
                   }
                 ></Column>
-                {/* <Column field="description" header="Task Description"></Column> */}
+                <Column field="description" header="Task Description"></Column>
                 <Column
                   field="start_date"
                   header="Start Date"
@@ -1046,8 +1046,8 @@ const MicroTask = ({
           <div className="mb-6">
             {subtasks.length > 0 ? (
               <Paginator
-                first={page * 30}
-                rows={30}
+                first={page * 5}
+                rows={5}
                 totalRecords={totalRecords}
                 onPageChange={(e) => {
                   setPage(e.page);
@@ -1112,10 +1112,12 @@ const MicroTask = ({
                 <Dropdown
                   id="department"
                   value={newTask.department}
-                  options={departments.map((dep) => ({
+
+                  options={[{ label: 'None', value: null }, ...departments.map((dep) => ({
                     label: dep.name,
                     value: dep.name,
-                  }))}
+                  }))]}
+
                   onChange={(e) =>
                     setNewTask({ ...newTask, department: e.value })
                   }
@@ -1136,6 +1138,7 @@ const MicroTask = ({
                   }
                   className="w-full  rounded"
                   dateFormat="yy/mm/dd"
+                  showButtonBar
                 />
               </div>
               <div className="mb-4">
@@ -1150,6 +1153,7 @@ const MicroTask = ({
                   }
                   className="w-full  rounded"
                   dateFormat="yy/mm/dd"
+                  showButtonBar
                 />
               </div>
               <div className="mb-4">
@@ -1159,7 +1163,9 @@ const MicroTask = ({
                 <Dropdown
                   id="business-ananlyst"
                   value={newTask.assigneBa}
-                  options={bas}
+                 
+                  options={[{ label: 'None', value: null }, ...bas]}
+
                   onChange={(e) =>
                     setNewTask({ ...newTask, assigneBa: e.value })
                   }
@@ -1175,7 +1181,8 @@ const MicroTask = ({
                 <Dropdown
                   id="team-lead"
                   value={newTask.assigneTl}
-                  options={imp}
+                  options={[{ label: 'None', value: null }, ...imp]}
+
                   onChange={(e) =>
                     setNewTask({ ...newTask, assigneTl: e.value })
                   }
@@ -1261,7 +1268,8 @@ const MicroTask = ({
                 <Dropdown
                   id="business-ananlyst"
                   value={editingTask.assigneBa}
-                  options={bas}
+        
+                  options={[{ label: 'None', value: null }, ...bas]}
                   onChange={(e) =>
                     setEditingTask({ ...editingTask, assigneBa: e.value })
                   }
@@ -1288,6 +1296,7 @@ const MicroTask = ({
                   }
                   className="w-full border rounded"
                   dateFormat="yy/mm/dd"
+                  showButtonBar
                 />
               </div>
               <div className="mb-4">
@@ -1305,6 +1314,7 @@ const MicroTask = ({
                   }
                   className="w-full border rounded"
                   dateFormat="yy/mm/dd"
+                  showButtonBar
                 />
               </div>
               <div className="mb-4">
@@ -1317,10 +1327,12 @@ const MicroTask = ({
                 <Dropdown
                   id="edit-department"
                   value={editingTask?.department || ""}
-                  options={departments.map((dep) => ({
+
+                  options={[{ label: 'None', value: null }, ...departments.map((dep) => ({
                     label: dep.name,
                     value: dep.name,
-                  }))}
+                  }))]}
+
                   onChange={(e) =>
                     setEditingTask({ ...editingTask, department: e.value })
                   }
@@ -1336,7 +1348,8 @@ const MicroTask = ({
                 <Dropdown
                   id="team-lead"
                   value={editingTask.assignedTl}
-                  options={imp}
+                  options={[{ label: 'None', value: null }, ...imp]}
+
                   onChange={(e) =>
                     setEditingTask({ ...editingTask, assignedTl: e.value })
                   }
@@ -1440,6 +1453,8 @@ const MicroTask = ({
             </button>
           </div>
         </Dialog>
+
+
       </div>
     </div>
   );

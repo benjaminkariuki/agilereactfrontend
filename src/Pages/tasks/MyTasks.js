@@ -781,7 +781,11 @@ const MyTasks = () => {
               }}
             ></Column>
 
-            {}
+             <Column
+              field="description"
+              header="Description"
+              body={sentenceCaseFormatter}
+            ></Column>
             <Column
               field="department"
               header="Department"

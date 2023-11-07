@@ -342,11 +342,11 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
                   return `${columnProps.rowIndex + 1}. ${task}`;
                 }}
               ></Column>
-              {/* <Column
+              <Column
               field="description"
               header="Description"
               body={sentenceCaseFormatter}
-            /> */}
+            />
               <Column field="start_date" header="Start Date" />
               <Column field="end_date" header="End Date" />
               <Column

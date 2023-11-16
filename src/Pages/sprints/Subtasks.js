@@ -44,7 +44,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
 
   const confirmRemove = (sprintId) => {
     confirmDialog({
-      message: "Are you sure you want to close this sprint?",
+      message: "Are you sure you want to remove the task?",
       header: "Close Confirmation",
       icon: "pi pi-exclamation-triangle",
       accept: () => handleRemoveFromSprint(sprintId),

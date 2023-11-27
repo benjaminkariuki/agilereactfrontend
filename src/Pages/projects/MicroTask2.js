@@ -129,7 +129,7 @@ const MicroTask = ({
 
     const confirmClose = () => {
       confirmDialog({
-        message: "Do you want to close this task(S)?",
+        message: "Are you sure you want to close this task or tasks?",
         header: "Close Confirmation",
         icon: "pi pi-info-circle",
         accept: pushToApproval,

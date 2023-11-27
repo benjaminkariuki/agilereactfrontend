@@ -42,6 +42,12 @@ const MicroTask = ({
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTasks, setSelectedTasks] = useState([]);
+
+  const { userRole, userEmail, userDepartment } = useSelector(
+    (state) => state.user
+  );
+
   const navigate = useNavigate();
 
 
@@ -80,6 +86,17 @@ const MicroTask = ({
   const { userActivities } = useSelector((state) => state.user);
   const [showPreassigned, setShowPreassigned] = useState(false);
 
+  const onWarn = (error) => {
+    if (error && toast.current) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Please upload micro task(s)",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
 
 
   //getting the permission for projects
@@ -103,6 +120,71 @@ const MicroTask = ({
   const hasWritePermissionSprint = sprintprioritiesActivity
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;
+
+    const taskActivity = userActivities.find(
+      (activity) => activity.name === "Tasks"
+    );
+
+    const hasCloseTasks = taskActivity.pivot.permissions.includes("Close-tasks");
+
+    const confirmClose = () => {
+      confirmDialog({
+        message: "Do you want to close this task(S)?",
+        header: "Close Confirmation",
+        icon: "pi pi-info-circle",
+        accept: pushToApproval,
+      });
+    };
+
+    const openConfirmDialog = () => {
+      if (selectedRows.length >= 1) confirmClose();
+      else if (selectedRows.length < 1){
+        onWarn("Select atleast one Micro-task");
+      }
+       
+    };
+
+
+    const pushToApproval = () => {
+   
+      fetchName();
+      setPushLoading(true);
+      const selectedIds = selectedRows.map((row) => row.id);
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      axios
+        .post(
+          "https://agilepmtest.agilebiz.co.ke/api/pushToApproval",
+          {
+            taskIds: selectedIds,
+            email:userEmail,
+          },
+          
+          config
+        )
+        .then((response) => {
+  
+          if (response.status === 401) {
+            navigate('/');
+          }
+  
+          onInfo(response.data.message);
+          setPushLoading(false);
+          setIsViewModalOpen(false);
+        })
+        .catch((error) => {
+          setPushLoading(false);
+  
+            onErrorF(error);
+  
+        });
+
+    };
 
   
   // Move this effect to handle selectedIcon changes
@@ -887,6 +969,7 @@ const MicroTask = ({
               </div>
             </>
           }
+
           footer={
             <div className="flex justify-between">
               {hasWritePermissionSprint && (
@@ -905,12 +988,22 @@ const MicroTask = ({
                 </button>
               )}
 
-              <button
-                className="px-4 py-2 bg-red-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
-                onClick={() => setIsViewModalOpen(false)}
-              >
-                Cancel
-              </button>
+              
+{hasCloseTasks && ( // Assuming the variable for the new button's visibility is called 'hasPermissionClose'
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded-md"
+                  onClick={openConfirmDialog}
+                >
+                  {pustLoading ? (
+                    <i
+                      className="pi pi-spin pi-spinner"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  ) : (
+                    "Close the task (s)"
+                  )}
+                </button>
+              )}
             </div>
           }
         >

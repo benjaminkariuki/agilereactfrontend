@@ -38,6 +38,8 @@ const MicroTask = ({
   const [loading, setIsLoading] = useState(false);
   const [isloading, set_IsLoading] = useState(false);
   const [pustLoading, setPushLoading] = useState(false);
+  const [pushLoading, setPustLoading] = useState(false);
+
   const [taskcreate, setTaskCreate] = useState(false);
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -148,7 +150,7 @@ const MicroTask = ({
     const pushToApproval = () => {
    
       fetchName();
-      setPushLoading(true);
+      setPustLoading(true);
       const selectedIds = selectedRows.map((row) => row.id);
       const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
   
@@ -174,11 +176,11 @@ const MicroTask = ({
           }
   
           onInfo(response.data.message);
-          setPushLoading(false);
+          setPustLoading(false);
           setIsViewModalOpen(false);
         })
         .catch((error) => {
-          setPushLoading(false);
+          setPustLoading(false);
   
             onErrorF(error);
   
@@ -994,7 +996,7 @@ const MicroTask = ({
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
                   onClick={openConfirmDialog}
                 >
-                  {pustLoading ? (
+                  {pushLoading ? (
                     <i
                       className="pi pi-spin pi-spinner"
                       style={{ fontSize: "1.4rem" }}

@@ -5,10 +5,8 @@ import axios from "axios";
 import { Toast } from "primereact/toast";
 import { Chart } from "primereact/chart";
 import _ from "lodash";
-import { useNavigate } from "react-router-dom";
-
-
-
+import { useNavigate } from "react-router-dom"
+import API_BASE_URL from "../../apiConfig";
 
 const Admin = () => {
   const [userCount, setUserCount] = useState(0);
@@ -87,7 +85,7 @@ const fetchName = async () => {
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
 
     const response = await fetch(
-      "https://agilepmtest.agilebiz.co.ke/api/appName",
+      `${API_BASE_URL}/appName`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -129,7 +127,7 @@ const fetchName = async () => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allUsersCount",
+        `${API_BASE_URL}/allUsersCount`,
         config
       );
       if (response.status === 401) {
@@ -159,7 +157,7 @@ const fetchName = async () => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allRolesCount",
+        `${API_BASE_URL}/allRolesCount`,
         config
       );
 
@@ -190,7 +188,7 @@ const fetchName = async () => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allDepartmentsCount",
+        `${API_BASE_URL}/allDepartmentsCount`,
         config
       );
       if (response.status === 401) {
@@ -220,7 +218,7 @@ const fetchName = async () => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allDepartmentsCountPerUser",
+        `${API_BASE_URL}/allDepartmentsCountPerUser`,
         config
       );
 
@@ -253,7 +251,7 @@ const fetchName = async () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allRolesCountPerUser",
+        `${API_BASE_URL}/allRolesCountPerUser`,
         config
       );
 

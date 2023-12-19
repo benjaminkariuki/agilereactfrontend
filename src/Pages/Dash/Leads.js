@@ -8,6 +8,7 @@ import _ from "lodash";
 import { FaBriefcase } from "react-icons/fa";
 import Teams from "./Dialogs/Teams";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 const Leads = () => {
@@ -81,7 +82,7 @@ const Leads = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -175,7 +176,7 @@ const Leads = () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/activeSprintMinimal",
+        `${API_BASE_URL}/activeSprintMinimal`,
         config
       );
 
@@ -214,7 +215,7 @@ const Leads = () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountOverall",
+        `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCountOverall`,
         {
           params: {
             email: email,
@@ -261,7 +262,7 @@ const Leads = () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountStage",
+        `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCountStage`,
         {
           params: {
             email: email,
@@ -310,7 +311,7 @@ const Leads = () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
+        `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCount`,
         {
           params: {
             email: email,

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "./apiConfig";
 
 const PasswordReset = () => {
   const [password, setPassword] = useState("");
@@ -33,7 +34,7 @@ const PasswordReset = () => {
     // Send the password and token in the POST request to the backend API
     setIsPending(true);
     axios
-      .post("https://agilepmtest.agilebiz.co.ke/api/reset_password", {
+      .post(`${API_BASE_URL}/reset_password`, {
         password,
         token,
       })

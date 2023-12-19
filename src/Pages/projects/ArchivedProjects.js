@@ -6,6 +6,7 @@ import {  confirmDialog } from "primereact/confirmdialog";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 const Archive = ({ onRestoreProject,viewMode }) => {
@@ -85,7 +86,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -135,7 +136,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       },
     };
     axios
-      .get( `https://agilepmtest.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}`,config)
+      .get(`${API_BASE_URL}/allProjectsArchived?page=${page + 1}`,config)
       .then((response) => {
 
         if (response.status === 401) {
@@ -169,7 +170,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
     setPage(0); 
 
       axios
-        .get(`https://agilepmtest.agilebiz.co.ke/api/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .get(`${API_BASE_URL}/allProjectsArchived?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
 
           if (response.status === 401) {
@@ -205,7 +206,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       },
     };
       const response = await axios.post(
-        `https://agilepmtest.agilebiz.co.ke/api/restore/${id}`, {},  
+        `${API_BASE_URL}/restore/${id}`, {},  
         config
       );
 
@@ -246,7 +247,7 @@ const Archive = ({ onRestoreProject,viewMode }) => {
       },
     };
       const response = await axios.delete(
-        `https://agilepmtest.agilebiz.co.ke/api/deletePermanently/${id}`,config
+        `${API_BASE_URL}/deletePermanently/${id}`,config
       );
 
       if (response.status === 401) {

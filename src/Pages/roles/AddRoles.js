@@ -3,6 +3,7 @@ import { Toast } from "primereact/toast";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -74,7 +75,7 @@ const AddRoles = () => {
       },
     };
         const response = await axios.get(
-          "https://agilepmtest.agilebiz.co.ke/api/activitiesAll",config
+          `${API_BASE_URL}/activitiesAll`,config
         );
 
         if (response.status === 401) {
@@ -100,7 +101,7 @@ const AddRoles = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -175,7 +176,7 @@ const AddRoles = () => {
       },
     };
       const response = await axios.post(
-        "https://agilepmtest.agilebiz.co.ke/api/create_role",
+        `${API_BASE_URL}/create_role`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,

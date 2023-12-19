@@ -11,6 +11,7 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 const ClosedTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -186,7 +187,7 @@ const ClosedTasks = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -214,7 +215,7 @@ const ClosedTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/myTasksApproved", {
+      .get(`${API_BASE_URL}/myTasksApproved`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -256,7 +257,7 @@ const ClosedTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/OtherTasksApproved", {
+      .get(`${API_BASE_URL}/OtherTasksApproved`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -309,7 +310,7 @@ const ClosedTasks = () => {
 
   // Create a download link
   // Create a download link
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
 
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";

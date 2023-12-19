@@ -8,6 +8,7 @@ import _ from "lodash";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 const EditProject = ({ projectId, routeToListProjects }) => {
@@ -153,7 +154,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -180,7 +181,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/allUsersData", config)
+      .get(`${API_BASE_URL}/allUsersData`, config)
       .then((response) => {
 
         if (response.status === 401) {
@@ -206,7 +207,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getCategoriesProject",
+        `${API_BASE_URL}/getCategoriesProject`,
         {
           method: "GET",
           headers: config.headers,
@@ -235,7 +236,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getSystemTypeProject",
+        `${API_BASE_URL}/getSystemTypeProject`,
         {
           method: "GET",
           headers: config.headers,
@@ -264,7 +265,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     };
     axios
       .get(
-        `https://agilepmtest.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
+        `${API_BASE_URL}/allProjectsWithId/${projectId}`,
         config
       )
       .then((response) => {
@@ -383,7 +384,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
     };
     axios
       .post(
-        `https://agilepmtest.agilebiz.co.ke/api/edit_projects/${projectId}`,
+        `${API_BASE_URL}/edit_projects/${projectId}`,
         formData,
         {
           headers: {
@@ -425,7 +426,7 @@ const EditProject = ({ projectId, routeToListProjects }) => {
         },
       };
       const response = await axios.get(
-        `https://agilepmtest.agilebiz.co.ke/api/download-excel-edit/${projectId}`,
+        `${API_BASE_URL}/download-excel-edit/${projectId}`,
         {
           ...config,
           responseType: "blob",

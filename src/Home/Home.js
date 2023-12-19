@@ -17,6 +17,7 @@ import { FaCog, FaSignOutAlt } from "react-icons/fa";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { GrUserSettings } from "react-icons/gr";
 import axios from "axios";
+import API_BASE_URL from "../apiConfig";
 
 
 const Home = () => {
@@ -37,7 +38,7 @@ const Home = () => {
       accept: () => handleLogout(),
     });
   };
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   // Use useEffect to check login status on component mount
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -56,6 +57,7 @@ const Home = () => {
     // Navigate to the specified URL
     navigate("/dashboard/editprofile");
   };
+
   const handleLogout = async () => {
     // Dispatch the logout action
     const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
@@ -69,7 +71,7 @@ const Home = () => {
     dispatch(logout());
     // Redirect to the login page or any other desired page
     navigate("/");
-    await axios.post("https://agilepmtest.agilebiz.co.ke/api/logout", {}, config);
+    await axios.post(`${API_BASE_URL}/logout`, {}, config);
 
   };
   const toggleDropdown = () => {

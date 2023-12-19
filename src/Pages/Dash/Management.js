@@ -14,6 +14,7 @@ import AllProjectsDialog from "./Dialogs/AllProjectsDialog.js";
 import { useNavigate } from "react-router-dom";
 
 import DetailsSupportDialog from "./Dialogs/DetailsSupportDialog.js";
+import API_BASE_URL from "../../apiConfig.js";
 
 const Management = () => {
   const email = useSelector((state) => state.user.userEmail);
@@ -98,7 +99,7 @@ const Management = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -177,7 +178,7 @@ const Management = () => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectImplementation",
+        `${API_BASE_URL}/allProjectImplementation`,
         config
       );
 
@@ -208,7 +209,7 @@ const Management = () => {
       };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectSupport",
+        `${API_BASE_URL}/allProjectSupport`,
         configs
       );
 
@@ -237,7 +238,7 @@ const Management = () => {
     };
     try {
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectsArchivedCount",
+        `${API_BASE_URL}/allProjectsArchivedCount`,
         config
       );
 
@@ -270,7 +271,7 @@ const Management = () => {
       };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectAndSubtasksActive",
+        `${API_BASE_URL}/allProjectAndSubtasksActive`,
         config
       );
 
@@ -304,7 +305,7 @@ const Management = () => {
       };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/fetchActiveSprint",
+        `${API_BASE_URL}/fetchActiveSprint`,
         config
       );
 
@@ -347,7 +348,7 @@ const Management = () => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
+        `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCount`,
         {
           params: {
             email: email,

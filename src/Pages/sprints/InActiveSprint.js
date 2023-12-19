@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
 import EditSprintsDialog from "./EditSprintsDialog";
+import API_BASE_URL from "../../apiConfig";
 
 const InActiveSprint = ({ rerouting }) => {
   const [inactiveSprints, setInactiveSprints] = useState([]);
@@ -15,14 +16,7 @@ const InActiveSprint = ({ rerouting }) => {
   const [showDelegate, setShowDelegate] = useState(false);
   const [sprintEditId, setShowSprintEditId] = useState('');
 
-  
-
-
-
-
-
-
-
+ 
   const toast = useRef(null);
    //getting the permission for Sprints
 const sprintsActivity = userActivities.find(
@@ -80,7 +74,7 @@ const hasWritePermissionSprints = sprintsActivity
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -108,7 +102,7 @@ const hasWritePermissionSprints = sprintsActivity
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allInactiveSprints",
+        `${API_BASE_URL}/allInactiveSprints`,
         config
       );
 
@@ -140,7 +134,7 @@ const hasWritePermissionSprints = sprintsActivity
     };
 
       const response = await axios.post(
-        `https://agilepmtest.agilebiz.co.ke/api/activateSprint/${id}`,
+        `${API_BASE_URL}/activateSprint/${id}`,
         {},
         config
       );
@@ -175,7 +169,7 @@ const hasWritePermissionSprints = sprintsActivity
     };
       setLoadingStates((prev) => ({ ...prev, [id]: "deleting" }));
       const response = await axios.delete(
-        `https://agilepmtest.agilebiz.co.ke/api/deleteSprint/${id}`,
+        `${API_BASE_URL}/deleteSprint/${id}`,
         config
       );
 

@@ -8,6 +8,7 @@ import _ from "lodash";
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -107,7 +108,7 @@ const CreateProject = ({ routeToListProjects }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -134,7 +135,7 @@ const CreateProject = ({ routeToListProjects }) => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/allUsersData",config)
+      .get(`${API_BASE_URL}/allUsersData`,config)
       .then((response) => {
 
         if (response.status === 401) {
@@ -159,7 +160,7 @@ const CreateProject = ({ routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getCategoriesProject",
+        `${API_BASE_URL}/getCategoriesProject`,
         {
           method: "GET",
           headers: config.headers,
@@ -190,7 +191,7 @@ const CreateProject = ({ routeToListProjects }) => {
       };
 
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getSystemTypeProject",
+        `${API_BASE_URL}/getSystemTypeProject`,
         {
           method: "GET",
           headers: config.headers,
@@ -224,7 +225,11 @@ const CreateProject = ({ routeToListProjects }) => {
     formData.append("clientemail", projectData.clientEmail);
     formData.append("start_date", formatDate(projectData.startDate));
     formData.append("end_date", formatDate(projectData.endDate));
-    formData.append("excel_file", projectData.excel_file);
+    
+    if (projectData.excel_file) {
+
+      formData.append("excel_file", projectData.excel_file);
+  }
     formData.append("category", projectData.category);
     formData.append("system_type", projectData.system);
     // For array data, we append each element of the array
@@ -243,7 +248,7 @@ const CreateProject = ({ routeToListProjects }) => {
       },
     };
     axios
-      .post("https://agilepmtest.agilebiz.co.ke/api/create_projects", formData, {
+      .post(`${API_BASE_URL}/create_projects`, formData, {
         ...config,
         headers: {
             ...config.headers,
@@ -311,7 +316,7 @@ const CreateProject = ({ routeToListProjects }) => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/download-excel",
+        `${API_BASE_URL}/download-excel`,
         {
           
           ...config, // Spread the contents of the config object

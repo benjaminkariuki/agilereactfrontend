@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
 import { Dialog } from "primereact/dialog";
+import API_BASE_URL from "../../apiConfig.js";
 
 const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const [projectData, setProjectData] = useState([]);
@@ -22,7 +23,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
   const { userActivities, userEmail, userDepartment } = useSelector(
     (state) => state.user
   );
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const navigate = useNavigate();
 
   const [showCloseModal, setShowCloseModal] = useState(false);
@@ -92,7 +93,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
       const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -139,7 +140,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
     };
     axios
       .get(
-        `https://agilepmtest.agilebiz.co.ke/api/allProjectsWithId/${projectId}`,
+        `${API_BASE_URL}/allProjectsWithId/${projectId}`,
         config
       )
       .then((response) => {
@@ -197,7 +198,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
 
     axios
       .post(
-        `https://agilepmtest.agilebiz.co.ke/api/closePhaseActivity`,
+        `${API_BASE_URL}/closePhaseActivity`,
         dataPass,
         config
       )
@@ -320,7 +321,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
                           />
 
                           {rowData.closed === 0 &&
-                            hasWritePermissionProject && (
+                            hasReadPermissionProject && (
                               <PiMicrosoftExcelLogoFill
                                 className="bg-blue-500 text-white rounded"
                                 size={18}
@@ -452,7 +453,7 @@ const ProjectDetails = ({ projectId, routeToListProjects, routetoEdit }) => {
           </div>
         </div>
         <div className="flex justify-between">
-          {hasWritePermissionProject && (
+          {hasReadPermissionProject && (
             <button
               className="px-4 py-2 bg-yellow-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
               onClick={handleEdit}

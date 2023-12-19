@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
 import { Toast } from "primereact/toast";
+import API_BASE_URL from "./apiConfig";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -37,7 +38,7 @@ const LoginForm = () => {
 
     try {
       const response = await axios.post(
-        "https://agilepmtest.agilebiz.co.ke/api/login",
+        `${API_BASE_URL}/login`,
         {
           email,
           password,

@@ -13,6 +13,7 @@ import DelegateTaskDialog from "./DelegateDialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 const ReviewTasks = () => {
   const { userRole, userEmail, userActivities, userDepartment } = useSelector(
@@ -236,7 +237,7 @@ const ReviewTasks = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -264,7 +265,7 @@ const ReviewTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/myTasksReview", {
+      .get(`${API_BASE_URL}/myTasksReview`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -304,7 +305,7 @@ const ReviewTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/OtherTasksReview", {
+      .get(`${API_BASE_URL}/OtherTasksReview`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -353,7 +354,7 @@ const ReviewTasks = () => {
   };
 
   // Create a download link
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
 
@@ -438,7 +439,7 @@ const ReviewTasks = () => {
       };
       axios
         .post(
-          "https://agilepmtest.agilebiz.co.ke/api/pushToApproval",
+          `${API_BASE_URL}/pushToApproval`,
           {
             taskIds: selectedIds,
             email:userEmail,
@@ -504,7 +505,7 @@ const ReviewTasks = () => {
       },
     };
     axios
-      .post("https://agilepmtest.agilebiz.co.ke/api/returnToTesting", formData, {
+      .post(`${API_BASE_URL}/returnToTesting`, formData, {
         headers: {
           ...config.headers,
           "Content-Type": "multipart/form-data",

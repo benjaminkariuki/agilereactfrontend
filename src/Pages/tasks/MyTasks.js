@@ -13,6 +13,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 const MyTasks = () => {
   const { userRole, userEmail, userDepartment } = useSelector(
@@ -202,7 +203,7 @@ const MyTasks = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -230,7 +231,7 @@ const MyTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/myTasks", {
+      .get(`${API_BASE_URL}/myTasks`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -271,7 +272,7 @@ const MyTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/AllOtherTasks", {
+      .get(`${API_BASE_URL}/AllOtherTasks`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -319,7 +320,7 @@ const MyTasks = () => {
   };
 
   // Create a download link
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const downloadLink = (rowData) => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
 
@@ -371,7 +372,7 @@ const MyTasks = () => {
       };
       axios
         .post(
-          "https://agilepmtest.agilebiz.co.ke/api/pushToApproval",
+          `${API_BASE_URL}/pushToApproval`,
           {
             taskIds: selectedIds,
             email:userEmail,
@@ -379,7 +380,7 @@ const MyTasks = () => {
           config
         )
         .then((response) => {
-          
+
           if (response.status === 401) {
             navigate("/");
           }
@@ -463,7 +464,7 @@ const MyTasks = () => {
       };
       axios
         .post(
-          "https://agilepmtest.agilebiz.co.ke/api/pushToDevelopment",
+          `${API_BASE_URL}/pushToDevelopment`,
           {
             taskIds: selectedIds,
           },

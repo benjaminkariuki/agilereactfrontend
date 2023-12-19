@@ -3,10 +3,10 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { Toast } from "primereact/toast";
 import _ from "lodash";
-
 import * as AiIcons from "react-icons/ai";
 import { Paginator } from "primereact/paginator";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig"; 
 
 
 const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
@@ -18,6 +18,12 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
   const toast = useRef(null);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [toggleStatus, setToggleStatus] = useState(0);
+
+  const { userId  } = useSelector(
+    (state) => state.user
+  );
+
   const navigate = useNavigate();
 
 
@@ -39,7 +45,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
 
   useEffect(() => {
     fetchProjects();
-  }, [page]);
+  }, [page,toggleStatus]);
 
  
 
@@ -79,7 +85,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -107,7 +113,9 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       },
     };
     axios
-      .get(`https://agilepmtest.agilebiz.co.ke/api/allProjects?page=${page + 1}`,config)
+    .get(`${API_BASE_URL}/allProjects?page=${page + 1}&toggle=${toggleStatus}&userId=${userId}`, config)
+
+
       .then((response) => {
 
         if (response.status === 401) {
@@ -141,12 +149,10 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     setPage(0); 
 
       axios
-        .get(
-          `https://agilepmtest.agilebiz.co.ke/api/allProjects?page=${
-            page + 1
-          }&searchTerm=${searchTerm}`,
-          config
-        )
+      .get(
+        `${API_BASE_URL}/allProjects?page=${page + 1}&toggle=${toggleStatus}&searchTerm=${encodeURIComponent(searchTerm)}&userId=${userId}`,
+        config
+      )
         .then((response) => {
 
           if (response.status === 401) {
@@ -181,7 +187,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       },
     };
       const response = await axios.post(
-        `https://agilepmtest.agilebiz.co.ke/api/archive/${id}`,
+        `${API_BASE_URL}/archive/${id}`,
         {},
         config
       );
@@ -233,7 +239,7 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
       </div>
 
       <div className="flex space-x-2 mt-2">
-        {hasReadPermission && hasWritePermission && (
+        {hasReadPermission  && (
           <button
             onClick={() => onEditProject(project.id)}
             className="bg-yellow-500 text-white font-semibold px-2 py-1 rounded-md"
@@ -267,7 +273,24 @@ const ListProjects = ({ onEditProject, onViewProjectDetails, viewMode }) => {
     <>
       <Toast ref={toast} />
 
-      <div className="mb-4 flex justify-end mt-0.5">
+      <div className="mb-4 flex justify-between items-center mt-0.5">
+
+      {toggleStatus === 0 ? (
+  <AiIcons.AiOutlineEye
+    className="text-3xl cursor-pointer text-blue-500 ml-2"
+    onClick={() => setToggleStatus(1)}
+    title="View My Projects" // Tooltip for open eye icon
+  />
+) : (
+  <AiIcons.AiOutlineEyeInvisible
+    className="text-3xl cursor-pointer text-blue-500 ml-2"
+    onClick={() => setToggleStatus(0)}
+    title="View All Projects" // Tooltip for closed eye icon
+  />
+)}
+
+
+
         <input
           type="text"
           placeholder="Search projects"

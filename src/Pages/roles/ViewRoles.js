@@ -4,6 +4,7 @@ import { Toast } from "primereact/toast";
 import { confirmDialog } from "primereact/confirmdialog";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -92,7 +93,7 @@ const ViewRoles = () => {
       },
     };
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/allRoles",config
+        `${API_BASE_URL}/allRoles`,config
       );
 
       if (response.status === 401) {
@@ -119,7 +120,7 @@ const ViewRoles = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -154,7 +155,7 @@ const ViewRoles = () => {
       },
     };
       const response = await axios.delete(
-        `https://agilepmtest.agilebiz.co.ke/api/deleteRoles/${roleId}`,
+        `${API_BASE_URL}/deleteRoles/${roleId}`,
         config
       );
 

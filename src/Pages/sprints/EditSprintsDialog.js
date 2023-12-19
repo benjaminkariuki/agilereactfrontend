@@ -7,6 +7,7 @@ import levenshtein from "fast-levenshtein";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSelector } from "react-redux";
+import API_BASE_URL from "../../apiConfig";
 
 const EditSprintsDialog = ({
   sprintEditId,
@@ -89,7 +90,7 @@ const EditSprintsDialog = ({
       };
       axios
         .get(
-          `https://agilepmtest.agilebiz.co.ke/api/sprintById/${sprintEditId}`,
+          `${API_BASE_URL}/sprintById/${sprintEditId}`,
           config
         )
         .then((response) => {
@@ -122,7 +123,7 @@ const EditSprintsDialog = ({
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -182,7 +183,7 @@ const EditSprintsDialog = ({
     setCreating(true);
     axios
       .patch(
-        `https://agilepmtest.agilebiz.co.ke/api/updateSprint/${sprintEditId}`,
+        `${API_BASE_URL}/updateSprint/${sprintEditId}`,
         editedData, // Send the edited data in the request body
         config
       )

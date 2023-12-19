@@ -6,6 +6,7 @@ import { Chart } from "primereact/chart";
 import Subtasks from "./Subtasks";
 import { useNavigate } from "react-router-dom";
 import { Paginator } from "primereact/paginator";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -47,7 +48,7 @@ const CompletedSprints = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,7 +77,7 @@ const CompletedSprints = () => {
       },
     };
       const response = await axios.get(
-        `https://agilepmtest.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}`,config
+        `${API_BASE_URL}/allClosedSprints?page=${page + 1}`,config
       );
 
       if (response.status === 401) {
@@ -104,7 +105,7 @@ const CompletedSprints = () => {
       },
     };
     axios
-      .get(`https://agilepmtest.agilebiz.co.ke/api/closedSprintById/${id}`,config)
+      .get(`${API_BASE_URL}/closedSprintById/${id}`,config)
       .then((response) => {
         if (response.status === 401) {
           navigate('/');
@@ -214,7 +215,7 @@ const CompletedSprints = () => {
       // Modify the endpoint to accommodate the searchTerm in the query string 
       setPage(0); 
       axios
-        .get(`https://agilepmtest.agilebiz.co.ke/api/allClosedSprints?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .get(`${API_BASE_URL}/allClosedSprints?page=${page + 1}&searchTerm=${searchTerm}`,config)
         .then((response) => {
 
           if (response.status === 401) {

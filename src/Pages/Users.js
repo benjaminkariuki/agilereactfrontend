@@ -6,12 +6,12 @@ import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
-import 'react-phone-number-input/style.css';
+import "react-phone-number-input/style.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../apiConfig";
 
-
-import PhoneInput from 'react-phone-number-input';
+import PhoneInput from "react-phone-number-input";
 
 const Users = () => {
   const navigate = useNavigate();
@@ -22,11 +22,12 @@ const Users = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const { userActivities } = useSelector((state) => state.user);
+  const [projects, setProjects] = useState([]);
+  const [selectedProjects, setSelectedProjects] = useState([]);
 
-
-  const [departments,setDepartments] = useState([]);
+  const [departments, setDepartments] = useState([]);
 
   //getting the permission for projects
   const UsersActivity = userActivities.find(
@@ -38,16 +39,15 @@ const Users = () => {
   const hasWritePermissionUsers =
     UsersActivity.pivot.permissions.includes("write");
 
-
   const [roles, setRoles] = useState([]);
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const toast = useRef(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [contact, setcontact] = useState();
-
+  const [filterClients, setFilterClients] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   const [updatedUser, setUpdateUser] = useState({
-   
     department: "",
     role: "",
   });
@@ -85,6 +85,17 @@ const Users = () => {
     }
   };
 
+  const onFetchingRoles = (error) => {
+    if (error && toast.current) {
+      toast.current.show({
+        severity: "error",
+        summary: "Error fetching roles",
+        detail: `${error}`,
+        life: 3000,
+      });
+    }
+  };
+
   const onError = (error) => {
     if (error && toast.current) {
       toast.current?.show({
@@ -94,6 +105,19 @@ const Users = () => {
         life: 3000,
       });
     }
+  };
+
+  const handleProjectSelection = (e, projectId) => {
+    const newSelection = [...selectedProjects];
+    if (e.target.checked) {
+      newSelection.push(projectId);
+    } else {
+      const index = newSelection.indexOf(projectId);
+      if (index > -1) {
+        newSelection.splice(index, 1);
+      }
+    }
+    setSelectedProjects(newSelection);
   };
 
   const confirmDelete = (id) => {
@@ -116,30 +140,38 @@ const Users = () => {
     fetchUsers();
     fetchRoles();
     fetchDepartments();
+    fetchProjects();
   }, []);
 
   useEffect(() => {
     fetchUsers();
   }, [page]);
 
+  useEffect(() => {
+    if (filterClients) {
+      const filtered = users.filter(user => 
+        user.role && user.role.name.toLowerCase() === 'client'
+      );
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers(users);
+    }
+  }, [users, filterClients]);
 
   const fetchName = async () => {
     try {
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
-  
-      const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const response = await fetch(`${API_BASE_URL}/appName`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (response.status === 401) {
-        navigate('/');
+        navigate("/");
       }
-  
+
       // Rest of your code...
     } catch (error) {
       // Error handling code...
@@ -148,7 +180,7 @@ const Users = () => {
 
   const fetchUsers = () => {
     setIsLoading(true);
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
@@ -157,29 +189,25 @@ const Users = () => {
     };
 
     axios
-      .get(`https://agilepmtest.agilebiz.co.ke/api/allUsers?page=${page + 1}`, config)
+      .get(`${API_BASE_URL}/allUsers?page=${page + 1}`, config)
       .then((response) => {
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
         setUsers(response.data.users.data);
         setTotalRecords(response.data.users.total);
-        
+
         setIsLoading(false);
-        
       })
       .catch((error) => {
         setIsLoading(false);
-       
+
         onError(error);
-        
-        
       });
   };
 
   const fetchRoles = () => {
-
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
@@ -188,17 +216,14 @@ const Users = () => {
     };
 
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/allRoles",config)
+      .get(`${API_BASE_URL}/allRoles`, config)
       .then((response) => {
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
         setRoles(response.data.roles);
-        
-       
       })
       .catch((error) => {
-      
         onError(error);
       });
   };
@@ -213,13 +238,10 @@ const Users = () => {
         },
       };
 
-      const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getDepartments",
-        {
-          method: "GET",
-          headers: config.headers,
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/getDepartments`, {
+        method: "GET",
+        headers: config.headers,
+      });
 
       if (response.status === 401) {
         navigate("/");
@@ -231,13 +253,36 @@ const Users = () => {
       onError(error);
     }
   };
-  
-  
+
+  const fetchProjects = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await fetch(`${API_BASE_URL}/allProjectsClients`, {
+        method: "GET",
+        headers: config.headers,
+      });
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+      const data = await response.json();
+      setProjects(data.data);
+    } catch (error) {
+      onFetchingRoles("Error  fetching projects");
+    }
+  };
 
   const handleDeleteUser = (userId) => {
     fetchName();
 
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
@@ -246,17 +291,15 @@ const Users = () => {
     };
 
     axios
-      .delete(`https://agilepmtest.agilebiz.co.ke/api/deleteUsers/${userId}`,config)
+      .delete(`${API_BASE_URL}/deleteUsers/${userId}`, config)
       .then((response) => {
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
         onDeleteUser(response.data.message);
         fetchUsers();
-       
       })
       .catch((error) => {
-       
         onError(error);
       });
   };
@@ -264,33 +307,43 @@ const Users = () => {
   const handleEditUser = (user) => {
     setSelectedUser(user);
     setEditModalOpen(true);
+    // Update the selectedProjects with the IDs of the user's projects
+    const projectIds = user.projects.map((project) => project.id);
+    setSelectedProjects(projectIds);
   };
 
   const handleUpdateUser = () => {
-  fetchName();
+    fetchName();
     setUpdateLoading(true);
+
     const formData = new FormData();
     formData.append("contacts", contact);
     formData.append("department", updatedUser.department);
     formData.append("role", updatedUser.role);
 
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    // Append project IDs
+    selectedProjects.forEach((projectId) => {
+      formData.append("projectIds[]", projectId);
+    });
+
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data", // This might be needed depending on your backend setup
       },
     };
 
     axios
       .post(
-        `https://agilepmtest.agilebiz.co.ke/api/updateUserDetails/${selectedUser.id}`,
+        `${API_BASE_URL}/updateUserDetails/${selectedUser.id}`,
         formData,
         config
       )
       .then((response) => {
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
         setTimeout(() => {
           onSuccessUpdate(response.data.message);
@@ -300,18 +353,14 @@ const Users = () => {
         setUpdateLoading(false);
         setcontact();
         setUpdateUser({
-         
           department: "",
           role: "",
         });
         fetchUsers();
-       
       })
       .catch((error) => {
         setUpdateLoading(false);
-       
         onErrorUpdate(error);
-      
       });
   };
 
@@ -320,33 +369,34 @@ const Users = () => {
     setSelectedUser([]);
     setcontact();
     setUpdateUser({
-    
       department: "",
       role: "",
     });
   };
 
   const handleSearch = () => {
-    if (searchTerm && searchTerm.trim() !== '') {
+    if (searchTerm && searchTerm.trim() !== "") {
       setIsLoading(true);
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-
-     // Reset the page state to 0 whenever a search is performed
-     setPage(0); 
-      // Modify the endpoint to accommodate the searchTerm in the query string 
+      // Reset the page state to 0 whenever a search is performed
+      setPage(0);
+      // Modify the endpoint to accommodate the searchTerm in the query string
       axios
-        .get(`https://agilepmtest.agilebiz.co.ke/api/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,config)
+        .get(
+          `${API_BASE_URL}/allUsers?page=${page + 1}&searchTerm=${searchTerm}`,
+          config
+        )
         .then((response) => {
           if (response.status === 401) {
-            navigate('/');
+            navigate("/");
           }
           setUsers(response.data.users.data);
           setTotalRecords(response.data.users.total);
@@ -354,16 +404,14 @@ const Users = () => {
         })
         .catch((error) => {
           setIsLoading(false);
-        
+
           onError(error);
-       
         });
     } else {
       // If there is no search term, just fetch users normally
       fetchUsers();
     }
   };
-
 
   const handleErrorMessage = (error) => {
     if (
@@ -399,14 +447,16 @@ const Users = () => {
 
   const renderUserList = () => {
 
-    if (users.length === 0) {
+    const userList = filterClients ? filteredUsers : users;
+
+    if (userList.length  === 0) {
       return <div>No users found</div>;
     }
+
+    
     return (
-     
-      
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {users.map((user) => (
+        {userList.map((user) => (
           <div key={user.id} className="bg-white rounded-lg shadow p-4">
             <div className="flex items-start md:items-center">
               <div className="w-2/3">
@@ -417,14 +467,19 @@ const Users = () => {
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Email:</span> {user.email}
                 </p>
+
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Contact:</span>{" "}
                   {user.contacts}
                 </p>
-                <p className="text-gray-500 mb-2 break-words">
-                  <span className="font-semibold">Department:</span>{" "}
-                  {user.department ? _.startCase(user.department) : ""}
-                </p>
+
+                {user.role && user.role.name.toLowerCase() !== "client" && (
+                  <p className="text-gray-500 mb-2 break-words">
+                    <span className="font-semibold">Department:</span>{" "}
+                    {_.startCase(user.department)}
+                  </p>
+                )}
+
                 <p className="text-gray-500 mb-2 break-words">
                   <span className="font-semibold">Role:</span>{" "}
                   {user.role ? _.startCase(user.role.name) : ""}
@@ -443,22 +498,23 @@ const Users = () => {
                   />
                 </div>
                 <div className="flex flex-col mt-4">
-                 
-                 {hasWritePermissionUsers && ( <button
-                    onClick={() => handleEditUser(user)}
-                    className="px-4 py-2 mb-2 bg-blue-500 text-white rounded-md"
-                  >
-                    Edit
-                  </button>)}
+                  {hasWritePermissionUsers && (
+                    <button
+                      onClick={() => handleEditUser(user)}
+                      className="px-4 py-2 mb-2 bg-blue-500 text-white rounded-md"
+                    >
+                      Edit
+                    </button>
+                  )}
 
-               {hasWritePermissionUsers && (   <button
-                    onClick={() => confirmDelete(user.id)}
-                    className="px-4 py-2 bg-red-500 text-white rounded-md"
-                  >
-                    Delete
-                  </button>)}
-
-
+                  {hasWritePermissionUsers && (
+                    <button
+                      onClick={() => confirmDelete(user.id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-md"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -479,7 +535,21 @@ const Users = () => {
         Users
       </h1>
 
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-between">
+        <div className="flex justify-end">
+          <input
+            type="checkbox"
+            id="filter-clients"
+            checked={filterClients}
+            onChange={(e) => setFilterClients(e.target.checked)}
+            className="mr-2"
+          />
+          <label htmlFor="filter-clients" className="mr-2">
+            Filter Clients
+          </label>
+          {/* Existing search bar here */}
+        </div>
+
         <input
           type="text"
           placeholder="Search user"
@@ -488,10 +558,8 @@ const Users = () => {
             setSearchTerm(e.target.value);
             handleSearch();
           }}
-          
           className="border rounded px-2 py-1 w-1/3 mr-2"
         />
-        
       </div>
 
       {!isLoading ? (
@@ -503,18 +571,19 @@ const Users = () => {
       )}
 
       <div className="mb-6">
-
-       {users.length > 0 ? (<Paginator
-          first={page * 12}
-          rows={12}
-          totalRecords={totalRecords}
-          onPageChange={(e) => {
-            setPage(e.page);
-          }}
-          template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
-        />): ''
-}
-
+        {users.length > 0 ? (
+          <Paginator
+            first={page * 12}
+            rows={12}
+            totalRecords={totalRecords}
+            onPageChange={(e) => {
+              setPage(e.page);
+            }}
+            template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
+          />
+        ) : (
+          ""
+        )}
       </div>
 
       {/* Edit User Modal */}
@@ -561,58 +630,93 @@ const Users = () => {
             />
           </div>
 
-
-          
           <div className="mb-4">
-              <div className="flex items-center">
-                <label
-                  className="block text-gray-700  font-bold mb-2 mr-2"
-                  htmlFor="contact"
-                >
-                  Contacts:
-                </label>
+            <div className="flex items-center">
+              <label
+                className="block text-gray-700  font-bold mb-2 mr-2"
+                htmlFor="contact"
+              >
+                Contacts:
+              </label>
 
-                <label
-                  htmlFor="contact"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {selectedUser.contacts}
-                </label>
-              </div>
-
-              <PhoneInput
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                international
-                defaultCountry="KE"
-                value={contact}
-                onChange={setcontact}
-              />
+              <label
+                htmlFor="contact"
+                className="block text-sm font-medium mb-2"
+              >
+                {selectedUser.contacts}
+              </label>
             </div>
 
-
-          <div className="mb-4">
-            <label htmlFor="department" className="block font-semibold mb-1">
-              Department:
-            </label>
-            <Dropdown
-              id="department"
-              value={updatedUser.department}
-              options={departmentOprions}
-              onChange={(e) =>
-                setUpdateUser({
-                  ...updatedUser,
-                  department: e.target.value,
-                })
-              }
-              scrollHeight="200px"
-              placeholder={
-                selectedUser.department
-                  ? selectedUser.department
-                  : "Select a department"
-              }
-              className="w-full"
+            <PhoneInput
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              international
+              defaultCountry="KE"
+              value={contact}
+              onChange={setcontact}
             />
           </div>
+
+          {selectedUser.role &&
+          selectedUser.role.name.toLowerCase() !== "client" ? (
+            <div className="mb-4">
+              <label htmlFor="department" className="block font-semibold mb-1">
+                Department:
+              </label>
+              <Dropdown
+                id="department"
+                value={updatedUser.department}
+                options={departmentOprions}
+                onChange={(e) =>
+                  setUpdateUser({
+                    ...updatedUser,
+                    department: e.target.value,
+                  })
+                }
+                scrollHeight="200px"
+                placeholder={
+                  selectedUser.department
+                    ? selectedUser.department
+                    : "Select a department"
+                }
+                className="w-full"
+              />
+            </div>
+          ) : (
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Projects
+              </label>
+              <input
+                type="text"
+                placeholder="Search projects"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+              />
+
+              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                {projects.map((project, index) => (
+                  <div key={index} className="mb-2">
+                    <input
+                      type="checkbox"
+                      id={`project-${project.id}`}
+                      value={project.id}
+                      checked={selectedProjects.includes(project.id)}
+                      onChange={(e) => handleProjectSelection(e, project.id)}
+                      className="mr-2 leading-tight"
+                    />
+                    <label
+                      htmlFor={`project-${project.id}`}
+                      className="text-gray-700 text-sm"
+                    >
+                      {project.title}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mb-4">
             <label htmlFor="role" className="block font-semibold mb-1">
               Role:

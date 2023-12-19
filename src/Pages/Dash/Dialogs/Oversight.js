@@ -12,6 +12,7 @@ import DetailsArchivedDialog from "./DetailsArchivedDialog.js";
 import MoreSprintsDetails from "./MoreSprintsDetails.js";
 import AllProjectsDialog from "./AllProjectsDialog.js";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../apiConfig.js";
 
 
 import DetailsSupportDialog from "./DetailsSupportDialog.js";
@@ -90,7 +91,7 @@ const Oversight = ({ onClose }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -129,7 +130,7 @@ const Oversight = ({ onClose }) => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectImplementation",
+        `${API_BASE_URL}/allProjectImplementation`,
         config
       );
 
@@ -161,7 +162,7 @@ const Oversight = ({ onClose }) => {
       };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectSupport",
+        `${API_BASE_URL}/allProjectSupport`,
         config
       );
 
@@ -192,7 +193,7 @@ const Oversight = ({ onClose }) => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectsArchivedCount",
+        `${API_BASE_URL}/allProjectsArchivedCount`,
         config
       );
 
@@ -224,7 +225,7 @@ const Oversight = ({ onClose }) => {
       };
       setIsLoadingAllProjectsCount(true);
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allProjectAndSubtasksActive",
+        `${API_BASE_URL}/allProjectAndSubtasksActive`,
         config
       );
 
@@ -257,7 +258,7 @@ const Oversight = ({ onClose }) => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/fetchActiveSprint",
+        `${API_BASE_URL}/fetchActiveSprint`,
         config
       );
 

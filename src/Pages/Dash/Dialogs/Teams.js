@@ -9,6 +9,7 @@ import { FaBriefcase } from "react-icons/fa";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../apiConfig";
 
 
 import "primeicons/primeicons.css";
@@ -57,7 +58,7 @@ const Teams = ({ onClose, labels }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -225,7 +226,7 @@ const Teams = ({ onClose, labels }) => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/teamsProjectsSubtasksPerCount",
+        `${API_BASE_URL}/teamsProjectsSubtasksPerCount`,
         {
           ...config, 
           params: {
@@ -268,7 +269,7 @@ setErrorMessage("Failed to get subtasks");
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/teamsProjectsPerMemberCount",
+        `${API_BASE_URL}/teamsProjectsPerMemberCount`,
         {
           ...config, 
           params: {

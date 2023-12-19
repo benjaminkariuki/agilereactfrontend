@@ -18,6 +18,7 @@ import levenshtein from "fast-levenshtein";
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -123,6 +124,10 @@ const MicroTask = ({
     ? sprintprioritiesActivity.pivot.permissions.includes("write")
     : false;
 
+    const hasReadPermissionSprint = sprintprioritiesActivity
+    ? sprintprioritiesActivity.pivot.permissions.includes("read")
+    : false;
+
     const taskActivity = userActivities.find(
       (activity) => activity.name === "Tasks"
     );
@@ -161,7 +166,7 @@ const MicroTask = ({
       };
       axios
         .post(
-          "https://agilepmtest.agilebiz.co.ke/api/pushToApproval",
+          `${API_BASE_URL}/pushToApproval`,
           {
             taskIds: selectedIds,
             email:userEmail,
@@ -274,7 +279,7 @@ const MicroTask = ({
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -365,7 +370,7 @@ const MicroTask = ({
       },
     };
     axios
-      .post("https://agilepmtest.agilebiz.co.ke/api/create_tasks", formData, {
+      .post(`${API_BASE_URL}/create_tasks`, formData, {
         params: {
           projectId: projectId,
           phaseId: phaseId,
@@ -402,7 +407,7 @@ const MicroTask = ({
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/download-excel-tasks", {
+      .get(`${API_BASE_URL}/download-excel-tasks`, {
         responseType: "blob",
         ...config,
       })
@@ -469,7 +474,7 @@ const MicroTask = ({
       },
     };
     axios
-      .delete(`https://agilepmtest.agilebiz.co.ke/api/deleteSubtask/${id}`, {
+      .delete(`${API_BASE_URL}/deleteSubtask/${id}`, {
         params: {
           projectId: projectId,
           phaseId: phaseId,
@@ -509,7 +514,7 @@ const MicroTask = ({
       setPage(0); 
       axios
         .get(
-          `https://agilepmtest.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
+          `${API_BASE_URL}/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
             page + 1
           }&searchTerm=${searchTerm}`,
           config
@@ -546,7 +551,7 @@ const MicroTask = ({
     };
     axios
       .get(
-        `https://agilepmtest.agilebiz.co.ke/api/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
+        `${API_BASE_URL}/getSubtasks/${projectId}/${phaseId}/${activityId}?page=${
           page + 1
         }`,
         config
@@ -580,7 +585,7 @@ const MicroTask = ({
       };
 
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getDepartments",
+        `${API_BASE_URL}/getDepartments`,
         {
           method: "GET",
           headers: config.headers,
@@ -612,7 +617,7 @@ const MicroTask = ({
     };
     axios
       .post(
-        "https://agilepmtest.agilebiz.co.ke/api/pushToSprint",
+        `${API_BASE_URL}/pushToSprint`,
         {
           taskIds: selectedIds,
         },
@@ -657,7 +662,7 @@ const MicroTask = ({
 
     axios
       .post(
-        "https://agilepmtest.agilebiz.co.ke/api/create_tasks_ui",
+        `${API_BASE_URL}/create_tasks_ui`,
         {
           projectId,
           phaseId,
@@ -831,7 +836,7 @@ const MicroTask = ({
     };
     axios
       .put(
-        `https://agilepmtest.agilebiz.co.ke/api/updateSubtask/${editingTask.id}`,
+        `${API_BASE_URL}/updateSubtask/${editingTask.id}`,
         {
           projectId,
           phaseId,
@@ -947,7 +952,7 @@ const MicroTask = ({
           style={{ width: "98vw" }}
           header={
             <>
-              {hasWritePermissionProject && (
+              {hasReadPermissionProject && (
                 <button
                   className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
                   onClick={() => setCreateTaskDialogVisible(true)}
@@ -974,7 +979,7 @@ const MicroTask = ({
 
           footer={
             <div className="flex justify-between">
-              {hasWritePermissionSprint && (
+              {hasReadPermissionSprint && (
                 <button
                   className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none focus:shadow-outline mt-4"
                   onClick={handlePushtoSprint}
@@ -1112,7 +1117,7 @@ const MicroTask = ({
                   field="closedBy"
                   header="Closed By"
                 ></Column>
-                {hasWritePermissionProject && (
+                {hasReadPermissionProject && (
                   <Column
                     header="Edit"
                     body={(rowData) => (
@@ -1141,8 +1146,8 @@ const MicroTask = ({
           <div className="mb-6">
             {subtasks.length > 0 ? (
               <Paginator
-                first={page * 5}
-                rows={5}
+                first={page * 30}
+                rows={30}
                 totalRecords={totalRecords}
                 onPageChange={(e) => {
                   setPage(e.page);

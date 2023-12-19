@@ -8,6 +8,7 @@ import { Column } from "primereact/column";
 import _ from "lodash";
 import { Chart } from "primereact/chart";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../apiConfig";
 
 
 const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart }) => {
@@ -103,7 +104,7 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -209,7 +210,7 @@ const AllProjectsDialog = ({showAllProjectsChart, disableShowAllProjectsChart })
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/getAllProjectAndSubtasksCount",
+        `${API_BASE_URL}/getAllProjectAndSubtasksCount`,
         config
       );
       if (response.status === 401) {

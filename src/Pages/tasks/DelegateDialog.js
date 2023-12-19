@@ -5,6 +5,7 @@ import axios from "axios";
 import { Toast } from "primereact/toast";
 import levenshtein from 'fast-levenshtein';
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 const DelegateTaskDialog = ({
@@ -91,7 +92,7 @@ const handleErrorMessage = (error) => {
     };
       axios
         .get(
-          `https://agilepmtest.agilebiz.co.ke/api/allProjectsCrewWithId/${projectInfomation.projectId}`,
+          `${API_BASE_URL}/allProjectsCrewWithId/${projectInfomation.projectId}`,
           config
         )
         .then((response) => {
@@ -117,7 +118,7 @@ const handleErrorMessage = (error) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -175,7 +176,7 @@ const handleErrorMessage = (error) => {
       },
     };
       const response = await axios.post(
-        "https://agilepmtest.agilebiz.co.ke/api/delegateTask",
+        `${API_BASE_URL}/delegateTask`,
         data,
         config
       );

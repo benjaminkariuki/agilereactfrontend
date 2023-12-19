@@ -17,6 +17,7 @@
     "draft-js": "^0.11.7",
     "fast-levenshtein": "^3.0.0",
     "flag-icon-css": "^4.1.7",
+    "framer-motion": "^10.16.16",
     "primeicons": "^6.0.1",
     "primereact": "^9.6.0",
     "prop-types": "^15.8.1",

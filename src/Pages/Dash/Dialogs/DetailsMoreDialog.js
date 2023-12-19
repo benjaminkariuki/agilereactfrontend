@@ -7,6 +7,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../apiConfig";
 
 
 
@@ -56,7 +57,7 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
     };
       axios
         .get(
-          `https://agilepmtest.agilebiz.co.ke/api/allProjectPhasesPhaseActivityActive`,config
+          `${API_BASE_URL}/allProjectPhasesPhaseActivityActive`,config
         )
         .then((response) => {
           // Handle the response data
@@ -81,7 +82,7 @@ const DetailsMoreDialog = ({ showDetailsMore, disableShowDelegateDialog }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

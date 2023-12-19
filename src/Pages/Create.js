@@ -5,18 +5,38 @@ import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../apiConfig";
+import CreateUserForm from "./UserComponents/CreateUserForm";
+import CreateClientForm from "./UserComponents/CreateClientForm";
+import { AnimatePresence, motion } from "framer-motion";
 
 const CreateUser = () => {
+  const [formType, setFormType] = useState(0); // 'user=0' or 'client=1'
+
   const [firstName, setFirstName] = useState("");
+  const [firstNameClient, setFirstNameClient] = useState("");
+
   const [lastName, setLastName] = useState("");
+  const [lastNameClient, setLastNameClient] = useState("");
+
   const [email, setEmail] = useState("");
+  const [emailClient, setEmailClient] = useState("");
+
   const [contact, setcontact] = useState();
+  const [contactClient, setcontactClient] = useState();
+
   const navigate = useNavigate();
 
   const [role_id, setRole] = useState("");
+  const [role_id_client, setRoleClient] = useState("");
+
   const [selelctedDepartment, setSelelctedDepartment] = useState(""); // New department state
   const [roles, setRoles] = useState([]);
+  const [rolesClient, setRolesClient] = useState([]);
+
   const [loading, setLoading] = useState(false);
+  const [loadingClient, setLoadingClient] = useState(false);
+
   const toast = useRef(null);
   const { userActivities } = useSelector((state) => state.user);
 
@@ -31,28 +51,67 @@ const CreateUser = () => {
 
   const [departments, setDepartments] = useState([]);
 
+  const [projects, setProjects] = useState([]);
+  const [selectedprojects, setSelectedProjects] = useState([]);
+
+  // Function to toggle form type
+
+  const toggleFormType = (type) => {
+    if (type === 0) {
+      // Reset client form fields
+      setFirstNameClient("");
+      setLastNameClient("");
+      setEmailClient("");
+      setcontactClient("");
+      setRoleClient("");
+      setSelectedProjects([]);
+
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setcontact("");
+      setRole("");
+      setSelelctedDepartment("");
+    } else if (type === 1) {
+      // Reset user form fields
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setcontact("");
+      setRole("");
+      setSelelctedDepartment("");
+
+      setFirstNameClient("");
+      setLastNameClient("");
+      setEmailClient("");
+      setcontactClient("");
+      setRoleClient("");
+      setSelectedProjects([]);
+    }
+    setFormType(type);
+  };
+  
   const handleErrorMessage = (error) => {
-    if (
-      error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.errors
-    ) {
-      // Extract error messages and join them into a single string
-      return Object.values(error.response.data.errors).flat().join(" ");
+    if (error && error.response && error.response.data) {
+      if (error.response.data.errors) {
+        // Handle validation errors
+        return Object.values(error.response.data.errors).flat().join(" ");
+      } else if (error.response.data.error) {
+        // Handle single error message
+        return error.response.data.error;
+      } else if (error.response.data.message) {
+        // Handle other server-side errors
+        return error.response.data.message;
+      }
     } else if (error && error.message) {
       // Client-side error (e.g., no internet)
       return error.message;
     }
-    // If no errors property is found, return the main message or a default error message
-    return error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-      ? error.response.data.message
-      : "An unexpected error occurred.";
+  
+    // Default error message
+    return "An unexpected error occurred.";
   };
-
+  
   const onSuccessCreate = (success) => {
     if (success) {
       toast.current.show({
@@ -89,6 +148,7 @@ const CreateUser = () => {
   useEffect(() => {
     fetchRoles();
     fetchDepartments();
+    fetchProjects();
   }, []);
 
   const fetchRoles = async () => {
@@ -101,13 +161,10 @@ const CreateUser = () => {
         },
       };
 
-      const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/allRoles",
-        {
-          method: "GET",
-          headers: config.headers,
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/allRoles`, {
+        method: "GET",
+        headers: config.headers,
+      });
 
       if (response.status === 401) {
         navigate("/");
@@ -115,6 +172,7 @@ const CreateUser = () => {
 
       const data = await response.json();
       setRoles(data.roles);
+      setRolesClient(data.roles);
     } catch (error) {
       onFetchingRoles("Can't fetch roles, contact the admin");
     }
@@ -130,13 +188,10 @@ const CreateUser = () => {
         },
       };
 
-      const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/getDepartments",
-        {
-          method: "GET",
-          headers: config.headers,
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/getDepartments`, {
+        method: "GET",
+        headers: config.headers,
+      });
 
       if (response.status === 401) {
         navigate("/");
@@ -146,6 +201,32 @@ const CreateUser = () => {
       setDepartments(data.departments);
     } catch (error) {
       onFetchingRoles("Error  fetching departments");
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await fetch(`${API_BASE_URL}/allProjectsClients`, {
+        method: "GET",
+        headers: config.headers,
+      });
+
+      if (response.status === 401) {
+        navigate("/");
+      }
+
+      const data = await response.json();
+      setProjects(data.data);
+    } catch (error) {
+      onFetchingRoles("Error  fetching projects");
     }
   };
 
@@ -162,7 +243,7 @@ const CreateUser = () => {
 
     axios
       .post(
-        "https://agilepmtest.agilebiz.co.ke/api/register",
+        `${API_BASE_URL}/register`,
         {
           firstName,
           lastName,
@@ -197,163 +278,150 @@ const CreateUser = () => {
       });
   };
 
+  const createUserClient = async () => {
+    setLoadingClient(true);
+
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    axios
+      .post(
+        `${API_BASE_URL}/registerClient`,
+        {
+          firstName:firstNameClient,
+          lastName:lastNameClient,
+          email:emailClient,
+          contact:contactClient,
+          projectIds: selectedprojects,
+          role_id:role_id_client,
+        },
+        config
+      )
+      .then((response) => {
+        if (response.status === 200) {
+          onSuccessCreate(response.data.message);
+        }
+
+        if (response.status === 401) {
+          navigate("/");
+        }
+
+        setLoadingClient(false);
+        setFirstNameClient("");
+        setLastNameClient("");
+        setEmailClient("");
+        setcontactClient("");
+        setRoleClient("");
+        setSelectedProjects([]);
+
+      })
+      .catch((error) => {
+        setLoadingClient(false);
+
+        onCreatingUser(error);
+      });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     createUser();
   };
 
+  const  handleSubmitClient = (e) => {
+    e.preventDefault();
+    createUserClient();
+  };
+
   return (
     <div>
       <Toast ref={toast} />
-      <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
+      <div className="text-xl font-bold mb-4 text-center">
+    <button
+        className={`mr-4 px-4 py-2 rounded ${
+            formType === 0 ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+        } hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 transition-all duration-300 ease-in-out`}
+        onClick={() => toggleFormType(0)}
+    >
         Create User
-      </h2>
-      <div
-        className="w-full"
-        style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
-      >
-        <form
-          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-sm mx-auto"
-          onSubmit={handleSubmit}
-        >
-          {/* Form fields */}
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="firstname"
-            >
-              First Name
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="firstname"
-              type="text"
-              placeholder="Enter first name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="lastname"
-            >
-              Last Name
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="lastname"
-              type="text"
-              placeholder="Enter last name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="email"
-              type="email"
-              placeholder="Enter email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="contacts"
-            >
-              Contacts
-            </label>
+    </button>
 
-            <PhoneInput
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              international
-              defaultCountry="KE"
-              value={contact}
-              onChange={setcontact}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="department"
-            >
-              Department
-            </label>
-            <select
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="department"
-              value={selelctedDepartment}
-              onChange={(e) => setSelelctedDepartment(e.target.value)}
-              required
-            >
-              <option value="" disabled required>
-                Select a department
-              </option>
-              {departments.map((department, index) => (
-                <option key={index} value={department.name}>
-                  {department.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="roles"
-            >
-              Roles
-            </label>
-            <select
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="roles"
-              value={role_id}
-              onChange={(e) => setRole(e.target.value)}
-              required
-            >
-              <option value="" disabled required>
-                Select a role
-              </option>
-              {roles.map((role, index) => (
-                <option key={index} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
-          </div>
+    <button
+        className={`px-4 py-2 rounded ${
+            formType === 1 ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+        } hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 transition-all duration-300 ease-in-out`}
+        onClick={() => toggleFormType(1)}
+    >
+        Create Client
+    </button>
+</div>
 
-          <div className="flex items-center justify-center">
-            {hasWritePermissionCreateUser && (
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                type="submit"
-                disabled={loading} // Disable button while loading
-              >
-                {loading ? (
-                  <i
-                    className="pi pi-spin pi-spinner"
-                    style={{ fontSize: "2rem" }}
-                  ></i>
-                ) : (
-                  "Create Account"
-                )}
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
+
+      <AnimatePresence>
+        {formType === 0 && (
+          <motion.div
+            key="createUserForm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CreateUserForm
+              handleSubmit={handleSubmit}
+              setFirstName={setFirstName}
+              setLastName={setLastName}
+              setEmail={setEmail}
+              setSelelctedDepartment={setSelelctedDepartment}
+              setRole={setRole}
+              hasWritePermissionCreateUser={hasWritePermissionCreateUser}
+              loading={loading}
+              roles={roles}
+              role_id={role_id}
+              departments={departments}
+              firstName={firstName}
+              lastName={lastName}
+              email={email}
+              contact={contact}
+              setcontact={setcontact}
+              selelctedDepartment={selelctedDepartment}
+            />
+          </motion.div>
+        )}
+
+        {formType === 1 && (
+          <motion.div
+            key="createClientForm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CreateClientForm
+              handleSubmitClient={handleSubmitClient}
+              setFirstNameClient={setFirstNameClient}
+              setLastNameClient={setLastNameClient}
+              setEmailClient={setEmailClient}
+              setRolesClient={setRoleClient}
+              hasWritePermissionCreateUser={hasWritePermissionCreateUser}
+              loadingClient={loadingClient}
+              rolesClient={rolesClient}
+              role_id_client={role_id_client}
+              projects={projects}
+              firstNameClient={firstNameClient}
+              lastNameClient={lastNameClient}
+              emailClient={emailClient}
+              contactClient={contactClient}
+              setcontactClient={setcontactClient}
+              setProjects={setSelectedProjects}
+              selectedprojects={selectedprojects}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

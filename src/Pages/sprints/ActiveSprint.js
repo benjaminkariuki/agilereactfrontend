@@ -8,6 +8,7 @@ import { Dialog } from "primereact/dialog";
 import _ from "lodash";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -117,7 +118,7 @@ const hasWritePermissionSprints = sprintsActivity
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -145,7 +146,7 @@ const hasWritePermissionSprints = sprintsActivity
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/activeSprint", config)
+      .get(`${API_BASE_URL}/activeSprint`, config)
       .then((response) => {
         setData(response.data);
       })
@@ -258,7 +259,7 @@ const hasWritePermissionSprints = sprintsActivity
     };
     axios
       .post(
-        `https://agilepmtest.agilebiz.co.ke/api/closeSprint/${id}`,
+        `${API_BASE_URL}/closeSprint/${id}`,
         {
           summary,
         },

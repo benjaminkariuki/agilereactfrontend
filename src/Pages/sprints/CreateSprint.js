@@ -4,6 +4,7 @@ import axios from "axios";
 import { Toast } from "primereact/toast";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -66,7 +67,7 @@ const hasWritePermissionSprints = sprintsActivity
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -147,7 +148,7 @@ const hasWritePermissionSprints = sprintsActivity
     };
     try {
       const response = await axios.post(
-        "https://agilepmtest.agilebiz.co.ke/api/create_sprint",
+        `${API_BASE_URL}/create_sprint`,
         {
           name: sprintData.name,
           start_date: formatDate(sprintData.start_date),

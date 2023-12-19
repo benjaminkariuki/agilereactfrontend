@@ -8,6 +8,7 @@ import { Column } from "primereact/column";
 import _ from "lodash";
 import { Chart } from "primereact/chart";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../apiConfig";
 
 
 const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
@@ -41,7 +42,7 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
     };
 
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/search_sprint", {
+      .get(`${API_BASE_URL}/search_sprint`, {
         ...config, 
         params: {
           q: query,
@@ -164,7 +165,7 @@ const MoreSprintsDetails = ({ showMoreSprints, disableShowMoreSprints }) => {
     };
     axios
       .get(
-        `https://agilepmtest.agilebiz.co.ke/api/infoSprintsAnalysis/${sprintId}`,config
+        `${API_BASE_URL}/infoSprintsAnalysis/${sprintId}`,config
       )
       .then((response) => {
 

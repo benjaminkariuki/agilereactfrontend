@@ -5,18 +5,17 @@ import { logout, updateUser } from "../slices/userSlices";
 import { FiTrash2 } from "react-icons/fi";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
-import {  confirmDialog } from "primereact/confirmdialog";
+import { confirmDialog } from "primereact/confirmdialog";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
-import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
-
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
+import API_BASE_URL from "../apiConfig";
 
 const EditProfile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  
+
   const {
     userId,
     userRole,
@@ -28,9 +27,7 @@ const EditProfile = () => {
     userContacts,
   } = useSelector((state) => state.user);
 
-
-
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setNewPassword] = useState("");
@@ -49,35 +46,29 @@ const EditProfile = () => {
   const [isConfirmPasswordMismatch, setIsConfirmPasswordMismatch] =
     useState(false);
 
-  
-    useEffect(() => {
-      fetchName();
-    }, []);
+  useEffect(() => {
+    fetchName();
+  }, []);
 
-    const fetchName = async () => {
-      try {
-        const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
-    
-        const response = await fetch(
-          "https://agilepmtest.agilebiz.co.ke/api/appName",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-    
-        if (response.status === 401) {
-          navigate('/');
-        }
-    
-        // Rest of your code...
-      } catch (error) {
-        // Error handling code...
+  const fetchName = async () => {
+    try {
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
+
+      const response = await fetch(`${API_BASE_URL}/appName`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        navigate("/");
       }
-    };
-  
 
+      // Rest of your code...
+    } catch (error) {
+      // Error handling code...
+    }
+  };
 
   const handleErrorMessage = (error) => {
     if (
@@ -88,7 +79,12 @@ const EditProfile = () => {
     ) {
       // Extract error messages and join them into a single string
       return Object.values(error.response.data.errors).flat().join(" ");
-    } else if (error && error.response && error.response.data && error.response.data.message) {
+    } else if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ) {
       // Server error with a `message` property
       return error.response.data.message;
     } else if (error && error.message) {
@@ -98,7 +94,6 @@ const EditProfile = () => {
     // If no errors property is found, return the main message or a default error message
     return "An unexpected error occurred.";
   };
-  
 
   const onError = (error) => {
     if (error && toast.current) {
@@ -120,13 +115,9 @@ const EditProfile = () => {
       accept: () => handleDeletePhoto(),
       reject: () => {
         // You can perform any logic if needed when the user clicks "No" or simply do nothing
-      }
+      },
     });
   };
-
-  
-
-  
 
   const handleFirstNameChange = (event) => {
     setFirstName(event.target.value);
@@ -135,8 +126,6 @@ const EditProfile = () => {
   const handleLastNameChange = (event) => {
     setLastName(event.target.value);
   };
-
-  
 
   const handleProfilePic = (event) => {
     const file = event.target.files[0];
@@ -158,10 +147,10 @@ const EditProfile = () => {
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
     formData.append("contacts", contact);
-    
+
     formData.append("profile_pic", profile_pic);
 
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
@@ -170,32 +159,23 @@ const EditProfile = () => {
     };
 
     axios
-      .post(
-        `https://agilepmtest.agilebiz.co.ke/api/updateUsers/${userId}`,
-        formData,
-        {
-          headers: {
-            ...config.headers,  // Include the headers from your config
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      )
+      .post(`${API_BASE_URL}/updateUsers/${userId}`, formData, {
+        headers: {
+          ...config.headers, // Include the headers from your config
+          "Content-Type": "multipart/form-data",
+        },
+      })
       .then((response) => {
         setIsLoading(false);
-        const  user = response.data.user;
-       
+        const user = response.data.user;
 
         dispatch(updateUser(user));
         handleCloseEdit();
-      
-      
       })
       .catch((error) => {
         setIsLoading(false);
-       
-          onError(error);
-        
-        
+
+        onError(error);
       });
   };
 
@@ -207,7 +187,6 @@ const EditProfile = () => {
     setError("");
     setIsConfirmPasswordMismatch(null);
     setShowPasswordModal(false);
-
   };
 
   const handlePasswordChange = (e) => {
@@ -227,41 +206,41 @@ const EditProfile = () => {
   const handlePasswordSave = (e) => {
     e.preventDefault(); // Prevent default form submission
 
-
     if (password === confirmPassword) {
       setError(null);
       setIsLoading(true);
       // Save the new password
       fetchName();
 
-      const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+      const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
       axios
-        .post(`https://agilepmtest.agilebiz.co.ke/api/changepassword/${userId}`, {
-          password: password,
-          previousPass:Oldpassword,
-        },config)
+        .post(
+          `${API_BASE_URL}/changepassword/${userId}`,
+          {
+            password: password,
+            previousPass: Oldpassword,
+          },
+          config
+        )
         .then((response) => {
-         
           setTimeout(() => {
-          handleTogglePasswordModal();
+            handleTogglePasswordModal();
             dispatch(logout());
             navigate("/");
           }, 1000);
-
         })
         .catch((error) => {
           // Error occurred while changing password
           setIsLoading(false);
-        
+
           onError(error);
-          
         });
     } else setError("Passwords don't match");
   };
@@ -279,8 +258,8 @@ const EditProfile = () => {
   //DELETING THE PROFILE pHOTO
   const handleDeletePhoto = () => {
     // Delete the photo
-fetchName();
-    const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
+    fetchName();
+    const token = sessionStorage.getItem("token"); // Ensure token is retrieved correctly
 
     const config = {
       headers: {
@@ -289,18 +268,17 @@ fetchName();
     };
 
     axios
-      .delete(`https://agilepmtest.agilebiz.co.ke/api/deleteImage/${userId}`,config)
+      .delete(`${API_BASE_URL}/deleteImage/${userId}`, config)
       .then((response) => {
         const { user } = response.data;
         if (response.status === 401) {
-          navigate('/');
+          navigate("/");
         }
         dispatch(updateUser(user));
         // Update session storage with the new user data
         sessionStorage.setItem("user", JSON.stringify(user));
       })
       .catch((error) => {
-      
         onError(error);
       });
   };
@@ -312,9 +290,9 @@ fetchName();
         className="w-full"
         style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
       >
-         <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
-        User account settings
-      </h2>
+        <h2 className="text-xl font-bold mb-4 text-center text-blue-500">
+          User account settings
+        </h2>
 
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
           <div className="relative">
@@ -383,18 +361,21 @@ fetchName();
               </label>
               <span className="text-gray-700">{_.startCase(userRole)}</span>
             </div>
-            <div className="mb-4">
-              <label
-                className="block text-gray-700  font-bold mb-2"
-                htmlFor="fullName"
-              >
-                Department:
-              </label>
 
-              <span className="text-gray-700">
-                {_.startCase(userDepartment)}
-              </span>
-            </div>
+            {userRole.toLowerCase() !== "client" && (
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700  font-bold mb-2"
+                  htmlFor="fullName"
+                >
+                  Department:
+                </label>
+
+                <span className="text-gray-700">
+                  {_.startCase(userDepartment)}
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-between mt-4">
               <button
@@ -412,96 +393,178 @@ fetchName();
             </div>
           </div>
         </div>
-      
-   
       </div>
 
       <Dialog
-          header="Edit User"
-          visible={isEditing}
-          onHide={handleCloseEdit}
-          style={{ width: "50vw" }}
-        >
-          <div className="p-fluid">
-            <div className="mb-4">
+        header="Edit User"
+        visible={isEditing}
+        onHide={handleCloseEdit}
+        style={{ width: "50vw" }}
+      >
+        <div className="p-fluid">
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="firstName"
+            >
+              First Name
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="firstName"
+              type="text"
+              value={firstName}
+              onChange={handleFirstNameChange}
+              placeholder={userFName}
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700  font-bold mb-2"
+              htmlFor="lastName"
+            >
+              Last Name
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="lastName"
+              type="text"
+              value={lastName}
+              onChange={handleLastNameChange}
+              placeholder={userLName}
+            />
+          </div>
+
+          <div className="mb-4">
+            <div className="flex items-center">
               <label
-                className="block text-gray-700 font-bold mb-2"
-                htmlFor="firstName"
+                className="block text-gray-700  font-bold mb-2 mr-2"
+                htmlFor="contact"
               >
-                First Name
+                Contacts:
               </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={handleFirstNameChange}
-                placeholder={userFName}
-              />
+
+              <label
+                htmlFor="contact"
+                className="block text-sm font-medium mb-2"
+              >
+                {userContacts}
+              </label>
             </div>
+
+            <PhoneInput
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              international
+              defaultCountry="KE"
+              value={contact}
+              onChange={setcontact}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="photo"
+            >
+              Photo
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePic}
+              name="profile_pic"
+            />
+            {previewImage && <img src={previewImage} alt="Profile" />}
+          </div>
+
+          <div className="flex justify-between">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleSubmit}
+            >
+              {isLoading ? (
+                <i
+                  className="pi pi-spin pi-spinner"
+                  style={{ fontSize: "1.4rem" }}
+                ></i>
+              ) : (
+                "Save"
+              )}
+            </button>
+            <button
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleCloseEdit}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        header="Change Password"
+        visible={showPasswordModal}
+        onHide={handleTogglePasswordModal}
+      >
+        <div>
+          {error && <p className="text-red-500">{error}</p>}
+          <form>
             <div className="mb-4">
               <label
                 className="block text-gray-700  font-bold mb-2"
-                htmlFor="lastName"
+                htmlFor="old-password"
               >
-                Last Name
+                Old Password
               </label>
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={handleLastNameChange}
-                placeholder={userLName}
-              />
-            </div>
-
-            <div className="mb-4">
-              <div className="flex items-center">
-                <label
-                  className="block text-gray-700  font-bold mb-2 mr-2"
-                  htmlFor="contact"
-                >
-                  Contacts:
-                </label>
-
-                <label
-                  htmlFor="contact"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {userContacts}
-                </label>
-              </div>
-
-              <PhoneInput
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                international
-                defaultCountry="KE"
-                value={contact}
-                onChange={setcontact}
+                id="old-password"
+                type="password"
+                value={Oldpassword}
+                onChange={handleOldPasswordChange}
+                required
               />
             </div>
 
             <div className="mb-4">
               <label
-                className="block text-gray-700 font-bold mb-2"
-                htmlFor="photo"
+                className="block text-gray-700  font-bold mb-2"
+                htmlFor="new-password"
               >
-                Photo
+                New Password
               </label>
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePic}
-                name="profile_pic"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="new-password"
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
+                required
               />
-              {previewImage && <img src={previewImage} alt="Profile" />}
             </div>
 
+            <div className="mb-4">
+              <label
+                className="block text-gray-700  font-bold mb-2"
+                htmlFor="confirmPassword"
+              >
+                Confirm New Password
+              </label>
+              <input
+                className={`shadow appearance-none border ${
+                  isConfirmPasswordMismatch ? "border-red-500" : ""
+                } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                required
+              />
+            </div>
             <div className="flex justify-between">
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                onClick={handleSubmit}
+                onClick={handlePasswordSave}
               >
                 {isLoading ? (
                   <i
@@ -514,101 +577,14 @@ fetchName();
               </button>
               <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                onClick={handleCloseEdit}
+                onClick={handleTogglePasswordModal}
               >
-                Close
+                Cancel
               </button>
             </div>
-          </div>
-        </Dialog>
-      
-
-        <Dialog
-          header="Change Password"
-          visible={showPasswordModal}
-          onHide={handleTogglePasswordModal}
-        >
-          <div>
-            {error && <p className="text-red-500">{error}</p>}
-            <form>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700  font-bold mb-2"
-                  htmlFor="old-password"
-                >
-                  Old Password
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="old-password"
-                  type="password"
-                  value={Oldpassword}
-                  onChange={handleOldPasswordChange}
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700  font-bold mb-2"
-                  htmlFor="new-password"
-                >
-                  New Password
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="new-password"
-                  type="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700  font-bold mb-2"
-                  htmlFor="confirmPassword"
-                >
-                  Confirm New Password
-                </label>
-                <input
-                  className={`shadow appearance-none border ${
-                    isConfirmPasswordMismatch ? "border-red-500" : ""
-                  } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  required
-                />
-              </div>
-              <div className="flex justify-between">
-                <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={handlePasswordSave}
-                >
-                  {isLoading ? (
-                    <i
-                      className="pi pi-spin pi-spinner"
-                      style={{ fontSize: "1.4rem" }}
-                    ></i>
-                  ) : (
-                    "Save"
-                  )}
-                </button>
-                <button
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={handleTogglePasswordModal}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </Dialog>
-
-
+          </form>
+        </div>
+      </Dialog>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import _ from "lodash";
 import { FaBriefcase } from "react-icons/fa";
 import Oversight from "./Dialogs/Oversight";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 
@@ -80,7 +81,7 @@ const PManager = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -172,7 +173,7 @@ const PManager = () => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/activeSprintMinimal",
+        `${API_BASE_URL}/activeSprintMinimal`,
         config
       );
 
@@ -208,11 +209,11 @@ const PManager = () => {
       },
     };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountOverall",
+        `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCountOverall`,
         {
           params: {
             email: email,
-            role: role,
+              role: role,
             department: department,
           },
           headers: config.headers
@@ -224,7 +225,7 @@ const PManager = () => {
       }
 
       const fetchedActiveSprintTasks = response.data;
-
+          
       // setActiveSprint(fetchedActiveSprint);
       setChartDataFromAPi(fetchedActiveSprintTasks);
 
@@ -254,7 +255,7 @@ const PManager = () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCountStage",
+          `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCountStage`,
         {
           params: {
             email: email,
@@ -303,7 +304,7 @@ const PManager = () => {
     };
 
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/ProjectAndSubtasksActivePerUserCount",
+        `${API_BASE_URL}/ProjectAndSubtasksActivePerUserCount`,
         {
           params: {
             email: email,

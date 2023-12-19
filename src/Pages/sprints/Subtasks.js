@@ -11,6 +11,7 @@ import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
   const [visible, setVisible] = useState(false);
@@ -71,6 +72,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
       });
     }
   };
+
   const onWarn = (error) => {
     if (error && toast.current) {
       toast.current?.show({
@@ -191,7 +193,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -223,7 +225,7 @@ const Subtasks = ({ subtasks, sprintId, reloadData, component }) => {
       };
       axios
         .post(
-          `https://agilepmtest.agilebiz.co.ke/api/removeTasks/${sprintId}`,
+          `${API_BASE_URL}/removeTasks/${sprintId}`,
           {
             taskIds: removedTask,
           },

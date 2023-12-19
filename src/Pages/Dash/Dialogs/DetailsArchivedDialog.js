@@ -8,6 +8,7 @@ import { Column } from "primereact/column";
 import _ from "lodash";
 import { Paginator } from "primereact/paginator";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../apiConfig";
 
 
 
@@ -46,7 +47,7 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
 
       axios
         .get(
-          `https://agilepmtest.agilebiz.co.ke/api/allProject_Support_Archived?page=${page + 1}`,config
+          `${API_BASE_URL}/allProject_Support_Archived?page=${page + 1}`,config
         )
         .then((response) => {
           // Handle the response data
@@ -73,7 +74,7 @@ const DetailsArchivedDialog = ({showDetailsArchived, disableShowDelegateDialogAr
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

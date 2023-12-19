@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import API_BASE_URL from "./apiConfig";
 
 const ForgotPass = () => {
   const [email, setEmail] = useState("");
@@ -45,7 +46,7 @@ const ForgotPass = () => {
     setIsSubmitting(true);
 
     axios
-      .post("https://agilepmtest.agilebiz.co.ke/api/pass_reset", {
+      .post(`${API_BASE_URL}/pass_reset`, {
         email,
       })
       .then((response) => {

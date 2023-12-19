@@ -3,6 +3,7 @@ import { Toast } from "primereact/toast";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 
 const UpdateRoles = () => {
@@ -20,6 +21,7 @@ const UpdateRoles = () => {
   const [savedActivities, setSavedActivities] = useState(false);
   const { userActivities } = useSelector((state) => state.user);
   const navigate = useNavigate();
+
 
 
   // Function to show a success toast when roles are updated successfully
@@ -92,7 +94,7 @@ const UpdateRoles = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -120,7 +122,7 @@ const UpdateRoles = () => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/allRoles",
+        `${API_BASE_URL}/allRoles`,
         config
       );
 
@@ -147,7 +149,7 @@ const UpdateRoles = () => {
         },
       };
       const response = await axios.get(
-        "https://agilepmtest.agilebiz.co.ke/api/activitiesAll",
+        `${API_BASE_URL}/activitiesAll`,
         config
       );
 
@@ -174,7 +176,7 @@ const UpdateRoles = () => {
         },
       };
       const roleResponse = await axios.get(
-        `https://agilepmtest.agilebiz.co.ke/api/allRolesWithId/${roleId}`,
+        `${API_BASE_URL}/allRolesWithId/${roleId}`,
         config
       );
 
@@ -286,7 +288,7 @@ const UpdateRoles = () => {
         },
       };
       const response = await axios.put(
-        `https://agilepmtest.agilebiz.co.ke/api/updateRoles/${selectedRole}`,
+        `${API_BASE_URL}/updateRoles/${selectedRole}`,
         {
           roleName: event.target.rolename.value,
           activities: selectedActivities,

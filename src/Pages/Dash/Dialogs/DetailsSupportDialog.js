@@ -9,7 +9,7 @@ import _ from "lodash";
 import { Paginator } from "primereact/paginator";
 import { useNavigate } from "react-router-dom";
 
-
+import API_BASE_URL from "../../../apiConfig";
 
 
 const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupport }) => {
@@ -21,9 +21,6 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
   const toast = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-
-
 
 
   const sentenceCaseFormatter = (rowData, column) => {
@@ -45,7 +42,7 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
     };
       axios
         .get(
-          `https://agilepmtest.agilebiz.co.ke/api/allProject_Support_Titles?page=${page + 1}`,config
+          `${API_BASE_URL}/allProject_Support_Titles?page=${page + 1}`,config
         )
         .then((response) => {
           // Handle the response data
@@ -72,7 +69,7 @@ const DetailsSupportDialog = ({showDetailsSupport, disableShowDelegateDialogSupp
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

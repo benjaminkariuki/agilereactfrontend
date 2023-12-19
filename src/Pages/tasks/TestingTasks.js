@@ -12,6 +12,7 @@ import DelegateTaskDialog from "./DelegateDialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../apiConfig";
 
 const TestingTasks = () => {
   const { userRole, userEmail, userActivities, userDepartment } = useSelector(
@@ -114,6 +115,7 @@ const TestingTasks = () => {
       });
     }
   };
+
   const onInfo = (info) => {
     if (info) {
       toast.current?.show({
@@ -216,7 +218,7 @@ const TestingTasks = () => {
       const token = sessionStorage.getItem('token'); // Ensure token is retrieved correctly
   
       const response = await fetch(
-        "https://agilepmtest.agilebiz.co.ke/api/appName",
+        `${API_BASE_URL}/appName`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -244,7 +246,7 @@ const TestingTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/myTasksTesting", {
+      .get(`${API_BASE_URL}/myTasksTesting`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -284,7 +286,7 @@ const TestingTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/OtherTasksTesting", {
+      .get(`${API_BASE_URL}/OtherTasksTesting`, {
         params: {
           email: userEmail,
           roleName: userRole,
@@ -324,7 +326,7 @@ const TestingTasks = () => {
       },
     };
     axios
-      .get("https://agilepmtest.agilebiz.co.ke/api/fromreviewtotesting", {
+      .get(`${API_BASE_URL}/fromreviewtotesting`, {
         params: {
           email: userEmail,
           roleName: userDepartment,
@@ -372,7 +374,7 @@ const TestingTasks = () => {
   };
 
   // Create a download link
-  const baseUrl = "https://agilepmtest.agilebiz.co.ke/storage/";
+  const baseUrl = "https://agile-pm.agilebiz.co.ke/storage/";
 
   const downloadLink2 = (rowData) => {
     const downloadUrl = rowData.path ? `${baseUrl}${rowData.path}` : "";
@@ -514,7 +516,7 @@ const TestingTasks = () => {
       };
       axios
         .post(
-          "https://agilepmtest.agilebiz.co.ke/api/pushToReview",
+          `${API_BASE_URL}/pushToReview`,
           {
             taskIds: selectedIds,
           },
@@ -579,7 +581,7 @@ const TestingTasks = () => {
     };
     axios
       .post(
-        "https://agilepmtest.agilebiz.co.ke/api/returnToDevelopment",
+        `${API_BASE_URL}/returnToDevelopment`,
         formData,
         {
           headers: {
